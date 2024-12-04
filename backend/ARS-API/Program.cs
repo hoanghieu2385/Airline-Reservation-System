@@ -1,3 +1,5 @@
+using ARS_API.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace ARS_API
 {
@@ -8,6 +10,11 @@ namespace ARS_API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddDbContext<ApplicationDBContext>(options =>
+            {
+                var connectionsString = builder.Configuration.GetConnectionString("DefaultConnection");
+                options.UseSqlServer(connectionsString);
+            });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
