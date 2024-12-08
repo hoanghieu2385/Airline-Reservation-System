@@ -1,0 +1,70 @@
+frontend/
+├── public/                  # Static files (favicon, index.html)
+├── src/
+│   ├── assets/              # Tài nguyên tĩnh (ảnh, file css/js dùng chung)
+│   │   ├── css/
+│   │   ├── images/
+│   ├── components/          # Các thành phần giao diện (reusable components)
+│   │   ├── common/          # Component dùng chung: Header, Footer, etc.
+│   │   ├── client/          # Component chỉ dành cho Client (guest)
+│   │   ├── admin/           # Component dành cho Admin
+│   │   ├── clerk/           # Component dành cho Clerk
+│   ├── layouts/             # Tổ chức Layout UI
+│   │   ├── ClientLayout.js  # Layout dành riêng cho Client
+│   │   ├── AdminLayout.js   # Layout dành riêng cho Admin
+│   │   ├── ClerkLayout.js   # Layout dành riêng cho Clerk
+│   ├── pages/               # Các trang ứng dụng
+│   │   ├── client/
+│   │   │   ├── HomePage.js
+│   │   │   ├── PrivacyPolicy.js
+│   │   │   ├── TermsAndConditions.js
+│   │   ├── admin/
+│   │   │   ├── Dashboard.js
+│   │   │   ├── ManageFlights.js
+│   │   │   ├── UserManagement.js
+│   │   ├── clerk/
+│   │       ├── ReservationList.js
+│   │       ├── CreateReservation.js
+│   │       ├── CheckIn.js
+│   ├── routes/              # File route để điều hướng
+│   │   ├── ClientRoutes.js  # Route dành riêng cho Client
+│   │   ├── AdminRoutes.js   # Route dành riêng cho Admin
+│   │   ├── ClerkRoutes.js   # Route dành riêng cho Clerk
+│   ├── services/            # File quản lý API
+│   │   ├── api.js           # File quản lý các endpoint API
+│   │   ├── clientApi.js     # API dành riêng cho Client
+│   │   ├── adminApi.js      # API dành riêng cho Admin
+│   │   ├── clerkApi.js      # API dành riêng cho Clerk
+│   ├── App.js               # File chính của ứng dụng
+│   ├── index.js             # Entry point của React
+│   ├── App.css              # CSS của App
+│   ├── index.css            # CSS chung
+├── .gitignore
+
+
+Luồng chạy React
+Mô tả luồng chạy:
+index.js:
+
+Là entry point. File này sẽ render component gốc App.js lên index.html.
+App.js:
+
+Đây là nơi định nghĩa các tuyến đường chính (routes) của ứng dụng.
+Tuỳ thuộc vào role của người dùng (Client, Admin, Clerk), sẽ điều hướng sang các routes tương ứng.
+routes:
+
+Tất cả các routes được định nghĩa ở đây, chia tách cho từng loại người dùng (client, admin, clerk) để dễ quản lý.
+layouts:
+
+Layout chính quyết định giao diện cơ bản cho từng loại người dùng, ví dụ: Admin có sidebar, Client thì không.
+pages:
+
+Chứa các trang chính của ứng dụng, tách riêng theo vai trò người dùng.
+components:
+
+Thành phần giao diện tái sử dụng. Ví dụ: Header, Footer dùng chung.
+services:
+
+File quản lý API. Tất cả các call đến backend (ASP.NET Core Web API) sẽ được thực hiện ở đây. Điều này giúp việc tái sử dụng và bảo trì dễ dàng hơn.
+
+App.js → Routes → Layout → Pages → Components.
