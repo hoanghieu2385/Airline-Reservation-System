@@ -1,6 +1,6 @@
 // src/routes/ClientRoutes.js
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import HomePage from "../pages/client/HomePage";
 import PrivacyPolicy from "../pages/client/PrivacyPolicy";
 import TermsAndConditions from "../pages/client/TermsAndConditions";
@@ -9,11 +9,11 @@ import ClientLayout from "../layouts/ClientLayout";
 function ClientRoutes() {
     return (
         <ClientLayout>
-            <Switch>
-                <Route exact path="/" component={HomePage} />
-                <Route path="/privacy" component={PrivacyPolicy} />
-                <Route path="/terms" component={TermsAndConditions} />
-            </Switch>
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsAndConditions />} />
+            </Routes>
         </ClientLayout>
     );
 }

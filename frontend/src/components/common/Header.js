@@ -1,8 +1,8 @@
 // File: src/components/Header.js
 import React, { useState, useEffect } from 'react';
 // import 'bootstrap/dist/css/bootstrap.min.css';
-import '../assets/css/Header.css';
-import Logo from '../assets/images/Logo.png'
+import '../../assets/css/Header.css';
+import Logo from '../../assets/images/Logo.png'
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -35,7 +35,7 @@ const Header = () => {
         <header className={`main-header ${isScrolled ? 'scrolled' : ''}`}>
             <nav className="navbar navbar-expand-lg navbar-light">
                 <div className="container">
-                    <a className="navbar-brand" href="#">
+                    <a className="navbar-brand" href="/">
                         <img src={Logo} alt='Logo' className="logo"/>
                     </a>
                     <button
