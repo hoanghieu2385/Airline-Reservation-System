@@ -1,11 +1,13 @@
-// File: src/components/Header.js
+// src/components/Header.js
 import React, { useState, useEffect } from 'react';
-// import 'bootstrap/dist/css/bootstrap.min.css';
+import { useLocation } from 'react-router-dom';
 import '../../assets/css/Header.css';
-import Logo from '../../assets/images/Logo.png'
+import Logo from '../../assets/images/Logo.png';
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const location = useLocation();
+    const isIndexPage = location.pathname === '/';
 
     useEffect(() => {
         let lastScrollY = 0;
@@ -32,7 +34,8 @@ const Header = () => {
     }, []);
 
     return (
-        <header className={`main-header ${isScrolled ? 'scrolled' : ''}`}>
+        <header className={`main-header ${isScrolled ? 'scrolled' : ''} ${isIndexPage ? 'overlay' : ''}`}>
+            {/* Rest of the header content remains the same */}
             <nav className="navbar navbar-expand-lg navbar-light">
                 <div className="container">
                     <a className="navbar-brand" href="/">
@@ -52,36 +55,24 @@ const Header = () => {
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav mx-auto">
                             <li className="nav-item">
-                                <a className="nav-link" href="#home">
-                                    Home
-                                </a>
+                                <a className="nav-link" href="#home">Home</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#about">
-                                    About
-                                </a>
+                                <a className="nav-link" href="#about">About</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#flights">
-                                    Flights
-                                </a>
+                                <a className="nav-link" href="#flights">Flights</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#blog">
-                                    Blog
-                                </a>
+                                <a className="nav-link" href="#blog">Blog</a>
                             </li>
                         </ul>
                         <ul className="navbar-nav ms-auto">
                             <li className="nav-item">
-                                <a className="nav-link" href="#login">
-                                    Login
-                                </a>
+                                <a className="nav-link" href="#login">Login</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#register">
-                                    Register
-                                </a>
+                                <a className="nav-link" href="#register">Register</a>
                             </li>
                         </ul>
                     </div>
