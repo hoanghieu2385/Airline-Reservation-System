@@ -67,13 +67,49 @@ select:focus,
     background-color: #f0f0f0;
 }
 
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.clear-button {
+    position: absolute;
+    right: 7px;
+    background-color: rgb(225, 223, 223); 
+    border: none;
+    border-radius: 50%; 
+    width: 20px;
+    height: 20px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    z-index: 2; 
+}
+
+.clear-button:hover {
+    background-color: #f0f0f0;
+}
+
+.clear-button svg {
+    width: 17px;
+    height: 17px;
+    color: #555;
+}
+
 .react-datepicker-wrapper {
     width: 100%;
 }
 
+.react-datepicker-wrapper input {
+    padding-right: 30px;
+}
+
 .passenger-dropdown {
     position: absolute;
-    top: calc(100% + 5px); /* Position dropdown below input */
+    top: calc(100% + 5px); 
     background-color: white;
     color: rgb(0, 0, 0);
     border: 1px solid #ddd;
