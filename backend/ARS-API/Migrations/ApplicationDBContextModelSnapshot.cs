@@ -50,18 +50,33 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
+                            Id = "fe2d547f-47c8-44cb-bf9f-5d149c9eac90",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
+                            Id = "f83a28c8-d075-4cbd-9eae-d6c03d7ac9e6",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
+                            Id = "bd2b011c-9559-442b-ac5f-81519211dec5",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "9bfe506d-4145-40e0-b287-89d0a67e7b6d",
+                            Name = "Clerk",
+                            NormalizedName = "CLERK"
+                        },
+                        new
+                        {
+                            Id = "2c1c3c50-7805-499c-ac3f-774ea2ceb914",
+                            Name = "Guest",
+                            NormalizedName = "GUEST"
                         });
                 });
 
