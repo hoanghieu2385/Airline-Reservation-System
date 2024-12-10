@@ -1,0 +1,76 @@
+/* src/pages/Policies.css */
+
+.policies-container {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.policies-header {
+    background-color: #0078d7;
+    color: white;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.policies-header h1 {
+    margin: 0;
+}
+
+.policies-nav {
+    margin-bottom: 20px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-button {
+    background-color: #0078d7;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none; /* Add JS to toggle this */
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    min-width: 200px;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    display: block;
+    color: black;
+    padding: 10px 15px;
+    text-decoration: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.policies-main {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.policies-main h2 {
+    margin-top: 0;
+}
+
+.policies-main p {
+    line-height: 1.6;
+}
