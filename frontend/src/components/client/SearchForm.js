@@ -39,10 +39,11 @@ const SearchForm = () => {
     const handleAirportSearch = (query, setFilteredAirports) => {
         const filtered = airportData.filter(
             (airport) =>
-                airport.name.toLowerCase().includes(query.toLowerCase()) ||
-                airport.code.toLowerCase().includes(query.toLowerCase()) &&
+                (airport.name.toLowerCase().includes(query.toLowerCase()) ||
+                    airport.code.toLowerCase().includes(query.toLowerCase())) &&
                 `${airport.name} (${airport.code})` !== query
         );
+
         setFilteredAirports(filtered);
     };
 
@@ -122,8 +123,8 @@ const SearchForm = () => {
     return (
         <div className="search-form">
             {/* From Field */}
-            <div 
-                className="form-group" 
+            <div
+                className="form-group"
                 ref={fromInputRef}
                 onMouseEnter={() => setFromHover(true)}
                 onMouseLeave={() => setFromHover(false)}
@@ -141,7 +142,7 @@ const SearchForm = () => {
                         }}
                     />
                     {(fromQuery || fromHover) && (
-                        <button 
+                        <button
                             className="clear-button"
                             onClick={clearFrom}
                             type="button"
@@ -169,8 +170,8 @@ const SearchForm = () => {
             </div>
 
             {/* To Field */}
-            <div 
-                className="form-group" 
+            <div
+                className="form-group"
                 ref={toInputRef}
                 onMouseEnter={() => setToHover(true)}
                 onMouseLeave={() => setToHover(false)}
@@ -188,7 +189,7 @@ const SearchForm = () => {
                         }}
                     />
                     {(toQuery || toHover) && (
-                        <button 
+                        <button
                             className="clear-button"
                             onClick={clearTo}
                             type="button"
@@ -216,7 +217,7 @@ const SearchForm = () => {
             </div>
 
             {/* Departure Date */}
-            <div 
+            <div
                 className="form-group"
                 onMouseEnter={() => setDepartureDateHover(true)}
                 onMouseLeave={() => setDepartureDateHover(false)}
@@ -232,7 +233,7 @@ const SearchForm = () => {
                         minDate={new Date()}
                     />
                     {(departureDate || departureDateHover) && (
-                        <button 
+                        <button
                             className="clear-button"
                             onClick={clearDepartureDate}
                             type="button"
@@ -245,7 +246,7 @@ const SearchForm = () => {
             </div>
 
             {/* Return Date */}
-            <div 
+            <div
                 className="form-group"
                 onMouseEnter={() => setReturnDateHover(true)}
                 onMouseLeave={() => setReturnDateHover(false)}
@@ -261,7 +262,7 @@ const SearchForm = () => {
                         minDate={departureDate || new Date()}
                     />
                     {(returnDate || returnDateHover) && (
-                        <button 
+                        <button
                             className="clear-button"
                             onClick={clearReturnDate}
                             type="button"
