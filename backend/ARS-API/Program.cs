@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using ARS_API.Data;
+using ARS_API.Models;
 
 namespace ARS_API
 {
@@ -21,9 +22,9 @@ namespace ARS_API
                 options.UseSqlServer(connectionString);
             });
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                // C?u hình password complexity
+                // C?u hï¿½nh password complexity
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
@@ -33,7 +34,7 @@ namespace ARS_API
                 .AddEntityFrameworkStores<ApplicationDBContext>()
                 .AddDefaultTokenProviders();
 
-            // C?u hình JWT Authentication
+            // C?u hï¿½nh JWT Authentication
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,7 +75,7 @@ namespace ARS_API
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
-                    Description = "Vui lòng nh?p token h?p l?",
+                    Description = "Vui lï¿½ng nh?p token h?p l?",
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
                     Scheme = "bearer"

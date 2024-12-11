@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ARS_API.Models;
 using System.Reflection.Emit;
 
-public class ApplicationDBContext : IdentityDbContext<IdentityUser, IdentityRole, string>
+public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
 {
     public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
     {
@@ -23,5 +23,4 @@ public class ApplicationDBContext : IdentityDbContext<IdentityUser, IdentityRole
 
         
     }
-    public DbSet<UserModel> Users { get; set; }
 }
