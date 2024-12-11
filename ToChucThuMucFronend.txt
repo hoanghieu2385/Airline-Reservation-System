@@ -3,7 +3,9 @@ frontend/
 ├── src/
 │   ├── assets/              # Tài nguyên tĩnh (ảnh, file css/js dùng chung)
 │   │   ├── css/
+│   │   ├── data/airport.json    # chứa các sân bay, có "code", "name", "city", "country"
 │   │   ├── images/
+│   │   ├── js/
 │   ├── components/          # Các thành phần giao diện (reusable components)
 │   │   ├── common/          # Component dùng chung: Header, Footer, etc.
 │   │   ├── client/          # Component chỉ dành cho Client (guest)
