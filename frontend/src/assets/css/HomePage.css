@@ -36,3 +36,61 @@
     font-size: 1.25rem;
     margin-bottom: 2rem;
 }
+
+
+/* Why Choose Us Section */
+.why-choose-us {
+    padding: 60px 20px;
+    background-color: #f9f9f9;
+}
+
+.why-choose-us .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+}
+
+.why-choose-us-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+}
+
+/* Image Section */
+.why-choose-us-image {
+    position: relative;
+    width: 50%;
+}
+
+.why-choose-us-image img {
+    width: 100%;
+    min-width: 200px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.why-choose-us .section-title {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.why-choose-us .section-subtitle {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.why-choose-us .features-list {
+    list-style: none;
+    padding: 0;
+}
+
+.why-choose-us .features-list li {
+    font-size: 1rem;
+    margin: 10px 0;
+    color: #555;
+    display: flex;
+    align-items: center;
+}
