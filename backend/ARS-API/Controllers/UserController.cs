@@ -57,7 +57,6 @@ namespace ARS_API.Controllers
         }
 
         [HttpPost("register")]
-        [Authorize]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             // Kiểm tra vai trò hợp lệ
