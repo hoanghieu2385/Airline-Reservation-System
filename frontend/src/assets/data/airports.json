@@ -1,0 +1,50 @@
+[
+    {
+        "code": "HAN",
+        "name": "Noi Bai International Airport",
+        "city": "Hanoi",
+        "country": "Vietnam"
+    },
+    {
+        "code": "SGN",
+        "name": "Tan Son Nhat International Airport",
+        "city": "Ho Chi Minh City",
+        "country": "Vietnam"
+    },
+    {
+        "code": "DAD",
+        "name": "Da Nang International Airport",
+        "city": "Da Nang",
+        "country": "Vietnam"
+    },
+    {
+        "code": "CXR",
+        "name": "Cam Ranh International Airport",
+        "city": "Nha Trang",
+        "country": "Vietnam"
+    },
+    {
+        "code": "DEL",
+        "name": "Indira Gandhi International Airport",
+        "city": "New Delhi",
+        "country": "India"
+    },
+    {
+        "code": "BOM",
+        "name": "Chhatrapati Shivaji Maharaj International Airport",
+        "city": "Mumbai",
+        "country": "India"
+    },
+    {
+        "code": "BLR",
+        "name": "Kempegowda International Airport",
+        "city": "Bangalore",
+        "country": "India"
+    },
+    {
+        "code": "MAA",
+        "name": "Chennai International Airport",
+        "city": "Chennai",
+        "country": "India"
+    }
+]
