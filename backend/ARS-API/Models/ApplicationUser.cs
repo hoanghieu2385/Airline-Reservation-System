@@ -1,15 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace ARS_API.Models
 {
-    public class UserModel
+    public class ApplicationUser : IdentityUser
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int UserId { get; set; }
-
         public string FirstName { get; set; } = string.Empty;
 
         public string LastName { get; set; } = string.Empty;
