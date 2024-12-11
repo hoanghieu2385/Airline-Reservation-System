@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ARS_API.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241210095016_AddUserModel")]
+    partial class AddUserModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,33 +84,21 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "fe2d547f-47c8-44cb-bf9f-5d149c9eac90",
+                            Id = "2d6c8558-5e1b-4004-93d0-e24cf7a6de3c",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "f83a28c8-d075-4cbd-9eae-d6c03d7ac9e6",
+                            Id = "af41a225-7482-4c0b-8ca0-85e6cb75e57e",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
-                            Id = "bd2b011c-9559-442b-ac5f-81519211dec5",
+                            Id = "b2c7fd54-92da-4029-bf83-d367a5df05e9",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = "9bfe506d-4145-40e0-b287-89d0a67e7b6d",
-                            Name = "Clerk",
-                            NormalizedName = "CLERK"
-                        },
-                        new
-                        {
-                            Id = "2c1c3c50-7805-499c-ac3f-774ea2ceb914",
-                            Name = "Guest",
-                            NormalizedName = "GUEST"
                         });
                 });
 

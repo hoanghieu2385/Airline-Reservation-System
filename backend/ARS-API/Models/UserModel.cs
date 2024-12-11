@@ -1,25 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ARS_API.Models
 {
     public class UserModel
     {
-        [Required]
-        [MaxLength(100)]
-        public string FirstName { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int UserId { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string LastName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
-        [MaxLength(255)]
-        public string Address { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
-        [Range(0, int.MaxValue)]
-        public int SkyMiles { get; set; } = 0;
+        public string Address { get; set; } = string.Empty;
 
-        [Column(TypeName = "date")]
+        public int SkyMiles { get; set; }
+
         public DateTime? DateOfBirth { get; set; }
     }
 }
