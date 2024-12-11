@@ -74,3 +74,5 @@ coverage/
 # Common files and folders
 bin/
 obj/
+Migrations/
+appsettings.json

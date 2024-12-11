@@ -81,19 +81,16 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "2d6c8558-5e1b-4004-93d0-e24cf7a6de3c",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "af41a225-7482-4c0b-8ca0-85e6cb75e57e",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
-                            Id = "b2c7fd54-92da-4029-bf83-d367a5df05e9",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
