@@ -41,12 +41,101 @@
     padding: 5px 15px;
 }
 
-/* Modify body padding for non-index pages */
 body {
     padding-top: 70px;
 }
 
-/* Remove padding-top for index page */
 body.index-page {
     padding-top: 0;
+}
+
+/* Tablet & Mobile Styles */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        padding: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .navbar-collapse.show {
+        transform: translateY(0);
+    }
+
+    .navbar-nav {
+        padding: 0.5rem 0;
+    }
+
+    .nav-item {
+        border-bottom: 1px solid #eee;
+    }
+
+    .nav-item:last-child {
+        border-bottom: none;
+    }
+
+    .nav-link {
+        padding: 1rem !important;
+        text-align: center;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .main-header {
+        height: 60px;
+    }
+
+    .logo {
+        width: 120px;
+        height: 40px;
+    }
+
+    .navbar-collapse {
+        top: 60px;
+    }
+
+    .navbar-toggler {
+        padding: 4px 8px;
+    }
+
+    .navbar-nav .nav-link {
+        margin: 0;
+        padding: 12px !important;
+        font-size: 16px;
+    }
+
+    .navbar-nav .btn {
+        margin: 8px 0;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 576px) {
+    .main-header {
+        height: 56px;
+    }
+
+    .logo {
+        width: 100px;
+        height: 35px;
+    }
+
+    .navbar-collapse {
+        top: 56px;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 10px !important;
+        font-size: 15px;
+    }
 }

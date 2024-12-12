@@ -1,4 +1,4 @@
-// src/components/Header.js
+// src/components/common/Header.js
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../../assets/css/Header.css';
@@ -55,7 +55,7 @@ const Header = () => {
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav mx-auto">
                             <li className="nav-item">
-                                <a className="nav-link" href="#home">Home</a>
+                                <a className="nav-link" href="/">Home</a>
                             </li>
                             <li className="nav-item">
                                 <a className="nav-link" href="#about">About</a>
@@ -69,10 +69,10 @@ const Header = () => {
                         </ul>
                         <ul className="navbar-nav ms-auto">
                             <li className="nav-item">
-                                <a className="nav-link" href="#login">Login</a>
+                                <a className="nav-link" href="/login">Login</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#register">Register</a>
+                                <a className="nav-link" href="/register">Register</a>
                             </li>
                         </ul>
                     </div>
