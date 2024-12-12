@@ -61,7 +61,7 @@ namespace ARS_API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             // Kiểm tra vai trò hợp lệ
-            string[] validRoles = { "USER", "CLERK", "ADMIN", "GUEST" };
+            string[] validRoles = { "USER", "CLERK", "ADMIN" };
             if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role))
             {
                 return BadRequest("Vai trò không hợp lệ.");
