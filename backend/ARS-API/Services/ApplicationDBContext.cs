@@ -20,7 +20,5 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
             new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Clerk", NormalizedName = "CLERK" },
             new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Guest", NormalizedName = "GUEST" }
         );
-
-        
     }
 }

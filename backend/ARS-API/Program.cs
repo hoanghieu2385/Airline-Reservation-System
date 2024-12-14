@@ -24,17 +24,16 @@ namespace ARS_API
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                // C?u h�nh password complexity
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequiredLength = 8;
             })
-                .AddEntityFrameworkStores<ApplicationDBContext>()
-                .AddDefaultTokenProviders();
+            .AddEntityFrameworkStores<ApplicationDBContext>()
+            .AddDefaultTokenProviders();
 
-            // C?u h�nh JWT Authentication
+            // Configure JWT Authentication
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -61,6 +60,17 @@ namespace ARS_API
                     policy.RequireRole("Manager", "Admin"));
             });
 
+            // Configure CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000") // Thay URL này bằng domain của frontend
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddControllers();
 
             // Swagger configuration
@@ -75,7 +85,7 @@ namespace ARS_API
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
-                    Description = "Vui l�ng nh?p token h?p l?",
+                    Description = "Please enter a valid token",
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
                     Scheme = "bearer"
@@ -112,7 +122,7 @@ namespace ARS_API
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "Loi khi seed du lieu");
+                    logger.LogError(ex, "Error seeding data");
                 }
             }
 
@@ -123,6 +133,10 @@ namespace ARS_API
             }
 
             app.UseHttpsRedirection();
+
+            // Enable CORS
+            app.UseCors("AllowFrontend");
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
