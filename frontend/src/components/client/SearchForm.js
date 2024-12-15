@@ -100,11 +100,11 @@ const SearchForm = () => {
                             <li
                                 key={airport.airportId}
                                 onClick={() => {
-                                    setFromQuery(`${airport.cityName} (${airport.airportCode})`);
+                                    setFromQuery(`${airport.airportName} (${airport.airportCode})`);
                                     setFilteredFromAirports([]);
                                 }}
                             >
-                                {airport.cityName} ({airport.airportCode})
+                                {airport.airportName} ({airport.airportCode})
                             </li>
                         ))}
                     </ul>
@@ -143,11 +143,11 @@ const SearchForm = () => {
                             <li
                                 key={airport.airportId}
                                 onClick={() => {
-                                    setToQuery(`${airport.cityName} (${airport.airportCode})`);
+                                    setToQuery(`${airport.airportName} (${airport.airportCode})`);
                                     setFilteredToAirports([]);
                                 }}
                             >
-                                {airport.cityName} ({airport.airportCode})
+                                {airport.airportName} ({airport.airportCode})
                             </li>
                         ))}
                     </ul>

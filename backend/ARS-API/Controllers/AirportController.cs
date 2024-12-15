@@ -26,17 +26,18 @@ namespace ARS_API.Controllers
                 return BadRequest("Query parameter is required.");
 
             var sql = @"
-        SELECT 
-            a.AirportId,
-            a.AirportName,
-            a.AirportCode,
-            c.CityName,
-            c.Country
-        FROM Airports a
-        INNER JOIN Cities c ON a.CityId = c.CityId
-        WHERE 
-            a.AirportCode LIKE @Query OR
-            c.CityName LIKE @Query";
+                    SELECT 
+                        a.AirportId,
+                        a.AirportName,
+                        a.AirportCode,
+                        c.CityName,
+                        c.Country
+                    FROM Airports a
+                    INNER JOIN Cities c ON a.CityId = c.CityId
+                    WHERE 
+                        a.AirportCode LIKE @Query OR
+                        a.AirportName LIKE @Query OR
+                        c.CityName LIKE @Query";
 
             using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             var airports = await connection.QueryAsync<AirportDTO>(sql, new { Query = $"%{query}%" });

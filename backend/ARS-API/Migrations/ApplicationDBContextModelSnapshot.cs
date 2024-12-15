@@ -194,7 +194,7 @@ namespace ARS_API.Migrations
 
                     b.HasKey("CityId");
 
-                    b.ToTable("City");
+                    b.ToTable("Cities");
                 });
 
             modelBuilder.Entity("ARS_API.Models.Flight", b =>
@@ -277,25 +277,25 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "73ee6b2c-90cb-4fb9-8890-93261ec1e8b4",
+                            Id = "84354aa6-25f0-45cc-8c51-24edadb60f8e",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "3c98dd5b-2512-4a45-9c02-194eba2ac57b",
+                            Id = "f559820b-6e6a-42f4-af0a-c4b135fb999d",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "4a09350b-9fb5-4c66-a285-8db6519e2774",
+                            Id = "f4357071-ee53-4b81-a207-e19573b9d8d5",
                             Name = "Clerk",
                             NormalizedName = "CLERK"
                         },
                         new
                         {
-                            Id = "7a21899b-702d-41b3-ba17-86b3d4a6d1a9",
+                            Id = "8c4e0138-bd48-401e-826e-b4971f6de2bf",
                             Name = "Guest",
                             NormalizedName = "GUEST"
                         });
