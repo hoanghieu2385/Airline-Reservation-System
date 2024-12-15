@@ -1,4 +1,4 @@
-﻿namespace ARS_API.Dtos
+﻿namespace ARS_API.DTOs
 {
     public class UpdateUserDto
     {

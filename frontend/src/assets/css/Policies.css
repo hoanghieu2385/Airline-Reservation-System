@@ -1,0 +1,70 @@
+/* Container chính */
+.policies-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    background-color: #f5f5f5;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Dropdown menu */
+.custom-dropdown {
+    margin-bottom: 20px;
+}
+
+.custom-dropdown-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.custom-dropdown-button:hover {
+    background-color: #0056b3;
+}
+
+.custom-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 10;
+    width: 200px;
+}
+
+.custom-dropdown:hover .custom-dropdown-content {
+    display: block;
+}
+
+.custom-dropdown-content a {
+    display: block;
+    padding: 8px 10px;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 3px;
+}
+
+.custom-dropdown-content a:hover {
+    background-color: #f0f0f0;
+}
+
+/* Card */
+.card {
+    background: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    width: 800px; /* Card rộng hơn */
+    padding: 20px;
+    text-align: left;
+    font-size: 16px;
+    line-height: 1.6;
+}
