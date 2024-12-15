@@ -1,4 +1,4 @@
-﻿using ARS_API.Dtos;
+﻿using ARS_API.DTOs;
 using ARS_API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

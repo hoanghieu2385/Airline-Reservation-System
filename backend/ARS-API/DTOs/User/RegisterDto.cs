@@ -1,8 +1,9 @@
-﻿namespace ARS_API.Dtos
+﻿namespace ARS_API.DTOs
 {
-    public class LoginDto
+    public class RegisterDto
     {
         public string Email { get; set; }
         public string Password { get; set; }
+        public string Role { get; set; }
     }
 }
