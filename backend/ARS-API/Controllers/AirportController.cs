@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ARS_API.Models;
 using Microsoft.EntityFrameworkCore;
-using ARS_API.Dtos;
+using ARS_API.DTOs;
 using Microsoft.Data.SqlClient;
 using Dapper;
 
@@ -20,7 +20,7 @@ namespace ARS_API.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<AirportDto>>> SearchAirports([FromQuery] string query)
+        public async Task<ActionResult<IEnumerable<AirportDTO>>> SearchAirports([FromQuery] string query)
         {
             if (string.IsNullOrWhiteSpace(query))
                 return BadRequest("Query parameter is required.");
@@ -39,7 +39,7 @@ namespace ARS_API.Controllers
             c.CityName LIKE @Query";
 
             using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            var airports = await connection.QueryAsync<AirportDto>(sql, new { Query = $"%{query}%" });
+            var airports = await connection.QueryAsync<AirportDTO>(sql, new { Query = $"%{query}%" });
 
             return Ok(airports);
         }
