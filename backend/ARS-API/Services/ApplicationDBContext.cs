@@ -21,6 +21,7 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
             new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Guest", NormalizedName = "GUEST" }
         );
 
+
         // Flight -> Airline (many-to-one)
         builder.Entity<Flight>()
             .HasOne(f => f.Airline)
@@ -41,6 +42,7 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
             .WithMany()
             .HasForeignKey(f => f.DestinationAirportId)
             .OnDelete(DeleteBehavior.Restrict);
+
 
     }
 

@@ -289,7 +289,7 @@ namespace ARS_API.Migrations
                         },
                         new
                         {
-                            Id = "b705611f-2b6f-4702-9934-8b9c099f8649",
+                            Id = "4a09350b-9fb5-4c66-a285-8db6519e2774",
                             Name = "Clerk",
                             NormalizedName = "CLERK"
                         },

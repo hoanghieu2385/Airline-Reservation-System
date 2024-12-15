@@ -1,6 +1,7 @@
 // src/services/clientApi.js
-import api from "./api";
+import api from './api';
 
-export const getFlights = () => api.get("/flights");
-export const bookFlight = (flightId, data) => api.post(`/flights/${flightId}/book`, data);
-export const cancelBooking = (bookingId) => api.delete(`/bookings/${bookingId}`);
+export const searchAirports = async (query) => {
+    const response = await api.get(`/airport/search`, { params: { query } });
+    return response.data;
+};

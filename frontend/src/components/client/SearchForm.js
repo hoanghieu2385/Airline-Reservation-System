@@ -1,81 +1,59 @@
 // src/components/client/SearchForm.js
-import 'react-datepicker/dist/react-datepicker.css';
-import '../../assets/css/SearchForm.css';
-import airportData from '../../assets/data/airports.json';
-
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import 'react-datepicker/dist/react-datepicker.css';
+import { searchAirports } from '../../services/clientApi';
+import { debounce } from 'lodash';
+import '../../assets/css/SearchForm.css';
 
 const SearchForm = () => {
-    // Form field states
     const [fromQuery, setFromQuery] = useState('');
     const [toQuery, setToQuery] = useState('');
     const [departureDate, setDepartureDate] = useState(null);
     const [returnDate, setReturnDate] = useState(null);
     const [passengers, setPassengers] = useState(1);
 
-    // UI state management
     const [filteredFromAirports, setFilteredFromAirports] = useState([]);
     const [filteredToAirports, setFilteredToAirports] = useState([]);
     const [isPassengerDropdownOpen, setIsPassengerDropdownOpen] = useState(false);
 
-    // Hover states for clear buttons
-    const [fromHover, setFromHover] = useState(false);
-    const [toHover, setToHover] = useState(false);
-    const [departureDateHover, setDepartureDateHover] = useState(false);
-    const [returnDateHover, setReturnDateHover] = useState(false);
-
-    // Refs for handling clicks outside
-    const fromInputRef = useRef(null);
-    const toInputRef = useRef(null);
-    const passengersDropdownRef = useRef(null);
+    const [isLoadingFrom, setIsLoadingFrom] = useState(false);
+    const [isLoadingTo, setIsLoadingTo] = useState(false);
 
     const navigate = useNavigate();
 
-    // Handle airport search/filtering
-    const handleAirportSearch = (query, setFilteredAirports) => {
-        const filtered = airportData.filter(
-            (airport) =>
-                (airport.name.toLowerCase().includes(query.toLowerCase()) ||
-                    airport.code.toLowerCase().includes(query.toLowerCase())) &&
-                `${airport.name} (${airport.code})` !== query
-        );
+    const handleAirportSearch = useRef(
+        debounce(async (query, setFilteredAirports, setIsLoading) => {
+            if (!query.trim()) {
+                setFilteredAirports([]);
+                return;
+            }
+            setIsLoading(true);
+            try {
+                const airports = await searchAirports(query);
+                setFilteredAirports(airports);
+            } catch (error) {
+                console.error('Error fetching airports:', error);
+                setFilteredAirports([]);
+            } finally {
+                setIsLoading(false);
+            }
+        }, 300)
+    ).current;
 
-        setFilteredAirports(filtered);
+    useEffect(() => {
+        return () => {
+            handleAirportSearch.cancel();
+        };
+    }, []);
+
+    const clearInput = (setter, setFilteredAirports) => {
+        setter('');
+        setFilteredAirports([]);
     };
 
-    // Clear button handlers
-    const clearFrom = () => {
-        setFromQuery('');
-        setFilteredFromAirports([]);
-    };
-
-    const clearTo = () => {
-        setToQuery('');
-        setFilteredToAirports([]);
-    };
-
-    const clearDepartureDate = () => {
-        setDepartureDate(null);
-    };
-
-    const clearReturnDate = () => {
-        setReturnDate(null);
-    };
-
-    // Passenger count handlers
-    const incrementPassengers = () => {
-        setPassengers((prev) => Math.min(prev + 1, 10));
-    };
-
-    const decrementPassengers = () => {
-        setPassengers((prev) => Math.max(prev - 1, 1));
-    };
-
-    // Handle search submission
     const handleSearch = () => {
         navigate('/results', {
             state: {
@@ -88,47 +66,10 @@ const SearchForm = () => {
         });
     };
 
-    // Handle clicks outside dropdowns
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            // Close passengers dropdown
-            if (
-                passengersDropdownRef.current &&
-                !passengersDropdownRef.current.contains(event.target)
-            ) {
-                setIsPassengerDropdownOpen(false);
-            }
-            // Close suggestions for "From" input
-            if (
-                fromInputRef.current &&
-                !fromInputRef.current.contains(event.target)
-            ) {
-                setFilteredFromAirports([]);
-            }
-            // Close suggestions for "To" input
-            if (
-                toInputRef.current &&
-                !toInputRef.current.contains(event.target)
-            ) {
-                setFilteredToAirports([]);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
     return (
         <div className="search-form">
             {/* From Field */}
-            <div
-                className="form-group"
-                ref={fromInputRef}
-                onMouseEnter={() => setFromHover(true)}
-                onMouseLeave={() => setFromHover(false)}
-            >
+            <div className="form-group">
                 <label htmlFor="from">From</label>
                 <div className="input-wrapper">
                     <input
@@ -138,17 +79,18 @@ const SearchForm = () => {
                         value={fromQuery}
                         onChange={(e) => {
                             setFromQuery(e.target.value);
-                            handleAirportSearch(e.target.value, setFilteredFromAirports);
+                            handleAirportSearch(e.target.value, setFilteredFromAirports, setIsLoadingFrom);
                         }}
+                        autoComplete="off"
                     />
-                    {(fromQuery || fromHover) && (
+                    {fromQuery && (
                         <button
                             className="clear-button"
-                            onClick={clearFrom}
+                            onClick={() => clearInput(setFromQuery, setFilteredFromAirports)}
                             type="button"
-                            aria-label="Clear from field"
+                            aria-label="Clear departure city"
                         >
-                            <X size={20} />
+                            <X size={16} />
                         </button>
                     )}
                 </div>
@@ -156,13 +98,13 @@ const SearchForm = () => {
                     <ul className="suggestions">
                         {filteredFromAirports.map((airport) => (
                             <li
-                                key={airport.code}
+                                key={airport.airportId}
                                 onClick={() => {
-                                    setFromQuery(`${airport.name} (${airport.code})`);
+                                    setFromQuery(`${airport.cityName} (${airport.airportCode})`);
                                     setFilteredFromAirports([]);
                                 }}
                             >
-                                {airport.name} ({airport.code})
+                                {airport.cityName} ({airport.airportCode})
                             </li>
                         ))}
                     </ul>
@@ -170,12 +112,7 @@ const SearchForm = () => {
             </div>
 
             {/* To Field */}
-            <div
-                className="form-group"
-                ref={toInputRef}
-                onMouseEnter={() => setToHover(true)}
-                onMouseLeave={() => setToHover(false)}
-            >
+            <div className="form-group">
                 <label htmlFor="to">To</label>
                 <div className="input-wrapper">
                     <input
@@ -185,15 +122,16 @@ const SearchForm = () => {
                         value={toQuery}
                         onChange={(e) => {
                             setToQuery(e.target.value);
-                            handleAirportSearch(e.target.value, setFilteredToAirports);
+                            handleAirportSearch(e.target.value, setFilteredToAirports, setIsLoadingTo);
                         }}
+                        autoComplete="off"
                     />
-                    {(toQuery || toHover) && (
+                    {toQuery && (
                         <button
                             className="clear-button"
-                            onClick={clearTo}
+                            onClick={() => clearInput(setToQuery, setFilteredToAirports)}
                             type="button"
-                            aria-label="Clear to field"
+                            aria-label="Clear destination"
                         >
                             <X size={16} />
                         </button>
@@ -203,13 +141,13 @@ const SearchForm = () => {
                     <ul className="suggestions">
                         {filteredToAirports.map((airport) => (
                             <li
-                                key={airport.code}
+                                key={airport.airportId}
                                 onClick={() => {
-                                    setToQuery(`${airport.name} (${airport.code})`);
+                                    setToQuery(`${airport.cityName} (${airport.airportCode})`);
                                     setFilteredToAirports([]);
                                 }}
                             >
-                                {airport.name} ({airport.code})
+                                {airport.cityName} ({airport.airportCode})
                             </li>
                         ))}
                     </ul>
@@ -217,11 +155,7 @@ const SearchForm = () => {
             </div>
 
             {/* Departure Date */}
-            <div
-                className="form-group"
-                onMouseEnter={() => setDepartureDateHover(true)}
-                onMouseLeave={() => setDepartureDateHover(false)}
-            >
+            <div className="form-group">
                 <label htmlFor="departureDate">Departure Date</label>
                 <div className="input-wrapper">
                     <ReactDatePicker
@@ -231,11 +165,12 @@ const SearchForm = () => {
                         dateFormat="yyyy-MM-dd"
                         placeholderText="Choose departure date"
                         minDate={new Date()}
+                        autoComplete="off"
                     />
-                    {(departureDate || departureDateHover) && (
+                    {departureDate && (
                         <button
                             className="clear-button"
-                            onClick={clearDepartureDate}
+                            onClick={() => setDepartureDate(null)}
                             type="button"
                             aria-label="Clear departure date"
                         >
@@ -246,11 +181,7 @@ const SearchForm = () => {
             </div>
 
             {/* Return Date */}
-            <div
-                className="form-group"
-                onMouseEnter={() => setReturnDateHover(true)}
-                onMouseLeave={() => setReturnDateHover(false)}
-            >
+            <div className="form-group">
                 <label htmlFor="returnDate">Return Date</label>
                 <div className="input-wrapper">
                     <ReactDatePicker
@@ -260,11 +191,12 @@ const SearchForm = () => {
                         dateFormat="yyyy-MM-dd"
                         placeholderText="Choose return date"
                         minDate={departureDate || new Date()}
+                        autoComplete="off"
                     />
-                    {(returnDate || returnDateHover) && (
+                    {returnDate && (
                         <button
                             className="clear-button"
-                            onClick={clearReturnDate}
+                            onClick={() => setReturnDate(null)}
                             type="button"
                             aria-label="Clear return date"
                         >
@@ -275,22 +207,14 @@ const SearchForm = () => {
             </div>
 
             {/* Passengers */}
-            <div className="form-group" ref={passengersDropdownRef}>
+            <div className="form-group">
                 <label htmlFor="passengers">Passengers</label>
                 <input
                     type="text"
                     id="passengers"
                     value={`${passengers} Passenger${passengers > 1 ? 's' : ''}`}
                     readOnly
-                    onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}
                 />
-                {isPassengerDropdownOpen && (
-                    <div className="passenger-dropdown">
-                        <button onClick={decrementPassengers}>-</button>
-                        <span>{passengers}</span>
-                        <button onClick={incrementPassengers}>+</button>
-                    </div>
-                )}
             </div>
 
             {/* Search Button */}
