@@ -14,18 +14,17 @@ const SearchForm = () => {
     const [departureDate, setDepartureDate] = useState(null);
     const [returnDate, setReturnDate] = useState(null);
     const [passengers, setPassengers] = useState(1);
-
     const [filteredFromAirports, setFilteredFromAirports] = useState([]);
     const [filteredToAirports, setFilteredToAirports] = useState([]);
     const [isPassengerDropdownOpen, setIsPassengerDropdownOpen] = useState(false);
-
     const [isLoadingFrom, setIsLoadingFrom] = useState(false);
     const [isLoadingTo, setIsLoadingTo] = useState(false);
 
     const navigate = useNavigate();
+    const passengersDropdownRef = useRef();
 
     const handleAirportSearch = useRef(
-        debounce(async (query, setFilteredAirports, setIsLoading) => {
+        debounce(async (query, setFilteredAirports, setIsLoading, excludeAirportCode = null) => {
             if (!query.trim()) {
                 setFilteredAirports([]);
                 return;
@@ -33,7 +32,10 @@ const SearchForm = () => {
             setIsLoading(true);
             try {
                 const airports = await searchAirports(query);
-                setFilteredAirports(airports);
+                const filteredAirports = excludeAirportCode
+                    ? airports.filter(airport => airport.airportCode !== excludeAirportCode)
+                    : airports;
+                setFilteredAirports(filteredAirports);
             } catch (error) {
                 console.error('Error fetching airports:', error);
                 setFilteredAirports([]);
@@ -42,12 +44,21 @@ const SearchForm = () => {
             }
         }, 300)
     ).current;
+    
 
     useEffect(() => {
         return () => {
             handleAirportSearch.cancel();
         };
     }, []);
+
+    const incrementPassengers = () => {
+        setPassengers((prev) => Math.min(prev + 1, 10));
+    };
+
+    const decrementPassengers = () => {
+        setPassengers((prev) => Math.max(prev - 1, 1));
+    };
 
     const clearInput = (setter, setFilteredAirports) => {
         setter('');
@@ -207,14 +218,22 @@ const SearchForm = () => {
             </div>
 
             {/* Passengers */}
-            <div className="form-group">
+            <div className="form-group" ref={passengersDropdownRef}>
                 <label htmlFor="passengers">Passengers</label>
                 <input
                     type="text"
                     id="passengers"
                     value={`${passengers} Passenger${passengers > 1 ? 's' : ''}`}
                     readOnly
+                    onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}
                 />
+                {isPassengerDropdownOpen && (
+                    <div className="passenger-dropdown">
+                        <button onClick={decrementPassengers}>-</button>
+                        <span>{passengers}</span>
+                        <button onClick={incrementPassengers}>+</button>
+                    </div>
+                )}
             </div>
 
             {/* Search Button */}
