@@ -1,4 +1,4 @@
-.login-container {
+.login-form {
   max-width: 400px;
   margin: 0 auto;
   margin-top: 160px;
@@ -10,18 +10,24 @@
   font-family: Arial, sans-serif;
 }
 
-.login-container h2 {
+.login-form__title {
   margin-bottom: 20px;
   font-size: 24px;
   color: #333;
 }
 
-.input-container {
+.login-form__error-message {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.login-form__input-container {
   position: relative;
   margin-bottom: 15px;
 }
 
-.input-field {
+.login-form__input {
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
@@ -30,30 +36,77 @@
   font-size: 16px;
 }
 
-.password-toggle-icon {
+.login-form {
+  max-width: 400px;
+  margin: 0 auto;
+  margin-top: 160px;
+  padding: 20px;
+  text-align: center;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+}
+
+.login-form__title {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.login-form__error-message {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.login-form__input-container {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.login-form__input {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.login-form__input--invalid {
+  border-color: red;
+  background-color: #ffe6e6;
+}
+
+.login-form__password-toggle-icon {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  cursor: pointer;
   color: #888;
+  cursor: pointer;
 }
 
-.forgot-password {
+.login-form__password-toggle-icon:hover {
+  color: #007bff;
+}
+
+.login-form__forgot-password {
   text-align: left;
   margin-bottom: 15px;
 }
 
-.forgot-password a {
+.login-form__forgot-password a {
   color: #007bff;
   text-decoration: none;
 }
 
-.forgot-password a:hover {
+.login-form__forgot-password a:hover {
   text-decoration: underline;
 }
 
-.login-button {
+.login-form__button {
   width: 100%;
   padding: 12px;
   background-color: #007bff;
@@ -66,21 +119,85 @@
   margin-bottom: 20px;
 }
 
-.login-button:hover {
+.login-form__button:hover {
   background-color: #0056b3;
 }
 
-.register-prompt {
+.login-form__register-prompt {
   margin-top: 20px;
   font-size: 14px;
   color: #666;
 }
 
-.register-prompt a {
+.login-form__register-prompt a {
   color: #007bff;
   text-decoration: none;
 }
 
-.register-prompt a:hover {
+.login-form__register-prompt a:hover {
+  text-decoration: underline;
+}
+
+.login-form__input--invalid {
+  border-color: red;
+  background-color: #ffe6e6;
+}
+
+.login-form__password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  cursor: pointer;
+}
+
+.login-form__password-toggle-icon:hover {
+  color: #007bff;
+}
+
+.login-form__forgot-password {
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.login-form__forgot-password a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.login-form__forgot-password a:hover {
+  text-decoration: underline;
+}
+
+.login-form__button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  margin-bottom: 20px;
+}
+
+.login-form__button:hover {
+  background-color: #0056b3;
+}
+
+.login-form__register-prompt {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-form__register-prompt a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.login-form__register-prompt a:hover {
   text-decoration: underline;
 }

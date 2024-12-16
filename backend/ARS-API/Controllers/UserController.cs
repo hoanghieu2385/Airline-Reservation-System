@@ -60,37 +60,46 @@ namespace ARS_API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            // Kiểm tra vai trò hợp lệ
+            // List of valid roles
             string[] validRoles = { "USER", "CLERK", "ADMIN" };
-            if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role))
+
+            // Check if the provided role is valid
+            if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role.ToUpper()))
             {
-                return BadRequest("Vai trò không hợp lệ.");
+                return BadRequest("Invalid role.");
             }
 
+            // Default role is "USER" if no role is provided
+            var role = string.IsNullOrEmpty(model.Role) ? "USER" : model.Role.ToUpper();
+
+            // Create a new user instance
             var user = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email
             };
 
+            // Create the user with the provided password
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
-                return BadRequest(result.Errors);
+                // Aggregate errors from Identity Framework
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return BadRequest(new { Message = "Registration failed.", Errors = errors });
             }
 
-            // Thêm vai trò nếu được chỉ định
-            if (!string.IsNullOrEmpty(model.Role))
+            // Assign the role to the user
+            var roleResult = await _userManager.AddToRoleAsync(user, role);
+            if (!roleResult.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, model.Role);
-            }
-            else
-            {
-                // Mặc định là User nếu không chỉ định vai trò
-                await _userManager.AddToRoleAsync(user, "USER");
+                // Rollback user creation if assigning role fails
+                await _userManager.DeleteAsync(user);
+                var errors = roleResult.Errors.Select(e => e.Description).ToList();
+                return BadRequest(new { Message = "Failed to assign role.", Errors = errors });
             }
 
-            return Ok(new { Message = "Người dùng đăng ký thành công.", UserId = user.Id });
+            // Successful registration
+            return Ok(new { Message = "User registered successfully.", UserId = user.Id });
         }
 
         [HttpGet("read")]
