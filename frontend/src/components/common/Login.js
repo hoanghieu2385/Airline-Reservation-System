@@ -15,7 +15,7 @@ function LoginPage() {
     <div>
       <Header />
       <div className="login-container">        
-        <h2>SIGN IN</h2>
+        <h2>LOGIN</h2>
         <form>
           <div className="input-container">
             <input 
