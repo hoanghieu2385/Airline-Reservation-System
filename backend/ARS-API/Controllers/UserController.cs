@@ -34,7 +34,7 @@ namespace ARS_API.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return Unauthorized("Email hoặc mật khẩu không hợp lệ.");
+                return Unauthorized("Email or password is incorrect.");
             }
 
             var userRoles = await _userManager.GetRolesAsync(user);
@@ -64,7 +64,7 @@ namespace ARS_API.Controllers
             string[] validRoles = { "USER", "CLERK", "ADMIN" };
             if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role))
             {
-                return BadRequest("Vai trò không hợp lệ.");
+                return BadRequest("Role does not exist or input is incorrect.");
             }
 
             var user = new ApplicationUser
@@ -90,7 +90,7 @@ namespace ARS_API.Controllers
                 await _userManager.AddToRoleAsync(user, "USER");
             }
 
-            return Ok(new { Message = "Người dùng đăng ký thành công.", UserId = user.Id });
+            return Ok(new { Message = "User registered successfully.", UserId = user.Id });
         }
 
         [HttpGet("read")]
@@ -122,7 +122,7 @@ namespace ARS_API.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
-                return NotFound("Không tìm thấy người dùng.");
+                return NotFound("User not found.");
             }
 
             // Cập nhật email nếu được cung cấp
@@ -151,10 +151,10 @@ namespace ARS_API.Controllers
 
             if (!string.IsNullOrEmpty(model.NewEmail) && !model.NewEmail.Contains("@"))
             {
-                return BadRequest("Email không hợp lệ.");
+                return BadRequest("Email is incorrect.");
             }
 
-            return Ok("Cập nhật người dùng thành công.");
+            return Ok("User updated successfully.");
         }
 
         [HttpDelete("delete/{id}")]
@@ -164,7 +164,7 @@ namespace ARS_API.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
-                return NotFound("Không tìm thấy người dùng.");
+                return NotFound("User not found.");
             }
 
             var result = await _userManager.DeleteAsync(user);
@@ -173,7 +173,7 @@ namespace ARS_API.Controllers
                 return BadRequest(result.Errors);
             }
 
-            return Ok("Xóa người dùng thành công.");
+            return Ok("User deleted successfully.");
         }
         private JwtSecurityToken CreateJwtToken(List<Claim> authClaims)
         {

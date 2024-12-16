@@ -7,48 +7,48 @@ namespace ARS_API.Models
     public class Flight
     {
         [Key]
-        public Guid FlightId { get; set; } // Primary key
+        public Guid FlightId { get; set; } 
 
         [Required]
         [StringLength(10)]
-        public string FlightNumber { get; set; } // Unique flight code
+        public string FlightNumber { get; set; }
 
         [Required]
-        public Guid AirlineId { get; set; } // Foreign key to Airlines table
+        public Guid AirlineId { get; set; } 
 
         [ForeignKey("AirlineId")]
-        public Airline Airline { get; set; } // Navigation property for Airline
+        public Airline Airline { get; set; } 
 
         [Required]
-        public Guid OriginAirportId { get; set; } // Foreign key to Origin Airport
+        public Guid OriginAirportId { get; set; } 
 
         [ForeignKey("OriginAirportId")]
-        public Airport OriginAirport { get; set; } // Navigation property for Origin Airport
+        public Airport OriginAirport { get; set; } 
 
         [Required]
-        public Guid DestinationAirportId { get; set; } // Foreign key to Destination Airport
+        public Guid DestinationAirportId { get; set; } 
 
         [ForeignKey("DestinationAirportId")]
-        public Airport DestinationAirport { get; set; } // Navigation property for Destination Airport
+        public Airport DestinationAirport { get; set; } 
 
         [Required]
-        public DateTime DepartureTime { get; set; } // Flight departure time
+        public DateTime DepartureTime { get; set; } 
 
         [Required]
-        public DateTime ArrivalTime { get; set; } // Flight arrival time
+        public DateTime ArrivalTime { get; set; } 
 
         [Required]
-        public int Duration { get; set; } // Flight duration in minutes
+        public int Duration { get; set; }
 
         [Required]
-        public int TotalSeats { get; set; } // Total seats available on the flight
+        public int TotalSeats { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal BasePrice { get; set; } // Base price for Economy class
+        public decimal BasePrice { get; set; }
 
         [Required]
         [StringLength(50)]
-        public string Status { get; set; } // Flight status (e.g., Scheduled, Cancelled)
+        public string Status { get; set; }
     }
 }
