@@ -133,25 +133,25 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "e958881d-8164-4213-9461-d9f22d564438",
+                            Id = "a6392dc9-67c9-4f79-bbb0-0c04378358d2",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "cce74bd7-03f5-43e6-bcf4-9894320f89b9",
+                            Id = "f4d4f0e3-d440-45fe-89e1-81fe4ebc6461",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "5399db11-0921-4a63-9d23-b9f486786373",
+                            Id = "ce11cc81-8df8-4e97-829b-66492e0b3176",
                             Name = "Clerk",
                             NormalizedName = "CLERK"
                         },
                         new
                         {
-                            Id = "3a4f8421-2223-4609-8994-bd9614e5a3d3",
+                            Id = "0240b71a-b18d-44a3-89b1-d871b16f6d69",
                             Name = "Guest",
                             NormalizedName = "GUEST"
                         });
