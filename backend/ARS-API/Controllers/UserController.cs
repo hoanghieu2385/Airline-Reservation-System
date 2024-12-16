@@ -1,4 +1,5 @@
-﻿using ARS_API.Dtos;
+﻿using ARS_API.DTOs;
+using ARS_API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,12 @@ namespace ARS_API.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
 
         public UserController(
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration)
         {
@@ -57,17 +58,16 @@ namespace ARS_API.Controllers
         }
 
         [HttpPost("register")]
-        [Authorize]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             // Kiểm tra vai trò hợp lệ
-            string[] validRoles = { "USER", "CLERK", "ADMIN", "GUEST" };
+            string[] validRoles = { "USER", "CLERK", "ADMIN" };
             if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role))
             {
                 return BadRequest("Vai trò không hợp lệ.");
             }
 
-            var user = new IdentityUser
+            var user = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email
