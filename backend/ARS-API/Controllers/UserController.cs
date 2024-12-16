@@ -53,7 +53,15 @@ namespace ARS_API.Controllers
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
                 expiration = token.ValidTo,
-                roles = userRoles
+                roles = userRoles,
+                user = new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName
+                }
             });
         }
 
@@ -101,8 +109,8 @@ namespace ARS_API.Controllers
         }
 
         [HttpGet("read")]
-        [Authorize]
-        public async Task<IActionResult> GetUsers()
+        [Authorize(Roles = "ADMIN,CLERK")] // allow for admin, clerk
+        public async Task<IActionResult> GetAllUsers()
         {
             var users = _userManager.Users.ToList();
             var userList = new List<object>();
@@ -115,11 +123,54 @@ namespace ARS_API.Controllers
                     user.Id,
                     user.UserName,
                     user.Email,
+                    user.FirstName,
+                    user.LastName,
                     Roles = roles
                 });
             }
 
             return Ok(userList);
+        }
+
+        [HttpGet("read/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetProfileById(string id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+
+            // if not admin, clerk, user dont see another profile   
+            if (!roles.Contains("ADMIN") && !roles.Contains("CLERK") && currentUserId != id)
+            {
+                return Forbid("You are not authorized to view this profile.");
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.FirstName,
+                user.LastName,
+                Roles = userRoles
+            });
+        }
+
+        // Users get personal information through session
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return await GetProfileById(userId); // reuse logic from GetProfileById
         }
 
         [HttpPut("update/{id}")]
