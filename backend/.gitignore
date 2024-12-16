@@ -75,3 +75,4 @@ coverage/
 bin/
 obj/
 Migrations/
+appsettings.json

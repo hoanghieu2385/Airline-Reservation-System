@@ -6,27 +6,27 @@ namespace ARS_API.Models
     public class Airline
     {
         [Key]
-        public Guid AirlineId { get; set; } // Primary key
+        public Guid AirlineId { get; set; } 
 
         [Required]
         [StringLength(150)]
-        public string AirlineName { get; set; } // Name of the airline
+        public string AirlineName { get; set; } 
 
         [Required]
         [StringLength(10)]
-        public string AirlineCode { get; set; } // Unique airline code (e.g., VA for Vietnam Airlines)
+        public string AirlineCode { get; set; } 
 
         [StringLength(100)]
-        public string Country { get; set; } // Country of the airline (optional)
+        public string Country { get; set; } 
 
         [StringLength(255)]
-        public string LogoUrl { get; set; } // URL to airline logo (optional)
+        public string LogoUrl { get; set; } 
 
         [StringLength(20)]
-        public string ContactNumber { get; set; } // Contact number (optional)
+        public string ContactNumber { get; set; } 
 
         [StringLength(255)]
-        public string WebsiteUrl { get; set; } // Website URL (optional)
+        public string WebsiteUrl { get; set; } 
 
         public ICollection<Flight> Flights { get; set; }
 

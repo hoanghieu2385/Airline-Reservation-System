@@ -110,7 +110,6 @@ namespace ARS_API.Controllers
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
 
-            // Update only allowed fields
             flight.DepartureTime = updateFlightDto.DepartureTime;
             flight.ArrivalTime = updateFlightDto.ArrivalTime;
             flight.Status = updateFlightDto.Status;
