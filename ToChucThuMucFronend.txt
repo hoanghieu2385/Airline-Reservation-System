@@ -37,6 +37,7 @@ frontend/
 │   │   ├── clientApi.js     # API dành riêng cho Client
 │   │   ├── adminApi.js      # API dành riêng cho Admin
 │   │   ├── clerkApi.js      # API dành riêng cho Clerk
+│   │   ├── authApi.js      # API dành riêng cho Login,register
 │   ├── App.js               # File chính của ứng dụng
 │   ├── index.js             # Entry point của React
 │   ├── App.css              # CSS của App
