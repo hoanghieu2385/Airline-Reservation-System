@@ -7,6 +7,7 @@ import Checkout from "../pages/client/Checkout";
 import ClientLayout from "../layouts/ClientLayout";
 import Login from "../components/common/Login"
 import Register from "../components/common/Register"
+import FlightResults from "../pages/client/SelectTicket/FlightResult";
 
 function ClientRoutes() {
     return (
@@ -18,6 +19,7 @@ function ClientRoutes() {
                 <Route path="/checkoutdetail" element={<Checkout />} />
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>
+                <Route path="/flightresult" element={<FlightResults/>}/>
             </Routes>
         </ClientLayout>
     );
