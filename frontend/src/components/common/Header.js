@@ -49,13 +49,13 @@ const Header = () => {
 
     return (
         <header
-            className={`main-header ${isScrolled ? "scrolled" : ""} ${isIndexPage ? "overlay" : ""
+            className={`header-container ${isScrolled ? "scrolled" : ""} ${isIndexPage ? "overlay" : ""
                 }`}
         >
             <nav className="navbar navbar-expand-lg navbar-light">
                 <div className="container">
                     <a className="navbar-brand" href="/">
-                        <img src={Logo} alt="Logo" className="logo" />
+                        <img src={Logo} alt="Logo" className="header-logo" />
                     </a>
                     <button
                         className="navbar-toggler"
@@ -69,7 +69,7 @@ const Header = () => {
                         <span className="navbar-toggler-icon"></span>
                     </button>
                     <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav mx-auto">
+                        <ul className="navbar-nav mx-auto header-nav">
                             <li className="nav-item">
                                 <a className="nav-link" href="/">
                                     Home
@@ -91,7 +91,7 @@ const Header = () => {
                                 </a>
                             </li>
                         </ul>
-                        <ul className="navbar-nav ms-auto">
+                        <ul className="navbar-nav ms-auto header-nav">
                             {!userEmail ? (
                                 <>
                                     <li className="nav-item">
@@ -109,7 +109,8 @@ const Header = () => {
                                 <li
                                     className="nav-item dropdown"
                                     onMouseEnter={() => setDropdownVisible(true)}
-                                    onMouseLeave={() => setDropdownVisible(false)}>
+                                    onMouseLeave={() => setDropdownVisible(false)}
+                                >
                                     <span className="nav-link">
                                         Hi, {getDisplayName(userEmail)}
                                         <FontAwesomeIcon icon={faUser} className="user-icon" />
