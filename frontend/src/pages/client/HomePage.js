@@ -2,7 +2,9 @@
 import React from 'react';
 import '../../assets/css/HomePage.css';
 import SearchForm from '../../components/client/SearchForm';
-import img_why_choose_us from '../../assets/images/flights_homepage.png';
+import img_why_choose_us from '../../assets/images/client/flights_homepage.png';
+import TrendingDestinations from '../../components/client/TrendingDestinations';
+import UserFeedback from '../../components/client/UserFeedback';
 
 const HomePage = () => {
     return (
@@ -14,7 +16,7 @@ const HomePage = () => {
                         Temporas Facere Doloribus Id Aut. Ea Maiores Esse Accusantium Laboriosam.
                         Quos Commodi Non Assumenda Quam Illum.
                     </p>
-                    
+
                     <SearchForm />
                 </div>
             </section>
@@ -42,6 +44,14 @@ const HomePage = () => {
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <section>
+                <TrendingDestinations />
+            </section>
+
+            <section>
+                <UserFeedback />
             </section>
         </div>
     );
