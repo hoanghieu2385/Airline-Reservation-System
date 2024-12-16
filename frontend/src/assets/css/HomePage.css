@@ -1,6 +1,6 @@
-/* File: src/pages/HomePage.css */
+/* File: src/assets/css/HomePage.css */
 .hero {
-    background: url('../images/bg3.jpg') no-repeat center center/cover;
+    background: url('../images/client/bg3.jpg') no-repeat center center/cover;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -41,7 +41,6 @@
 /* Why Choose Us Section */
 .why-choose-us {
     padding: 60px 20px;
-    background-color: #f9f9f9;
 }
 
 .why-choose-us .container {
