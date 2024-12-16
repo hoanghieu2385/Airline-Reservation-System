@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import '../../assets/css/Login.css';
 import Header from "./Header";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 function LoginPage() {
-  const [passwordVisible] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
 
   return (    
     <div>
-      <Header/>
+      <Header />
       <div className="login-container">        
-        <h2>SIGN IN</h2>
+        <h2>LOGIN</h2>
         <form>
           <div className="input-container">
             <input 
@@ -24,6 +30,9 @@ function LoginPage() {
               placeholder="Password" 
               className="input-field" 
             />
+            <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+              <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} />
+            </span>
           </div>
           <div className="forgot-password">
             <a href="/forgotPassword">Forgot Password?</a>

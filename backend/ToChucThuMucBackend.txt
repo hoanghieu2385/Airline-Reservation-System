@@ -1,0 +1,19 @@
+backend/
+├── ARS-API/
+│   ├── bin/             
+│   ├── Controller/                
+│   │   ├── UserController.cs 
+│   ├── Data/            
+│   │   ├── DataSeeder.cs
+│   ├── Dtos/              # File để tôi chỉnh những gì muốn sử dụng khi model có nhiều thứ mà không cần thiết phải upload lên (Data transfer object)
+│   │   ├── LoginDto.cs
+│   │   ├── RegisterDto.cs
+│   │   ├── UpdateUserDto.cs
+│   ├── Model/            
+│   │   ├── ApplicationUser.cs       
+│   ├── Services/            
+│   │   ├── ApplicationDBContext.cs    
+│   ├── appsettings.json    # chứa DefaultConnection(chuỗi kết nối)
+│   ├── program.cs     # tìm tới app settings.json và lấy kết nối chuỗi DefaultConnection rồi kết nối
+├── .gitignore
+
