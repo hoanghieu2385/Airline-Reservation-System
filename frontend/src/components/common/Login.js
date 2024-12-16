@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
 
@@ -19,10 +20,7 @@ const LoginPage = () => {
     setPasswordVisible(!passwordVisible);
   };
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -34,11 +32,14 @@ const LoginPage = () => {
 
     try {
       const response = await login({ email, password });
-      console.log(response);
-      localStorage.setItem("token", response.token);
-      navigate("/");
+      sessionStorage.setItem("userEmail", email);
+      sessionStorage.setItem("token", response.token);
+      setError("");
+      setSuccess(true);
+
+      setTimeout(() => navigate("/"), 2000);
     } catch (error) {
-      console.error("Login failed", error);
+      setSuccess(false);
       setError(
         error.response?.data ||
           "Login failed. Please check your email and password."
@@ -52,6 +53,11 @@ const LoginPage = () => {
       <div className="login-form">
         <h2 className="login-form__title">LOGIN</h2>
         {error && <div className="login-form__error-message">{error}</div>}
+        {success && (
+          <div className="login-form__success-message">
+            Login successful! Redirecting...
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="login-form__input-container">
             <input
