@@ -19,7 +19,7 @@ function RegisterPage() {
 
   return (    
     <div className="register-container">      
-      <h2>SIGN UP</h2>
+      <h2>REGISTER</h2>
       <form onSubmit={handleSubmit}>
         <div className="input-container">
           <input 
