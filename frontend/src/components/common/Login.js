@@ -40,9 +40,7 @@ const LoginPage = () => {
       setTimeout(() => navigate("/"), 2000);
     } catch (error) {
       setSuccess(false);
-      setError(
-        error.response?.data ||
-          "Login failed. Please check your email and password."
+      setError(error.response?.data || "Login failed. Please check your email and password."
       );
     }
   };
@@ -63,9 +61,8 @@ const LoginPage = () => {
             <input
               type="email"
               placeholder="Email"
-              className={`login-form__input ${
-                email && !validateEmail(email) ? "login-form__input--invalid" : ""
-              }`}
+              className={`login-form__input ${email && !validateEmail(email) ? "login-form__input--invalid" : ""
+                }`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

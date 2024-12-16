@@ -1,66 +1,71 @@
-/* src/components/Header.css */
-.main-header {
+/* src/assets/css/Header.css */
+.header-container {
     position: fixed;
     top: 0;
-    height: 70px;
     width: 100%;
     z-index: 1030;
     transition: background-color 0.4s ease, box-shadow 0.4s ease;
     background-color: rgba(255, 255, 255, 1);
 }
 
-.main-header.overlay {
+.header-container.overlay {
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     position: absolute;
 }
 
-.main-header.scrolled {
+.header-container.scrolled {
     background-color: rgba(255, 255, 255, 1);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: fixed;
 }
 
-.navbar-nav .nav-link {
+.header-nav .nav-link {
     margin: 0 10px;
     transition: color 0.3s ease, background-color 0.3s ease;
 }
 
-.logo {
+.header-logo {
     width: 150px;
     height: 50px;
 }
 
-.navbar-nav .nav-link:hover {
+.header-nav .nav-link:hover {
     color: #007bff;
     text-decoration: underline;
 }
 
-.navbar-nav .btn {
+.header-nav .btn {
     margin-left: 15px;
     padding: 5px 15px;
 }
 
+
 body {
     padding-top: 70px;
+    /* Adjust this value based on your header height */
 }
 
 body.index-page {
     padding-top: 0;
 }
+
 .nav-link {
-    cursor: pointer;        
+    cursor: pointer;
 }
+
 @media (max-width: 991px) {
     .navbar-collapse {
         position: fixed;
         top: 70px;
+        /* Adjust this value based on your header height */
         left: 0;
         right: 0;
         background-color: #fff;
         padding: 1rem;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         max-height: calc(100vh - 70px);
+        /* Adjust this value based on your header height */
         overflow-y: auto;
         transform: translateY(-100%);
         transition: transform 0.3s ease;
@@ -70,7 +75,7 @@ body.index-page {
         transform: translateY(0);
     }
 
-    .navbar-nav {
+    .header-nav {
         padding: 0.5rem 0;
     }
 
@@ -89,11 +94,11 @@ body.index-page {
 }
 
 @media (max-width: 768px) {
-    .main-header {
+    .header-container {
         height: 60px;
     }
 
-    .logo {
+    .header-logo {
         width: 120px;
         height: 40px;
     }
@@ -106,13 +111,13 @@ body.index-page {
         padding: 4px 8px;
     }
 
-    .navbar-nav .nav-link {
+    .header-nav .nav-link {
         margin: 0;
         padding: 12px !important;
         font-size: 16px;
     }
 
-    .navbar-nav .btn {
+    .header-nav .btn {
         margin: 8px 0;
         width: 100%;
         text-align: center;
@@ -120,11 +125,11 @@ body.index-page {
 }
 
 @media (max-width: 576px) {
-    .main-header {
+    .header-container {
         height: 56px;
     }
 
-    .logo {
+    .header-logo {
         width: 100px;
         height: 35px;
     }
@@ -133,46 +138,48 @@ body.index-page {
         top: 56px;
     }
 
-    .navbar-nav .nav-link {
+    .header-nav .nav-link {
         padding: 10px !important;
         font-size: 15px;
     }
 }
+
 .nav-item.dropdown {
     position: relative;
 }
-  
+
 .user-icon {
     padding-left: 10px;
     margin-right: 10px;
 }
+
 .nav-item.dropdown .dropdown-menu {
-position: absolute;
-top: 100%;
-right: 0;
-background-color: #fff;
-border: 1px solid #ddd;
-border-radius: 4px;
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-display: none;
-min-width: 150px;
-z-index: 1050;
-cursor: pointer;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    min-width: 150px;
+    z-index: 1050;
+    cursor: pointer;
 }
 
 .nav-item.dropdown:hover .dropdown-menu {
-display: block;
+    display: block;
 }
 
 .dropdown-menu .dropdown-item {
-padding: 10px 15px;
-font-size: 14px;
-color: #333;
-cursor: pointer;
-transition: background-color 0.3s ease, color 0.3s ease;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .dropdown-menu .dropdown-item:hover {
-background-color: #f8f9fa;
-color: #007bff;
+    background-color: #f8f9fa;
+    color: #007bff;
 }
