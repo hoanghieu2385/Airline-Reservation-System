@@ -6,8 +6,6 @@
     font-family: Arial, sans-serif;
   }
   
-  /* General */
-  /* Set header height and make it fixed */
 /* Header cố định */
 header {
     position: fixed;
@@ -47,12 +45,12 @@ main, .content {
   }
   
   /* Row and Columns */
-  .row {
+   .checkout-row {
     display: flex;
     gap: 20px;
   }
   
-  .col {
+  .checkout-col {
     flex: 1;
   }
   
