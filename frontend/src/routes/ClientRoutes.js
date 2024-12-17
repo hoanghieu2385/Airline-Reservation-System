@@ -19,7 +19,8 @@ function ClientRoutes() {
                 <Route path="/checkoutdetail" element={<Checkout />} />
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>\
-                <Route path="/eticket" element={<Eticket/>}/>\
+                <Route path="/etic
+                ket" element={<Eticket/>}/>\
             </Routes>
         </ClientLayout>
     );
