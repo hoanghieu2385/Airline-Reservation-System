@@ -27,4 +27,12 @@ namespace ARS_API.DTOs
         public int? NumberOfBlockedSeats { get; set; }
         public DateTime TravelDate { get; set; }
     }
+
+    public class ReservationUpdateDTO
+    {
+        public string? ReservationStatus { get; set; } // "Confirmed" or "Cancelled" only
+        public int? NumberOfBlockedSeats { get; set; } // Only allows reducing seats
+        public DateTime? TravelDate { get; set; } // Only allowed when flight is delayed
+    }
+
 }
