@@ -23,10 +23,10 @@ namespace ARS_API.DTOs
         public string UserId { get; set; }
         public Guid FlightId { get; set; }
         public Guid AllocationId { get; set; }
-        public string ReservationStatus { get; set; }
         public int? NumberOfBlockedSeats { get; set; }
-        public DateTime TravelDate { get; set; }
+        public string? ReservationStatus { get; set; }
     }
+
 
     public class ReservationUpdateDTO
     {

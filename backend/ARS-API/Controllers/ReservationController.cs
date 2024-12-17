@@ -62,6 +62,9 @@ namespace ARS_API.Controllers
                 return BadRequest("Invalid flight ID.");
             }
 
+            // Automatically set TravelDate to the flight's DepartureTime
+            var travelDate = flight.DepartureTime;
+
             // Calculate TotalPrice (BasePrice * NumberOfBlockedSeats)
             var totalPrice = flight.BasePrice * createReservationDto.NumberOfBlockedSeats ?? 0;
 
@@ -73,9 +76,9 @@ namespace ARS_API.Controllers
                 UserId = createReservationDto.UserId,
                 FlightId = createReservationDto.FlightId,
                 AllocationId = createReservationDto.AllocationId,
-                ReservationStatus = createReservationDto.ReservationStatus,
+                ReservationStatus = createReservationDto.ReservationStatus ?? "Blocked", // Default is "Blocked"
                 TotalPrice = totalPrice,
-                TravelDate = createReservationDto.TravelDate,
+                TravelDate = travelDate,
                 NumberOfBlockedSeats = createReservationDto.NumberOfBlockedSeats,
                 CreatedAt = DateTime.UtcNow
             };
@@ -135,7 +138,8 @@ namespace ARS_API.Controllers
                 if (reservation.ReservationStatus == "Blocked" &&
                     (updateDto.ReservationStatus == "Confirmed" || updateDto.ReservationStatus == "Cancelled"))
                 {
-                    reservation.ReservationStatus = updateDto.ReservationStatus;
+                    // TODO: if Status is changed to "Confirmed", NumberOfSeatsBlocked should be nullified (back to 0), seats will then be accounted for via Passengers
+                    reservation.ReservationStatus = updateDto.ReservationStatus; 
 
                     if (updateDto.ReservationStatus == "Cancelled")
                     {
