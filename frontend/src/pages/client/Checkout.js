@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/css/Checkout.css";
 
-// Mock API function
+// Mock API functions
 const fetchPricingRules = async () => {
   return [
     { daysBeforeDeparture: 30, multiplier: 1.0 },
@@ -96,13 +96,13 @@ const Checkout = () => {
   if (!flightDetails) return <div>Loading...</div>;
 
   return (
-    <div className="checkout-container">
-      <div className="checkout-row">
+    <div className="container checkout-container my-5">
+      <div className="row g-4">
         {/* Left Column */}
-        <div className="col">
-          <section className="flight-info">
-            <h4>Thông tin chuyến bay</h4>
-            <div>
+        <div className="col-md-7">
+          <section className="checkout-flight-info mb-4">
+            <h4 className="text-primary">Thông tin chuyến bay</h4>
+            <div className="mb-3">
               <h5>Chiều đi: {flightDetails.departure.airline}</h5>
               <p>Mã chuyến bay: {flightDetails.departure.flightCode}</p>
               <p>
@@ -129,19 +129,22 @@ const Checkout = () => {
             </div>
           </section>
 
-          <section className="passenger-info">
-            <h4>Thông tin hành khách</h4>
+          <section className="checkout-passenger-info">
+            <h4 className="text-primary">Thông tin hành khách</h4>
             <input
+              className="form-control mb-3"
               name="name"
               placeholder="Họ và tên"
               onChange={handleInputChange}
             />
             <input
+              className="form-control mb-3"
               name="phone"
               placeholder="Số điện thoại"
               onChange={handleInputChange}
             />
             <input
+              className="form-control mb-3"
               name="email"
               placeholder="Email"
               onChange={handleInputChange}
@@ -150,46 +153,52 @@ const Checkout = () => {
         </div>
 
         {/* Right Column */}
-        <div className="checkout-col">
-          <section className="voucher-info">
-            <h4>Voucher giảm giá</h4>
+        <div className="col-md-5">
+          <section className="checkout-voucher-info mb-4">
+            <h4 className="text-primary">Voucher giảm giá</h4>
             <input
+              className="form-control"
               placeholder="Nhập mã voucher"
               value={voucher}
               onChange={(e) => setVoucher(e.target.value)}
             />
           </section>
 
-          <section className="pricing-summary">
-            <h4>Tóm tắt giá</h4>
+          <section className="checkout-pricing-summary p-3 bg-light border rounded">
+            <h4 className="text-primary mb-3">Tóm tắt giá</h4>
             <p>
               Chiều đi:{" "}
-              {(
-                flightDetails.departure.basePrice *
-                calculateMultiplier(
-                  flightDetails.departure.departureTime,
-                  pricingRules
-                )
-              ).toLocaleString()}{" "}
-              VND
+              <strong>
+                {(
+                  flightDetails.departure.basePrice *
+                  calculateMultiplier(
+                    flightDetails.departure.departureTime,
+                    pricingRules
+                  )
+                ).toLocaleString()}{" "}
+                VND
+              </strong>
             </p>
             <p>
               Chiều về:{" "}
-              {(
-                flightDetails.return.basePrice *
-                calculateMultiplier(
-                  flightDetails.return.departureTime,
-                  pricingRules
-                )
-              ).toLocaleString()}{" "}
-              VND
+              <strong>
+                {(
+                  flightDetails.return.basePrice *
+                  calculateMultiplier(
+                    flightDetails.return.departureTime,
+                    pricingRules
+                  )
+                ).toLocaleString()}{" "}
+                VND
+              </strong>
             </p>
-            <p>Giảm giá: 20,000 VND</p>
-            <p className="total-price">
+            <p>Giảm giá: <strong>20,000 VND</strong></p>
+            <p className="checkout-total-price text-success fs-5 fw-bold">
               Tổng tiền: {totalPrice.toLocaleString()} VND
             </p>
           </section>
-          <button>Tiếp tục</button>
+
+          <button className="btn btn-primary w-100 mt-4">Tiếp tục</button>
         </div>
       </div>
     </div>
