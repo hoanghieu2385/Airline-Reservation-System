@@ -97,7 +97,7 @@ const Checkout = () => {
 
   return (
     <div className="checkout-container">
-      <div className="row">
+      <div className="checkout-row">
         {/* Left Column */}
         <div className="col">
           <section className="flight-info">
@@ -150,7 +150,7 @@ const Checkout = () => {
         </div>
 
         {/* Right Column */}
-        <div className="col">
+        <div className="checkout-col">
           <section className="voucher-info">
             <h4>Voucher giảm giá</h4>
             <input
