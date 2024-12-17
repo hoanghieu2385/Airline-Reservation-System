@@ -1,128 +1,110 @@
-/* Toàn bộ CSS được giới hạn trong phạm vi của .checkout-page */
-.checkout-page {
-    /* Định dạng chung */
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    padding: 20px;
+  }
+  
+  /* General */
+  /* Set header height and make it fixed */
+/* Header cố định */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px; /* Chiều cao header */
+    background-color: #fff; /* Nền trắng */
+    z-index: 1000; /* Luôn nằm trên */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Hiệu ứng bóng nhẹ */
 }
 
-.checkout-page .container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 15px;
+/* Tạo khoảng trống dưới header */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+main, .content {
+    margin-top: 80px; /* Khoảng cách tương ứng với chiều cao header */
+    padding: 20px; /* Thêm padding cho content */
+    box-sizing: border-box;
+}
+
+
+  
+  .checkout-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.checkout-page .text-center {
-    text-align: center;
-}
-
-.checkout-page .mb-3,
-.checkout-page .mb-4 {
-    margin-bottom: 1rem;
-}
-
-/* Header và thẻ section */
-.checkout-page h2 {
-    color: #333;
-}
-
-.checkout-page .card {
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.checkout-page .card-header {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 15px;
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
-.checkout-page .card-body {
-    padding: 15px;
-}
-
-.checkout-page .summary-box {
-    background: #f1f3f5;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.checkout-page .summary-box h4 {
-    margin-bottom: 15px;
+    border-radius: 8px;
+  }
+  
+  /* Row and Columns */
+  .row {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .col {
+    flex: 1;
+  }
+  
+  /* Flight Info */
+  .flight-info h4,
+  .passenger-info h4,
+  .voucher-info h4,
+  .pricing-summary h4 {
     color: #007bff;
-}
-
-.checkout-page .total-price {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #e63946;
-}
-
-/* Form và button */
-.checkout-page .form-label {
-    font-weight: bold;
-    color: #555;
-}
-
-.checkout-page .form-control,
-.checkout-page .form-select {
+    margin-bottom: 10px;
+  }
+  
+  .flight-info div,
+  .pricing-summary p {
+    margin-bottom: 10px;
+  }
+  
+  /* Input Fields */
+  input {
     width: 100%;
     padding: 10px;
-    margin-bottom: 10px;
+    margin: 5px 0 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-}
-
-.checkout-page .input-group {
-    display: flex;
-    align-items: center;
-}
-
-.checkout-page .input-group .form-control {
-    flex: 1;
-}
-
-.checkout-page .input-group .btn {
-    margin-left: 10px;
-}
-
-.checkout-page .btn {
+  }
+  
+  /* Button */
+  button {
+    background-color: #007bff;
+    color: #fff;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1rem;
-}
-
-.checkout-page .btn-primary {
-    background-color: #007bff;
-    color: white;
-    transition: background-color 0.3s;
-}
-
-.checkout-page .btn-primary:hover {
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
     background-color: #0056b3;
-}
-
-.checkout-page .w-100 {
-    width: 100%;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .checkout-page .card-body .row {
-        flex-direction: column;
-    }
-
-    .checkout-page .summary-box {
-        text-align: center;
-    }
-}
+  }
+  
+  /* Summary */
+  .pricing-summary {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .total-price {
+    font-weight: bold;
+    color: #28a745;
+    font-size: 18px;
+  }
+  

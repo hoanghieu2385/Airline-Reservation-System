@@ -5,9 +5,8 @@ import HomePage from "../pages/client/HomePage";
 import Policies from "../pages/client/Policies";
 import Checkout from "../pages/client/Checkout";
 import ClientLayout from "../layouts/ClientLayout";
-import Login from "../components/common/Login";
-import Register from "../components/common/Register";
-import ClientDashboard from "../pages/client/ClientDashboard";
+import Login from "../components/common/Login"
+import Register from "../components/common/Register"
 
 function ClientRoutes() {
     return (
@@ -20,8 +19,6 @@ function ClientRoutes() {
 
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>
-
-                <Route path="/user/dashboard" element={<ClientDashboard />} />
             </Routes>
         </ClientLayout>
     );
