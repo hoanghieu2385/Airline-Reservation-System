@@ -113,11 +113,27 @@ namespace ARS_API.Controllers
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
 
+            // Check if DepartureTime has changed
+            bool departureTimeChanged = flight.DepartureTime != updateFlightDto.DepartureTime;
+
+            // Update flight details
             flight.DepartureTime = updateFlightDto.DepartureTime;
             flight.ArrivalTime = updateFlightDto.ArrivalTime;
             flight.Status = updateFlightDto.Status;
 
             _context.Flights.Update(flight);
+
+            // Automatically update TravelDate in Reservations if DepartureTime has changed
+            if (departureTimeChanged)
+            {
+                var reservations = _context.Reservations.Where(r => r.FlightId == id).ToList();
+                foreach (var reservation in reservations)
+                {
+                    reservation.TravelDate = flight.DepartureTime;
+                }
+            }
+
+            // Save changes to both Flights and Reservations
             await _context.SaveChangesAsync();
 
             return NoContent();

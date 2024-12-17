@@ -104,60 +104,139 @@ namespace ARS_API.Controllers
             return code;
         }
 
-        // PUT: api/Reservations/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutReservation(Guid id, ReservationDTO reservationDto)
+        public async Task<IActionResult> PutReservation(Guid id, ReservationUpdateDTO updateDto)
         {
+            // Retrieve existing reservation
             var reservation = await _context.Reservations.FindAsync(id);
             if (reservation == null)
             {
                 return NotFound();
             }
 
-            // Update fields (e.g., status or blocked seats)
-            if (reservationDto.NumberOfBlockedSeats.HasValue)
+            // Prevent updates if the reservation is already Cancelled
+            if (reservation.ReservationStatus == "Cancelled")
             {
-                var allocation = await _context.FlightSeatAllocation.FindAsync(reservation.AllocationId);
-                if (allocation == null || allocation.AvailableSeats + reservation.NumberOfBlockedSeats < reservationDto.NumberOfBlockedSeats)
-                {
-                    return BadRequest("Invalid seat allocation or insufficient seats.");
-                }
-
-                // Adjust seat counts
-                allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
-                allocation.AvailableSeats -= reservationDto.NumberOfBlockedSeats.Value;
-
-                reservation.NumberOfBlockedSeats = reservationDto.NumberOfBlockedSeats;
+                return BadRequest("Cannot update a cancelled reservation. Please create a new one.");
             }
 
-            reservation.ReservationStatus = "Updated"; // Example status update
-            await _context.SaveChangesAsync();
+            // Retrieve seat allocation and flight details
+            var allocation = await _context.FlightSeatAllocation.FindAsync(reservation.AllocationId);
+            var flight = await _context.Flights.FindAsync(reservation.FlightId);
+
+            if (allocation == null || flight == null)
+            {
+                return BadRequest("Invalid seat allocation or flight.");
+            }
+
+            // 1. Update ReservationStatus
+            if (!string.IsNullOrEmpty(updateDto.ReservationStatus))
+            {
+                if (reservation.ReservationStatus == "Blocked" &&
+                    (updateDto.ReservationStatus == "Confirmed" || updateDto.ReservationStatus == "Cancelled"))
+                {
+                    reservation.ReservationStatus = updateDto.ReservationStatus;
+
+                    if (updateDto.ReservationStatus == "Cancelled")
+                    {
+                        // Nullify blocked seats and restore availability
+                        allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
+                        reservation.NumberOfBlockedSeats = 0;
+                    }
+                }
+                else if (reservation.ReservationStatus == "Confirmed" && updateDto.ReservationStatus == "Cancelled")
+                {
+                    reservation.ReservationStatus = "Cancelled";
+                    allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
+                    reservation.NumberOfBlockedSeats = 0;
+                }
+                else
+                {
+                    return BadRequest("Invalid ReservationStatus change.");
+                }
+            }
+
+            // 2. Update NumberOfBlockedSeats (only allow lowering the number)
+            if (updateDto.NumberOfBlockedSeats.HasValue)
+            {
+                if (updateDto.NumberOfBlockedSeats.Value < reservation.NumberOfBlockedSeats)
+                {
+                    int seatDifference = reservation.NumberOfBlockedSeats.Value - updateDto.NumberOfBlockedSeats.Value;
+
+                    allocation.AvailableSeats += seatDifference; // Return seats
+                    reservation.NumberOfBlockedSeats = updateDto.NumberOfBlockedSeats;
+
+                    // TODO: TotalPrice will be calculated via Passengers also, once APIs for Passengers are created
+                    reservation.TotalPrice = flight.BasePrice * reservation.NumberOfBlockedSeats.Value;
+                }
+                else
+                {
+                    return BadRequest("NumberOfBlockedSeats can only be reduced.");
+                }
+            }
+
+            // Save changes
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ReservationExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
+        }
+
+        private bool ReservationExists(Guid id)
+        {
+            return _context.Reservations.Any(e => e.ReservationId == id);
         }
 
         // DELETE: api/Reservations/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(Guid id)
         {
+            // Retrieve the reservation
             var reservation = await _context.Reservations.FindAsync(id);
             if (reservation == null)
             {
-                return NotFound();
+                return NotFound("The reservation was not found.");
             }
 
-            // Restore seats
-            var allocation = await _context.FlightSeatAllocation.FindAsync(reservation.AllocationId);
-            if (allocation != null)
+            // Prevent deletion of already Cancelled reservations
+            if (reservation.ReservationStatus == "Cancelled")
             {
-                allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
+                return BadRequest("Cancelled reservations cannot be deleted. Please create a new reservation if needed.");
             }
 
+            // Restore seats in FlightSeatAllocation
+            var allocation = await _context.FlightSeatAllocation.FindAsync(reservation.AllocationId);
+            if (allocation != null && reservation.NumberOfBlockedSeats.HasValue)
+            {
+                allocation.AvailableSeats += reservation.NumberOfBlockedSeats.Value;
+            }
+
+            // Remove the reservation
             _context.Reservations.Remove(reservation);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            // Return success message with details
+            return Ok(new
+            {
+                Message = "Reservation successfully deleted.",
+                ReservationId = reservation.ReservationId,
+                SeatsRestored = reservation.NumberOfBlockedSeats ?? 0
+            });
         }
+
     }
 
 }
