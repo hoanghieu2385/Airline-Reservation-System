@@ -1,0 +1,33 @@
+.trending-destinations {
+    background-color: #fff;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.section-title .highlight {
+    color: #D38174; /* Màu chữ khác cho từ "Destination" */
+}
+
+.section-subtitle {
+    color: #777;
+    font-size: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.destination-card img {
+    width: 100%;
+    height: 400px; /* Chiều cao cố định cho ảnh */
+    object-fit: cover; /* Ảnh sẽ giữ tỷ lệ mà không bị méo */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.destination-card h5 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #444;
+}

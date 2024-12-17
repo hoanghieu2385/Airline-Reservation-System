@@ -7,7 +7,6 @@ import Checkout from "../pages/client/Checkout";
 import ClientLayout from "../layouts/ClientLayout";
 import Login from "../components/common/Login"
 import Register from "../components/common/Register"
-import Eticket from "../pages/client/Eticket";
 
 function ClientRoutes() {
     return (
@@ -17,10 +16,9 @@ function ClientRoutes() {
 
                 <Route path="/policies" element={<Policies />} />
                 <Route path="/checkoutdetail" element={<Checkout />} />
+
                 <Route path="/login" element={<Login/>} />
-                <Route path="/register" element={<Register/>}/>\
-                <Route path="/etic
-                ket" element={<Eticket/>}/>\
+                <Route path="/register" element={<Register/>}/>
             </Routes>
         </ClientLayout>
     );
