@@ -1,125 +1,110 @@
-/* Toàn bộ CSS giới hạn trong checkout-page */
-
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* General */
+  /* Set header height and make it fixed */
+/* Header cố định */
 header {
-    position: fixed; /* Header cố định trên cùng */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px; /* Chiều cao header */
-    z-index: 1000; /* Đảm bảo header luôn trên cùng */
-    background-color: #fff; /* Màu nền header */
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    height: 70px; /* Chiều cao header */
+    background-color: #fff; /* Nền trắng */
+    z-index: 1000; /* Luôn nằm trên */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Hiệu ứng bóng nhẹ */
 }
 
-
+/* Tạo khoảng trống dưới header */
 body {
     margin: 0;
     padding: 0;
 }
 
-.checkout-container {
-    margin-top: 70px; /* Đẩy nội dung xuống dưới, lớn hơn height của header */
-    padding: 20px; /* Khoảng cách padding bên trong container */
+main, .content {
+    margin-top: 80px; /* Khoảng cách tương ứng với chiều cao header */
+    padding: 20px; /* Thêm padding cho content */
     box-sizing: border-box;
 }
 
 
-.checkout-page {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    padding: 20px;
-}
-
-.checkout-page .container {
+  
+  .checkout-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     max-width: 1200px;
     margin: 0 auto;
     background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Chia layout thành 2 cột */
-.checkout-page .row {
+  }
+  
+  /* Row and Columns */
+  .row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px; /* Khoảng cách giữa các cột */
-}
-
-.checkout-page .col-left {
-    flex: 2; /* Chiếm 2 phần */
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 20px;
-}
-
-.checkout-page .col-right {
-    flex: 1; /* Chiếm 1 phần */
-    background: #f1f3f5;
-    border-radius: 5px;
-    padding: 20px;
-    border: 1px solid #ddd;
-}
-
-/* Thẻ card */
-.checkout-page .card {
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.checkout-page .card-header {
-    background-color: #007bff;
-    color: white;
-    padding: 10px;
-    font-weight: bold;
-}
-
-.checkout-page .card-body {
-    padding: 15px;
-}
-
-/* Tóm tắt giá */
-.checkout-page .summary-box {
-    margin-top: 20px;
-    background: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.checkout-page .summary-box h4 {
+    gap: 20px;
+  }
+  
+  .col {
+    flex: 1;
+  }
+  
+  /* Flight Info */
+  .flight-info h4,
+  .passenger-info h4,
+  .voucher-info h4,
+  .pricing-summary h4 {
     color: #007bff;
-}
-
-.checkout-page .total-price {
-    font-weight: bold;
-    font-size: 1.3rem;
-    color: #e63946;
-    margin-top: 10px;
-}
-
-/* Nút Tiếp tục */
-.checkout-page .btn-primary {
+    margin-bottom: 10px;
+  }
+  
+  .flight-info div,
+  .pricing-summary p {
+    margin-bottom: 10px;
+  }
+  
+  /* Input Fields */
+  input {
     width: 100%;
     padding: 10px;
-    font-size: 1rem;
+    margin: 5px 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Button */
+  button {
     background-color: #007bff;
     color: #fff;
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.checkout-page .btn-primary:hover {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
     background-color: #0056b3;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .checkout-page .row {
-        flex-direction: column; /* Cột dọc cho màn hình nhỏ */
-    }
-}
+  }
+  
+  /* Summary */
+  .pricing-summary {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .total-price {
+    font-weight: bold;
+    color: #28a745;
+    font-size: 18px;
+  }
+  
