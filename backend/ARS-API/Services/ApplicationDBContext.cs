@@ -43,12 +43,16 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasForeignKey(f => f.DestinationAirportId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
     }
 
     public DbSet<City> Cities { get; set; }
     public DbSet<Airport> Airports { get; set; }
     public DbSet<Airline> Airlines { get; set; }
     public DbSet<Flight> Flights { get; set; }
+    public DbSet<SeatClass> SeatClasses { get; set; }
+    public DbSet<FlightSeatAllocation> FlightSeatAllocation { get; set; }
+    public DbSet<Reservation> Reservations { get; set; }
+
+
 
 }
