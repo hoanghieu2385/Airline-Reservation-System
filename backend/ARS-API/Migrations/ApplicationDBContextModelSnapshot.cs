@@ -248,6 +248,91 @@ namespace ARS_API.Migrations
                     b.ToTable("Flights");
                 });
 
+            modelBuilder.Entity("ARS_API.Models.FlightSeatAllocation", b =>
+                {
+                    b.Property<Guid>("AllocationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AvailableSeats")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FlightId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AllocationId");
+
+                    b.ToTable("FlightSeatAllocation");
+                });
+
+            modelBuilder.Entity("ARS_API.Models.Reservation", b =>
+                {
+                    b.Property<Guid>("ReservationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AllocationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FlightId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("NumberOfBlockedSeats")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReservationCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReservationStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<DateTime>("TravelDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ReservationId");
+
+                    b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("ARS_API.Models.SeatClass", b =>
+                {
+                    b.Property<Guid>("ClassId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AirlineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("BasePriceMultiplier")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<string>("ClassName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LuggageAllowance")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClassId");
+
+                    b.ToTable("SeatClasses");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -277,25 +362,25 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "58645ed8-9b06-497e-9956-365d716a54fe",
+                            Id = "fe233e3e-69e6-4201-a2ff-e1bee693afaa",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "5bc96c3e-daa8-4137-a188-13c166beaae5",
+                            Id = "ac7a4d37-71a2-4cd2-a6ed-4889654e0bf1",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "68b0f79f-f844-4392-95d3-9f0a7f4b022a",
+                            Id = "06506b0f-e18c-4b35-9dc6-4d71112052cb",
                             Name = "Clerk",
                             NormalizedName = "CLERK"
                         },
                         new
                         {
-                            Id = "8c215f87-51db-4479-9513-23431aba33f5",
+                            Id = "9f9628dd-3343-4b82-9647-5863c7fee17c",
                             Name = "Guest",
                             NormalizedName = "GUEST"
                         });

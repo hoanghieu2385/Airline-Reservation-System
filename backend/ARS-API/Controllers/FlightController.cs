@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using ARS_API.DTOs;
 using ARS_API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ARS_API.Controllers
 {
@@ -76,6 +77,7 @@ namespace ARS_API.Controllers
 
         // POST: api/Flight
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateFlight([FromBody] CreateFlightDto flightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -103,6 +105,7 @@ namespace ARS_API.Controllers
 
         // PUT: api/Flight/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateFlight(Guid id, [FromBody] UpdateFlightDto updateFlightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -122,6 +125,7 @@ namespace ARS_API.Controllers
 
         // DELETE: api/Flight/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteFlight(Guid id)
         {
             var flight = await _context.Flights.FindAsync(id);
