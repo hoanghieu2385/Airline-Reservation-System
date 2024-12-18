@@ -117,7 +117,13 @@ namespace ARS_API
                 {
                     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                    var context = services.GetRequiredService<ApplicationDBContext>();
+
+                    // Seed Roles and Admin User
                     await DataSeeder.SeedRolesAndAdminAsync(userManager, roleManager);
+
+                    // Seed Database with initial data
+                    await DataSeeder.SeedDatabaseAsync(context);
                 }
                 catch (Exception ex)
                 {
@@ -125,6 +131,7 @@ namespace ARS_API
                     logger.LogError(ex, "Error seeding data");
                 }
             }
+
 
             if (app.Environment.IsDevelopment())
             {

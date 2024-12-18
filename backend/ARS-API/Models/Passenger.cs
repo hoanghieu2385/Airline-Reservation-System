@@ -15,5 +15,8 @@ namespace ARS_API.Models
         public string Gender { get; set; }
         public string TicketCode { get; set; } // Unique 12-digit code
         public decimal TicketPrice { get; set; }
+
+        // Navigation properties
+        public Reservation Reservation { get; set; }
     }
 }

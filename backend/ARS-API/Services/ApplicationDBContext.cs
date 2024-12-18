@@ -35,6 +35,28 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasForeignKey(f => f.DestinationAirportId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // FlightSeatAllocation -> SeatClass (many-to-one)
+        builder.Entity<FlightSeatAllocation>()
+            .HasOne(fsa => fsa.Class)
+            .WithMany()
+            .HasForeignKey(fsa => fsa.ClassId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Passenger>()
+            .Property(p => p.TicketPrice)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Entity<FlightRoute>()
+            .HasOne(r => r.OriginAirport)
+            .WithMany()
+            .HasForeignKey(r => r.OriginAirportId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<FlightRoute>()
+            .HasOne(r => r.DestinationAirport)
+            .WithMany()
+            .HasForeignKey(r => r.DestinationAirportId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     public DbSet<City> Cities { get; set; }
@@ -45,7 +67,7 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<FlightSeatAllocation> FlightSeatAllocation { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
     public DbSet<Passenger> Passengers { get; set; }
-
+    public DbSet<FlightRoute> Routes { get; set; }
 
 
 

@@ -13,6 +13,6 @@ namespace ARS_API.Models
         public Guid FlightId { get; set; }
         public Guid ClassId { get; set; }
         public int AvailableSeats { get; set; }
-
+        public SeatClass Class { get; set; }
     }
 }
