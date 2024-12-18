@@ -21,14 +21,6 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
             new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Guest", NormalizedName = "GUEST" }
         );
 
-
-        // Flight -> Airline (many-to-one)
-        builder.Entity<Flight>()
-            .HasOne(f => f.Airline)
-            .WithMany(a => a.Flights)
-            .HasForeignKey(f => f.AirlineId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // Flight -> Origin Airport (many-to-one)
         builder.Entity<Flight>()
             .HasOne(f => f.OriginAirport)
@@ -52,6 +44,8 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<SeatClass> SeatClasses { get; set; }
     public DbSet<FlightSeatAllocation> FlightSeatAllocation { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
+    public DbSet<Passenger> Passengers { get; set; }
+
 
 
 
