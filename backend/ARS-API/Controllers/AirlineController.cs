@@ -59,7 +59,42 @@ namespace ARS_API.Controllers
 
             _context.Airlines.Add(airline);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetAirlineById), new { id = createAirlineDto.AirlineId }, createAirlineDto);
+
+            // Add SeatClasses (if provided) or use defaults
+            var seatClasses = createAirlineDto.SeatClasses?.Select(sc => new SeatClass
+            {
+                ClassId = Guid.NewGuid(),
+                AirlineId = airline.AirlineId,
+                ClassName = sc.ClassName,
+                LuggageAllowance = sc.LuggageAllowance,
+                BasePriceMultiplier = sc.BaseMultiplier
+            }).ToList()
+            ?? new List<SeatClass> // Default classes
+            {
+                new SeatClass { ClassId = Guid.NewGuid(), AirlineId = airline.AirlineId, ClassName = "Economy", LuggageAllowance = 20, BasePriceMultiplier = 1.0M },
+                new SeatClass { ClassId = Guid.NewGuid(), AirlineId = airline.AirlineId, ClassName = "Business", LuggageAllowance = 30, BasePriceMultiplier = 1.5M },
+                new SeatClass { ClassId = Guid.NewGuid(), AirlineId = airline.AirlineId, ClassName = "First Class", LuggageAllowance = 40, BasePriceMultiplier = 2.0M }
+            };
+
+            _context.SeatClasses.AddRange(seatClasses);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetAirlineById), new { id = airline.AirlineId }, new
+            {
+                airline.AirlineId,
+                airline.AirlineName,
+                airline.AirlineCode,
+                airline.Country,
+                airline.LogoUrl,
+                airline.ContactNumber,
+                airline.WebsiteUrl,
+                SeatClasses = seatClasses.Select(sc => new
+                {
+                    sc.ClassName,
+                    sc.LuggageAllowance,
+                    sc.BasePriceMultiplier
+                })
+            });
         }
 
         // PUT: api/Airline/{id}
