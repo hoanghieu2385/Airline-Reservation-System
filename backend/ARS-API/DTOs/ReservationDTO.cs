@@ -25,6 +25,7 @@ namespace ARS_API.DTOs
         public Guid AllocationId { get; set; }
         public int? NumberOfBlockedSeats { get; set; }
         public string? ReservationStatus { get; set; }
+        public List<PassengerDTO>? Passengers { get; set; } // Only required for "Confirmed"
     }
 
 
@@ -32,7 +33,7 @@ namespace ARS_API.DTOs
     {
         public string? ReservationStatus { get; set; } // "Confirmed" or "Cancelled" only
         public int? NumberOfBlockedSeats { get; set; } // Only allows reducing seats
-        public DateTime? TravelDate { get; set; } // Only allowed when flight is delayed
+        public List<PassengerDTO>? Passengers { get; set; } // Only required for "Confirmed"
     }
 
 }

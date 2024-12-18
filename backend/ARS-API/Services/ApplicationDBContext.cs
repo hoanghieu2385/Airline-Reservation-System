@@ -52,6 +52,8 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<SeatClass> SeatClasses { get; set; }
     public DbSet<FlightSeatAllocation> FlightSeatAllocation { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
+    public DbSet<Passenger> Passengers { get; set; }
+
 
 
 

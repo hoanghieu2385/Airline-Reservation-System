@@ -55,7 +55,7 @@ namespace ARS_API.Controllers
                 return BadRequest("Invalid seat allocation or insufficient seats.");
             }
 
-            // Fetch the flight to get the BasePrice
+            // Fetch the flight to get the BasePrice and DepartureTime
             var flight = await _context.Flights.FindAsync(createReservationDto.FlightId);
             if (flight == null)
             {
@@ -86,10 +86,46 @@ namespace ARS_API.Controllers
             // Deduct seats
             allocation.AvailableSeats -= createReservationDto.NumberOfBlockedSeats ?? 0;
 
+            // Add passengers if ReservationStatus is "Confirmed"
+            if (createReservationDto.ReservationStatus == "Confirmed" && createReservationDto.Passengers != null)
+            {
+                foreach (var passengerDto in createReservationDto.Passengers)
+                {
+                    var passenger = new Passenger
+                    {
+                        PassengerId = Guid.NewGuid(),
+                        ReservationId = reservation.ReservationId,
+                        FirstName = passengerDto.FirstName,
+                        LastName = passengerDto.LastName,
+                        Age = passengerDto.Age,
+                        Gender = passengerDto.Gender,
+                        TicketCode = GenerateTicketCode(),
+                        // TODO: Adjust TicketPRice accordingly to line 245
+                        TicketPrice = flight.BasePrice
+                    };
+
+                    _context.Passengers.Add(passenger);
+                }
+            }
+
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
+        }
+
+        private string GenerateTicketCode()
+        {
+            string code;
+            var random = new Random();
+
+            do
+            {
+                code = random.Next(100000000, 999999999).ToString() + random.Next(1000, 9999).ToString(); // 12 digits
+            }
+            while (_context.Passengers.Any(p => p.TicketCode == code));
+
+            return code;
         }
 
         private string GenerateReservationCode()
@@ -139,7 +175,40 @@ namespace ARS_API.Controllers
                     (updateDto.ReservationStatus == "Confirmed" || updateDto.ReservationStatus == "Cancelled"))
                 {
                     // TODO: if Status is changed to "Confirmed", NumberOfSeatsBlocked should be nullified (back to 0), seats will then be accounted for via Passengers
-                    reservation.ReservationStatus = updateDto.ReservationStatus; 
+                    reservation.ReservationStatus = updateDto.ReservationStatus;
+
+                    if (updateDto.ReservationStatus == "Confirmed")
+                    {
+                        // Nullify NumberOfBlockedSeats as seats will be accounted for via Passengers
+                        allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
+                        reservation.NumberOfBlockedSeats = 0;
+
+                        // Automatically add passengers
+                        if (updateDto.Passengers != null)
+                        {
+                            foreach (var passengerDto in updateDto.Passengers)
+                            {
+                                var passenger = new Passenger
+                                {
+                                    PassengerId = Guid.NewGuid(),
+                                    ReservationId = reservation.ReservationId,
+                                    FirstName = passengerDto.FirstName,
+                                    LastName = passengerDto.LastName,
+                                    Age = passengerDto.Age,
+                                    Gender = passengerDto.Gender,
+                                    TicketCode = GenerateTicketCode(),
+                                    // TODO: Adjust TicketPRice accordingly to line 245
+                                    TicketPrice = flight.BasePrice
+                                };
+
+                                _context.Passengers.Add(passenger);
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest("Passengers must be provided when confirming a reservation.");
+                        }
+                    }
 
                     if (updateDto.ReservationStatus == "Cancelled")
                     {
@@ -153,6 +222,10 @@ namespace ARS_API.Controllers
                     reservation.ReservationStatus = "Cancelled";
                     allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
                     reservation.NumberOfBlockedSeats = 0;
+
+                    // Remove associated passengers
+                    var passengers = _context.Passengers.Where(p => p.ReservationId == reservation.ReservationId).ToList();
+                    _context.Passengers.RemoveRange(passengers);
                 }
                 else
                 {
@@ -170,7 +243,7 @@ namespace ARS_API.Controllers
                     allocation.AvailableSeats += seatDifference; // Return seats
                     reservation.NumberOfBlockedSeats = updateDto.NumberOfBlockedSeats;
 
-                    // TODO: TotalPrice will be calculated via Passengers also, once APIs for Passengers are created
+                    // TODO: TotalPrice will be calculated based on Passengers, BasePriceMultiplier and PriceMultiplier
                     reservation.TotalPrice = flight.BasePrice * reservation.NumberOfBlockedSeats.Value;
                 }
                 else
