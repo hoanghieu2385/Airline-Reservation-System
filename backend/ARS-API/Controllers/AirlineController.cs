@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ARS_API.DTOs;
 using ARS_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,15 +41,25 @@ namespace ARS_API.Controllers
 
         // POST: api/Airline
         [HttpPost]
-        public async Task<IActionResult> CreateAirline([FromBody] Airline airline)
+        public async Task<IActionResult> CreateAirline([FromBody] CreateAirlineDTO createAirlineDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            airline.AirlineId = Guid.NewGuid();
+            var airline = new Airline
+            {
+                AirlineId = Guid.NewGuid(),
+                AirlineName = createAirlineDto.AirlineName,
+                AirlineCode = createAirlineDto.AirlineCode,
+                Country = createAirlineDto.Country,
+                LogoUrl = createAirlineDto.LogoUrl,
+                ContactNumber = createAirlineDto.ContactNumber,
+                WebsiteUrl = createAirlineDto.WebsiteUrl
+            };
+
             _context.Airlines.Add(airline);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetAirlineById), new { id = airline.AirlineId }, airline);
+            return CreatedAtAction(nameof(GetAirlineById), new { id = createAirlineDto.AirlineId }, createAirlineDto);
         }
 
         // PUT: api/Airline/{id}

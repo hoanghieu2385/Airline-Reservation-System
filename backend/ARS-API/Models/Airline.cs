@@ -27,12 +27,5 @@ namespace ARS_API.Models
 
         [StringLength(255)]
         public string WebsiteUrl { get; set; } 
-
-        public ICollection<Flight> Flights { get; set; }
-
-        public Airline()
-        {
-            Flights = new List<Flight>();
-        }
     }
 }
