@@ -57,6 +57,8 @@ namespace ARS_API.DTOs
         [Required]
         [StringLength(50)]
         public string Status { get; set; }
+
+        public List<FlightSeatAllocationDTO> SeatAllocations { get; set; }
     }
 
     public class UpdateFlightDto

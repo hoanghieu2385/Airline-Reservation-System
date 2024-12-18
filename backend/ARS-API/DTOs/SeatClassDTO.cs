@@ -7,7 +7,9 @@ namespace ARS_API.DTOs
 {
     public class SeatClassDTO
     {
-
+        public string ClassName { get; set; }
+        public int LuggageAllowance { get; set; }
+        public decimal BaseMultiplier { get; set; }
     }
 
     public class UpdateSeatClassDto

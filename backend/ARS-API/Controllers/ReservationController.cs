@@ -66,6 +66,7 @@ namespace ARS_API.Controllers
             var travelDate = flight.DepartureTime;
 
             // Calculate TotalPrice (BasePrice * NumberOfBlockedSeats)
+            // TODO: totalPrice is to be calculated via BasePrice * BasePriceMultiplier * PriceMultiplier * number of Passengers OR number of Blocked seats
             var totalPrice = flight.BasePrice * createReservationDto.NumberOfBlockedSeats ?? 0;
 
             // Create a new reservation
@@ -86,30 +87,29 @@ namespace ARS_API.Controllers
             // Deduct seats
             allocation.AvailableSeats -= createReservationDto.NumberOfBlockedSeats ?? 0;
 
+            // Add Reservation to the context and save it
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
             // Add passengers if ReservationStatus is "Confirmed"
             if (createReservationDto.ReservationStatus == "Confirmed" && createReservationDto.Passengers != null)
             {
-                foreach (var passengerDto in createReservationDto.Passengers)
+                var passengers = createReservationDto.Passengers.Select(passengerDto => new Passenger
                 {
-                    var passenger = new Passenger
-                    {
-                        PassengerId = Guid.NewGuid(),
-                        ReservationId = reservation.ReservationId,
-                        FirstName = passengerDto.FirstName,
-                        LastName = passengerDto.LastName,
-                        Age = passengerDto.Age,
-                        Gender = passengerDto.Gender,
-                        TicketCode = GenerateTicketCode(),
-                        // TODO: Adjust TicketPRice accordingly to line 245
-                        TicketPrice = flight.BasePrice
-                    };
+                    PassengerId = Guid.NewGuid(),
+                    ReservationId = reservation.ReservationId, // Link FK after saving Reservation
+                    FirstName = passengerDto.FirstName,
+                    LastName = passengerDto.LastName,
+                    Age = passengerDto.Age,
+                    Gender = passengerDto.Gender,
+                    TicketCode = GenerateTicketCode(),
+                    // TODO: Adjust TicketPrice accordingly to line 69
+                    TicketPrice = flight.BasePrice
+                }).ToList();
 
-                    _context.Passengers.Add(passenger);
-                }
+                _context.Passengers.AddRange(passengers);
+                await _context.SaveChangesAsync();
             }
-
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
         }
@@ -243,7 +243,7 @@ namespace ARS_API.Controllers
                     allocation.AvailableSeats += seatDifference; // Return seats
                     reservation.NumberOfBlockedSeats = updateDto.NumberOfBlockedSeats;
 
-                    // TODO: TotalPrice will be calculated based on Passengers, BasePriceMultiplier and PriceMultiplier
+                    // TODO: TotalPrice will be calculated via BasePrice, Passengers, BasePriceMultiplier and PriceMultiplier
                     reservation.TotalPrice = flight.BasePrice * reservation.NumberOfBlockedSeats.Value;
                 }
                 else
