@@ -265,7 +265,47 @@ namespace ARS_API.Migrations
 
                     b.HasKey("AllocationId");
 
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("FlightId");
+
                     b.ToTable("FlightSeatAllocation");
+                });
+
+            modelBuilder.Entity("ARS_API.Models.Passenger", b =>
+                {
+                    b.Property<Guid>("PassengerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TicketCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TicketPrice")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("PassengerId");
+
+                    b.ToTable("Passengers");
                 });
 
             modelBuilder.Entity("ARS_API.Models.Reservation", b =>
@@ -362,25 +402,25 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "fe233e3e-69e6-4201-a2ff-e1bee693afaa",
+                            Id = "ca115ddd-95d8-4438-897b-b207b09bba18",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "ac7a4d37-71a2-4cd2-a6ed-4889654e0bf1",
+                            Id = "d890d300-bc3c-4420-8567-09937cfbcb1b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "06506b0f-e18c-4b35-9dc6-4d71112052cb",
+                            Id = "c785c56f-a8bd-4135-a7bc-914140986fc8",
                             Name = "Clerk",
                             NormalizedName = "CLERK"
                         },
                         new
                         {
-                            Id = "9f9628dd-3343-4b82-9647-5863c7fee17c",
+                            Id = "ded41d2c-3ff8-4f98-8e2b-fa72759cae3a",
                             Name = "Guest",
                             NormalizedName = "GUEST"
                         });
@@ -506,9 +546,9 @@ namespace ARS_API.Migrations
             modelBuilder.Entity("ARS_API.Models.Flight", b =>
                 {
                     b.HasOne("ARS_API.Models.Airline", "Airline")
-                        .WithMany("Flights")
+                        .WithMany()
                         .HasForeignKey("AirlineId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ARS_API.Models.Airport", "DestinationAirport")
@@ -528,6 +568,25 @@ namespace ARS_API.Migrations
                     b.Navigation("DestinationAirport");
 
                     b.Navigation("OriginAirport");
+                });
+
+            modelBuilder.Entity("ARS_API.Models.FlightSeatAllocation", b =>
+                {
+                    b.HasOne("ARS_API.Models.SeatClass", "SeatClass")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ARS_API.Models.Flight", "Flight")
+                        .WithMany("FlightSeatAllocations")
+                        .HasForeignKey("FlightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Flight");
+
+                    b.Navigation("SeatClass");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -581,9 +640,9 @@ namespace ARS_API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ARS_API.Models.Airline", b =>
+            modelBuilder.Entity("ARS_API.Models.Flight", b =>
                 {
-                    b.Navigation("Flights");
+                    b.Navigation("FlightSeatAllocations");
                 });
 #pragma warning restore 612, 618
         }
