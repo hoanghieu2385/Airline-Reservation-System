@@ -183,36 +183,74 @@ namespace ARS_API.Controllers
                 return NotFound("User not found.");
             }
 
-            // Cập nhật email nếu được cung cấp
-            if (!string.IsNullOrEmpty(model.NewEmail))
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+            if (!roles.Contains("ADMIN") && !roles.Contains("CLERK") && currentUserId != id)
             {
-                user.Email = model.NewEmail;
-                user.UserName = model.NewEmail;
+                return Forbid("You are not authorized to update this profile.");
             }
+
+            if (!string.IsNullOrEmpty(model.FirstName))
+                user.FirstName = model.FirstName;
+
+            if (!string.IsNullOrEmpty(model.LastName))
+                user.LastName = model.LastName;
+
+            if (!string.IsNullOrEmpty(model.Address))
+                user.Address = model.Address;
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+                user.PhoneNumber = model.PhoneNumber;
+
+            if (model.DateOfBirth.HasValue)
+                user.DateOfBirth = model.DateOfBirth;
+
+            //if (!string.IsNullOrEmpty(model.PreferredCreditCard))
+            //    user.PreferredCreditCard = model.PreferredCreditCard;
+
 
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
-                return BadRequest(updateResult.Errors);
+                return BadRequest(new
+                {
+                    Message = "Failed to update user profile.",
+                    Errors = updateResult.Errors.Select(e => e.Description)
+                });
             }
 
-            // Đặt lại mật khẩu nếu được cung cấp
             if (!string.IsNullOrEmpty(model.NewPassword))
             {
+                if (model.NewPassword != model.ConfirmPassword)
+                {
+                    return BadRequest("Passwords do not match.");
+                }
+
                 var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var passwordResult = await _userManager.ResetPasswordAsync(user, resetToken, model.NewPassword);
                 if (!passwordResult.Succeeded)
                 {
-                    return BadRequest(passwordResult.Errors);
+                    return BadRequest(new
+                    {
+                        Message = "Failed to update password.",
+                        Errors = passwordResult.Errors.Select(e => e.Description)
+                    });
                 }
             }
 
-            if (!string.IsNullOrEmpty(model.NewEmail) && !model.NewEmail.Contains("@"))
+            return Ok(new
             {
-                return BadRequest("Email is incorrect.");
-            }
-
-            return Ok("User updated successfully.");
+                Message = "User updated successfully.",
+                UpdatedFields = new
+                {
+                    user.FirstName,
+                    user.LastName,
+                    user.Address,
+                    user.PhoneNumber,
+                    user.DateOfBirth,
+                    //user.PreferredCreditCard
+                }
+            });
         }
 
         [HttpDelete("delete/{id}")]
