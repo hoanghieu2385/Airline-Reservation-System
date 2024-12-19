@@ -162,7 +162,7 @@ namespace ARS_API.Controllers
         }
 
         [HttpGet("read")]
-        [Authorize(Roles = "ADMIN,CLERK")] // allow for admin, clerk
+        [Authorize(Roles = "Admin,Clerk")] // allow for admin, clerk
         public async Task<IActionResult> GetAllUsers()
         {
             var users = _userManager.Users.ToList();

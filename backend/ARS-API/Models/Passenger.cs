@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace ARS_API.Models
         public int Age { get; set; }
         public string Gender { get; set; }
         public string TicketCode { get; set; } // Unique 12-digit code
+        [Column(TypeName = "decimal(10, 2)")]
         public decimal TicketPrice { get; set; }
 
         // Navigation properties

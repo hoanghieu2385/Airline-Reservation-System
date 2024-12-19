@@ -75,6 +75,48 @@ namespace ARS_API.Controllers
             return Ok(flight);
         }
 
+        // GET: api/Flights/Search
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchFlights(
+            [FromQuery] Guid originAirportId,
+            [FromQuery] Guid destinationAirportId,
+            [FromQuery] DateTime departureDate)
+        {
+            // Query flights with matching criteria and available seats in FlightSeatAllocation
+            var flights = await _context.Flights
+                .Include(f => f.FlightSeatAllocations) // Include seat allocations
+                .ThenInclude(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
+                .Where(f => f.OriginAirportId == originAirportId
+                            && f.DestinationAirportId == destinationAirportId
+                            && f.DepartureTime.Date == departureDate.Date
+                            && f.FlightSeatAllocations.Sum(a => a.AvailableSeats) > 0) // Check available seats
+                .ToListAsync();
+
+            if (!flights.Any())
+            {
+                return NotFound("No flights found matching the criteria.");
+            }
+
+            // Prepare response with seat availability
+            var result = flights.Select(f => new
+            {
+                f.FlightId,
+                f.FlightNumber,
+                f.OriginAirportId,
+                f.DestinationAirportId,
+                f.DepartureTime,
+                TotalAvailableSeats = f.FlightSeatAllocations.Sum(a => a.AvailableSeats), // Total available seats
+                SeatClasses = f.FlightSeatAllocations.Select(a => new
+                {
+                    a.SeatClass.ClassName,
+                    a.AvailableSeats
+                })
+            });
+
+            return Ok(result);
+        }
+
+
         // POST: api/Flight
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -82,6 +124,34 @@ namespace ARS_API.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            // Step 1: Validate Airline
+            var airline = await _context.Airlines.FindAsync(flightDto.AirlineId);
+            if (airline == null)
+                return BadRequest("Invalid AirlineId.");
+
+            // Step 2: Fetch SeatClasses for the Airline
+            var seatClasses = await _context.SeatClasses
+                .Where(sc => sc.AirlineId == flightDto.AirlineId)
+                .ToListAsync();
+
+            if (!seatClasses.Any())
+                return BadRequest("No seat classes found for the specified airline.");
+
+            // Step 3: Validate Seat Allocations (if provided)
+            if (flightDto.SeatAllocations != null)
+            {
+                var totalAllocatedSeats = flightDto.SeatAllocations.Sum(sa => sa.AvailableSeats);
+                if (totalAllocatedSeats != flightDto.TotalSeats)
+                {
+                    return BadRequest("The total of all seat allocations must match the TotalSeats for the flight.");
+                }
+            }
+            else
+            {
+                return BadRequest("Seat allocations are required.");
+            }
+
+            // Step 4: Create Flight
             var flight = new Flight
             {
                 FlightId = Guid.NewGuid(),
@@ -100,7 +170,35 @@ namespace ARS_API.Controllers
             _context.Flights.Add(flight);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, flight);
+            // Step 5: Map SeatAllocations to FlightSeatAllocation
+            var seatAllocations = flightDto.SeatAllocations.Select(sa =>
+            {
+                var seatClass = seatClasses.FirstOrDefault(sc => sc.ClassName == sa.ClassName);
+                if (seatClass == null)
+                    throw new Exception($"Seat class '{sa.ClassName}' does not exist for this airline.");
+
+                return new FlightSeatAllocation
+                {
+                    AllocationId = Guid.NewGuid(),
+                    FlightId = flight.FlightId,
+                    ClassId = seatClass.ClassId,
+                    AvailableSeats = sa.AvailableSeats
+                };
+            }).ToList();
+
+            _context.FlightSeatAllocation.AddRange(seatAllocations);
+            await _context.SaveChangesAsync();
+
+            // Return response
+            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, new
+            {
+                Flight = flight,
+                SeatAllocations = seatAllocations.Select(sa => new
+                {
+                    sa.ClassId,
+                    sa.AvailableSeats
+                })
+            });
         }
 
         // PUT: api/Flight/{id}

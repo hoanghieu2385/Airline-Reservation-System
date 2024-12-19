@@ -7,7 +7,8 @@ namespace ARS_API.DTOs
 {
     public class FlightSeatAllocationDTO
     {
-        
+        public string ClassName { get; set; } // Must match a SeatClass in this airline
+        public int AvailableSeats { get; set; }
     }
 
     public class UpdateFlightSeatAllocationDTO

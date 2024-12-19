@@ -57,6 +57,19 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
             .WithMany()
             .HasForeignKey(r => r.DestinationAirportId)
             .OnDelete(DeleteBehavior.Restrict);
+            
+        builder.Entity<Flight>()
+            .HasMany(f => f.FlightSeatAllocations)
+            .WithOne(fa => fa.Flight)
+            .HasForeignKey(fa => fa.FlightId);
+
+        // FlightSeatAllocation -> SeatClass (many-to-one)
+        builder.Entity<FlightSeatAllocation>()
+            .HasOne(fa => fa.SeatClass)
+            .WithMany()
+            .HasForeignKey(fa => fa.ClassId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 
     public DbSet<City> Cities { get; set; }

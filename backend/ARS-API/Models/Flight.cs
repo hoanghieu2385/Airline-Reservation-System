@@ -56,6 +56,6 @@ namespace ARS_API.Models
         [StringLength(50)]
         public string Status { get; set; }
         public virtual ICollection<FlightSeatAllocation> FlightSeatAllocations { get; set; }
-
+        public ICollection<FlightSeatAllocation> FlightSeatAllocations { get; set; }
     }
 }
