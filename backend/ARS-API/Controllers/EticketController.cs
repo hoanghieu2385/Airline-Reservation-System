@@ -130,7 +130,7 @@ namespace ARS_API.Controllers
             if (passenger == null)
                 return NotFound(new { Message = "Passenger not found." });
 
-            // C?p nh?t thông tin hành khách
+            // C?p nh?t thï¿½ng tin hï¿½nh khï¿½ch
             passenger.FirstName = updateDTO.FirstName;
             passenger.LastName = updateDTO.LastName;
             passenger.Age = updateDTO.Age;
@@ -174,7 +174,7 @@ namespace ARS_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateETicket([FromBody] CreatePassengerDTO createDTO)
         {
-            // Ki?m tra reservation có t?n t?i không
+            // Ki?m tra reservation cï¿½ t?n t?i khï¿½ng
             var reservation = await _dbContext.Reservations
                 .Include(r => r.Flight)
                 .FirstOrDefaultAsync(r => r.ReservationId == createDTO.ReservationId);
@@ -190,7 +190,7 @@ namespace ARS_API.Controllers
                 LastName = createDTO.LastName,
                 Age = createDTO.Age,
                 Gender = createDTO.Gender,
-                TicketCode = GenerateTicketCode(), // Hàm t?o mã vé
+                TicketCode = GenerateTicketCode(), // Hï¿½m t?o mï¿½ vï¿½
                 TicketPrice = createDTO.TicketPrice
             };
 
@@ -211,7 +211,7 @@ namespace ARS_API.Controllers
 
         private string GenerateTicketCode()
         {
-            // T?o mã vé ng?u nhiên v?i ??nh d?ng: TK + n?m + tháng + ngày + 4 s? ng?u nhiên
+            // T?o mï¿½ vï¿½ ng?u nhiï¿½n v?i ??nh d?ng: TK + n?m + thï¿½ng + ngï¿½y + 4 s? ng?u nhiï¿½n
             string dateComponent = DateTime.Now.ToString("yyyyMMdd");
             string randomComponent = new Random().Next(1000, 9999).ToString();
             return $"TK{dateComponent}{randomComponent}";
