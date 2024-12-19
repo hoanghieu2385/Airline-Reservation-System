@@ -75,6 +75,48 @@ namespace ARS_API.Controllers
             return Ok(flight);
         }
 
+        // GET: api/Flights/Search
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchFlights(
+            [FromQuery] Guid originAirportId,
+            [FromQuery] Guid destinationAirportId,
+            [FromQuery] DateTime departureDate)
+        {
+            // Query flights with matching criteria and available seats in FlightSeatAllocation
+            var flights = await _context.Flights
+                .Include(f => f.FlightSeatAllocations) // Include seat allocations
+                .ThenInclude(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
+                .Where(f => f.OriginAirportId == originAirportId
+                            && f.DestinationAirportId == destinationAirportId
+                            && f.DepartureTime.Date == departureDate.Date
+                            && f.FlightSeatAllocations.Sum(a => a.AvailableSeats) > 0) // Check available seats
+                .ToListAsync();
+
+            if (!flights.Any())
+            {
+                return NotFound("No flights found matching the criteria.");
+            }
+
+            // Prepare response with seat availability
+            var result = flights.Select(f => new
+            {
+                f.FlightId,
+                f.FlightNumber,
+                f.OriginAirportId,
+                f.DestinationAirportId,
+                f.DepartureTime,
+                TotalAvailableSeats = f.FlightSeatAllocations.Sum(a => a.AvailableSeats), // Total available seats
+                SeatClasses = f.FlightSeatAllocations.Select(a => new
+                {
+                    a.SeatClass.ClassName,
+                    a.AvailableSeats
+                })
+            });
+
+            return Ok(result);
+        }
+
+
         // POST: api/Flight
         [HttpPost]
         [Authorize(Roles = "Admin")]
