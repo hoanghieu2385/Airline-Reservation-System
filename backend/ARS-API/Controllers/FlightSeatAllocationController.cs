@@ -85,7 +85,6 @@ public class FlightSeatAllocationController : ControllerBase
         return NoContent();
     }
 
-
     // DELETE: api/FlightSeatAllocation/{id}
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
