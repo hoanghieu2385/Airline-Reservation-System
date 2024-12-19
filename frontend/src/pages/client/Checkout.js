@@ -32,11 +32,22 @@ const Checkout = () => {
   const [pricingRules, setPricingRules] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [voucher, setVoucher] = useState("");
+  const [baggagePrice, setBaggagePrice] = useState(0);
   const [contactInfo, setContactInfo] = useState({
     name: "",
     phone: "",
     email: "",
   });
+
+  const baggageOptions = [
+    { label: "Không chọn hành lý", price: 0 },
+    { label: "Thêm 20kgs hành lý - 216,000 VND", price: 216000 },
+    { label: "Thêm 30kgs hành lý - 324,000 VND", price: 324000 },
+    { label: "Thêm 40kgs hành lý - 432,000 VND", price: 432000 },
+    { label: "Thêm 50kgs hành lý - 594,000 VND", price: 594000 },
+    { label: "Thêm 60kgs hành lý - 702,000 VND", price: 702000 },
+    { label: "Thêm 70kgs hành lý - 810,000 VND", price: 810000 },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,12 +57,12 @@ const Checkout = () => {
       setPricingRules(rules);
       setFlightDetails(flights);
 
-      const calculatedPrice = calculateTotalPrice(flights, rules);
+      const calculatedPrice = calculateTotalPrice(flights, rules, baggagePrice);
       setTotalPrice(calculatedPrice);
     };
 
     fetchData();
-  }, []);
+  }, [baggagePrice]);
 
   const calculateMultiplier = (departureDate, rules) => {
     const today = new Date();
@@ -72,7 +83,7 @@ const Checkout = () => {
     return multiplier;
   };
 
-  const calculateTotalPrice = (flights, rules) => {
+  const calculateTotalPrice = (flights, rules, baggage) => {
     const departureMultiplier = calculateMultiplier(
       flights.departure.departureTime,
       rules
@@ -85,7 +96,11 @@ const Checkout = () => {
     const departurePrice = flights.departure.basePrice * departureMultiplier;
     const returnPrice = flights.return.basePrice * returnMultiplier;
 
-    return Math.round(departurePrice + returnPrice - 20000);
+    return Math.round(departurePrice + returnPrice + baggage - 20000);
+  };
+
+  const handleBaggageChange = (e) => {
+    setBaggagePrice(Number(e.target.value));
   };
 
   const handleInputChange = (e) => {
@@ -127,6 +142,21 @@ const Checkout = () => {
                 Giá gốc: {flightDetails.return.basePrice.toLocaleString()} VND
               </p>
             </div>
+          </section>
+
+          <section className="checkout-baggage-info mb-4">
+            <h4 className="text-primary">Chọn hành lý</h4>
+            <select
+              className="form-select"
+              value={baggagePrice}
+              onChange={handleBaggageChange}
+            >
+              {baggageOptions.map((option, index) => (
+                <option key={index} value={option.price}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </section>
 
           <section className="checkout-passenger-info">
@@ -192,6 +222,7 @@ const Checkout = () => {
                 VND
               </strong>
             </p>
+            <p>Hành lý: <strong>{baggagePrice.toLocaleString()} VND</strong></p>
             <p>Giảm giá: <strong>20,000 VND</strong></p>
             <p className="checkout-total-price text-success fs-5 fw-bold">
               Tổng tiền: {totalPrice.toLocaleString()} VND
