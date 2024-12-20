@@ -1,0 +1,59 @@
+.user-feedback {
+    /* background-color: #f9f9f9; */
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.section-title .highlight {
+    color: #D38174;
+}
+
+.section-subtitle {
+    color: #777;
+    font-size: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.feedback-card {
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+    border: 1px solid #e6e6e6;
+}
+
+.feedback-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.avatar img {
+    object-fit: cover;
+    border: 3px solid #D38174;
+}
+
+.feedback-review {
+    font-size: 0.9rem;
+    color: #555;
+    font-style: italic;
+    min-height: 60px;
+}
+
+.star {
+    color: #FFD700;
+    font-size: 1.2rem;
+}
+
+.feedback-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.feedback-country {
+    color: #777;
+    font-size: 0.9rem;
+}

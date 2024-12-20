@@ -53,49 +53,64 @@ namespace ARS_API.Controllers
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
                 expiration = token.ValidTo,
-                roles = userRoles
+                roles = userRoles,
+                user = new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName
+                }
             });
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            // Kiểm tra vai trò hợp lệ
+            // List of valid roles
             string[] validRoles = { "USER", "CLERK", "ADMIN" };
-            if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role))
+
+            // Check if the provided role is valid
+            if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role.ToUpper()))
             {
                 return BadRequest("Role does not exist or input is incorrect.");
             }
 
+            // Default role is "USER" if no role is provided
+            var role = string.IsNullOrEmpty(model.Role) ? "USER" : model.Role.ToUpper();
+
+            // Create a new user instance
             var user = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email
             };
 
+            // Create the user with the provided password
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
-                return BadRequest(result.Errors);
+                // Aggregate errors from Identity Framework
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return BadRequest(new { Message = "Registration failed.", Errors = errors });
             }
 
-            // Thêm vai trò nếu được chỉ định
-            if (!string.IsNullOrEmpty(model.Role))
+            // Assign the role to the user
+            var roleResult = await _userManager.AddToRoleAsync(user, role);
+            if (!roleResult.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, model.Role);
+                // Rollback user creation if assigning role fails
+                await _userManager.DeleteAsync(user);
+                var errors = roleResult.Errors.Select(e => e.Description).ToList();
+                return BadRequest(new { Message = "Failed to assign role.", Errors = errors });
             }
-            else
-            {
-                // Mặc định là User nếu không chỉ định vai trò
-                await _userManager.AddToRoleAsync(user, "USER");
-            }
-
             return Ok(new { Message = "User registered successfully.", UserId = user.Id });
         }
 
         [HttpGet("read")]
-        [Authorize]
-        public async Task<IActionResult> GetUsers()
+        [Authorize(Roles = "Admin,Clerk")] // allow for admin, clerk
+        public async Task<IActionResult> GetAllUsers()
         {
             var users = _userManager.Users.ToList();
             var userList = new List<object>();
@@ -108,11 +123,54 @@ namespace ARS_API.Controllers
                     user.Id,
                     user.UserName,
                     user.Email,
+                    user.FirstName,
+                    user.LastName,
                     Roles = roles
                 });
             }
 
             return Ok(userList);
+        }
+
+        [HttpGet("read/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetProfileById(string id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+
+            // if not admin, clerk, user dont see another profile   
+            if (!roles.Contains("ADMIN") && !roles.Contains("CLERK") && currentUserId != id)
+            {
+                return Forbid("You are not authorized to view this profile.");
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.FirstName,
+                user.LastName,
+                Roles = userRoles
+            });
+        }
+
+        // Users get personal information through session
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return await GetProfileById(userId); // reuse logic from GetProfileById
         }
 
         [HttpPut("update/{id}")]

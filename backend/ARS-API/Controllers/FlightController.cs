@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using ARS_API.DTOs;
 using ARS_API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ARS_API.Controllers
 {
@@ -76,10 +77,39 @@ namespace ARS_API.Controllers
 
         // POST: api/Flight
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateFlight([FromBody] CreateFlightDto flightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            // Step 1: Validate Airline
+            var airline = await _context.Airlines.FindAsync(flightDto.AirlineId);
+            if (airline == null)
+                return BadRequest("Invalid AirlineId.");
+
+            // Step 2: Fetch SeatClasses for the Airline
+            var seatClasses = await _context.SeatClasses
+                .Where(sc => sc.AirlineId == flightDto.AirlineId)
+                .ToListAsync();
+
+            if (!seatClasses.Any())
+                return BadRequest("No seat classes found for the specified airline.");
+
+            // Step 3: Validate Seat Allocations (if provided)
+            if (flightDto.SeatAllocations != null)
+            {
+                var totalAllocatedSeats = flightDto.SeatAllocations.Sum(sa => sa.AvailableSeats);
+                if (totalAllocatedSeats != flightDto.TotalSeats)
+                {
+                    return BadRequest("The total of all seat allocations must match the TotalSeats for the flight.");
+                }
+            }
+            else
+            {
+                return BadRequest("Seat allocations are required.");
+            }
+
+            // Step 4: Create Flight
             var flight = new Flight
             {
                 FlightId = Guid.NewGuid(),
@@ -98,11 +128,40 @@ namespace ARS_API.Controllers
             _context.Flights.Add(flight);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, flight);
+            // Step 5: Map SeatAllocations to FlightSeatAllocation
+            var seatAllocations = flightDto.SeatAllocations.Select(sa =>
+            {
+                var seatClass = seatClasses.FirstOrDefault(sc => sc.ClassName == sa.ClassName);
+                if (seatClass == null)
+                    throw new Exception($"Seat class '{sa.ClassName}' does not exist for this airline.");
+
+                return new FlightSeatAllocation
+                {
+                    AllocationId = Guid.NewGuid(),
+                    FlightId = flight.FlightId,
+                    ClassId = seatClass.ClassId,
+                    AvailableSeats = sa.AvailableSeats
+                };
+            }).ToList();
+
+            _context.FlightSeatAllocation.AddRange(seatAllocations);
+            await _context.SaveChangesAsync();
+
+            // Return response
+            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, new
+            {
+                Flight = flight,
+                SeatAllocations = seatAllocations.Select(sa => new
+                {
+                    sa.ClassId,
+                    sa.AvailableSeats
+                })
+            });
         }
 
         // PUT: api/Flight/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateFlight(Guid id, [FromBody] UpdateFlightDto updateFlightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -110,11 +169,27 @@ namespace ARS_API.Controllers
             var flight = await _context.Flights.FindAsync(id);
             if (flight == null) return NotFound();
 
+            // Check if DepartureTime has changed
+            bool departureTimeChanged = flight.DepartureTime != updateFlightDto.DepartureTime;
+
+            // Update flight details
             flight.DepartureTime = updateFlightDto.DepartureTime;
             flight.ArrivalTime = updateFlightDto.ArrivalTime;
             flight.Status = updateFlightDto.Status;
 
             _context.Flights.Update(flight);
+
+            // Automatically update TravelDate in Reservations if DepartureTime has changed
+            if (departureTimeChanged)
+            {
+                var reservations = _context.Reservations.Where(r => r.FlightId == id).ToList();
+                foreach (var reservation in reservations)
+                {
+                    reservation.TravelDate = flight.DepartureTime;
+                }
+            }
+
+            // Save changes to both Flights and Reservations
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -122,6 +197,7 @@ namespace ARS_API.Controllers
 
         // DELETE: api/Flight/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteFlight(Guid id)
         {
             var flight = await _context.Flights.FindAsync(id);
