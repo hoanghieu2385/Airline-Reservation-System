@@ -1,0 +1,68 @@
+.flight-booking__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+.flight-booking__title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.flight-booking__filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.flight-booking__filter-select {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: white;
+    min-width: 150px;
+}
+
+.flight-booking__table-wrapper {
+    overflow-x: auto;
+}
+
+.flight-booking__table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.flight-booking__table th,
+.flight-booking__table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+    text-align: left;
+}
+
+.flight-booking__table th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    color: #495057;
+}
+
+.flight-booking__status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.flight-booking__status.paid {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flight-booking__status.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
