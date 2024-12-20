@@ -25,6 +25,8 @@ namespace ARS_API
 
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
+            builder.Services.AddScoped<PricingService>();
+
             // Configure Email Service
             builder.Services.Configure<EmailSettings>(
                 builder.Configuration.GetSection("SmtpSettings"));
