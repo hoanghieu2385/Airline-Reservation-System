@@ -3,28 +3,15 @@ import { useNavigate } from "react-router-dom";
 import "../../assets/css/ClientDashboard/ClientDashboard.css";
 import UserProfile from "../../components/client/ClientProfile";
 import BookingHistory from "../../components/client/BookingHistory";
-import Security from "../../components/client//Security";
-import "../../services/clientApi"
+import Security from "../../components/client/Security";
+import { getCurrentUser } from "../../services/clientApi";
 
 const FlightDashboard = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("profile");
     const [userProfile, setUserProfile] = useState(null);
 
-    useEffect(() => {
-        const userProfile = sessionStorage.getItem("userProfile");
-        if (!userProfile || !JSON.parse(userProfile).email) {
-            navigate("/login");
-        }
-    }, [navigate]);
-
-    useEffect(() => {
-        const profile = sessionStorage.getItem("userProfile");
-        if (profile) {
-            setUserProfile(JSON.parse(profile));
-        }
-    }, []);
-
+    // Hardcoded bookings
     const bookings = [
         {
             id: 1,
@@ -54,6 +41,25 @@ const FlightDashboard = () => {
             paymentStatus: true,
         },
     ];
+
+    // Check login status
+    useEffect(() => {
+        const userProfile = sessionStorage.getItem("userProfile");
+        if (!userProfile || !JSON.parse(userProfile).email) {
+            navigate("/login");
+        }
+    }, [navigate]);
+
+    // Fetch user profile when activeTab changes to "profile"
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (activeTab === "profile") {
+                const profile = await getCurrentUser();
+                setUserProfile(profile);
+            }
+        };
+        fetchProfile();
+    }, [activeTab]);
 
     if (!userProfile) {
         return (
