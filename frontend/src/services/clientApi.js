@@ -60,12 +60,28 @@ export const updateUser = async (userId, data) => {
 };
 
 // Change user password
-export const changePassword = async (userId, passwords) => {
+export const changePassword = async (userId, data) => {
     try {
-        const response = await api.put(`/user/security/${userId}`, passwords);
+        // Map the formData to match the backend's UpdateUserDto
+        const payload = {
+            currentPassword: data.currentPassword,
+            newPassword: data.newPassword,
+            confirmPassword: data.confirmPassword,
+        };
+
+        console.log("Change Password Payload:", payload);
+
+        // Send request to the existing update endpoint
+        const response = await api.put(`/user/update/${userId}`, payload);
+
         return response.data;
     } catch (error) {
-        console.error('Failed to change password:', error);
-        throw error;
+        console.error("Change Password Error Details:", {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message,
+        });
+
+        throw new Error(error.response?.data?.message || "Failed to change password");
     }
 };

@@ -26,7 +26,8 @@ const UserProfile = ({ profile }) => {
 
     const handleSave = async () => {
         try {
-            await updateUser(formData);
+            const userId = profile.id;
+            await updateUser(userId, formData);
             alert("Profile updated successfully.");
             setEditMode(false);
             setIsChanged(false);
@@ -34,7 +35,7 @@ const UserProfile = ({ profile }) => {
             console.error("Failed to update profile:", error);
             alert("Failed to update profile.");
         }
-    };
+    }; 
 
     return (
         <div className="flight-profile">

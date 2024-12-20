@@ -42,6 +42,7 @@ const Security = ({ userId }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (formData.newPassword !== formData.confirmPassword) {
             alert("Passwords do not match!");
             return;

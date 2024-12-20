@@ -195,6 +195,7 @@ namespace ARS_API.Controllers
                 return Forbid("You are not authorized to update this profile.");
             }
 
+            // Update other user details
             if (!string.IsNullOrEmpty(model.FirstName))
                 user.FirstName = model.FirstName;
 
@@ -213,7 +214,6 @@ namespace ARS_API.Controllers
             //if (!string.IsNullOrEmpty(model.PreferredCreditCard))
             //    user.PreferredCreditCard = model.PreferredCreditCard;
 
-
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
@@ -231,6 +231,13 @@ namespace ARS_API.Controllers
                     return BadRequest("Passwords do not match.");
                 }
 
+                // Validate current password
+                if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
+                {
+                    return BadRequest("Current password is incorrect.");
+                }
+
+                // Update the password
                 var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var passwordResult = await _userManager.ResetPasswordAsync(user, resetToken, model.NewPassword);
                 if (!passwordResult.Succeeded)

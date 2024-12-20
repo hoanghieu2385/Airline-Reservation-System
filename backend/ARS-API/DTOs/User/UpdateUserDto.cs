@@ -8,6 +8,9 @@
         public string? PhoneNumber { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? PreferredCreditCard { get; set; }
+
+        // Fields for password update
+        public string? CurrentPassword { get; set; }
         public string? NewPassword { get; set; }
         public string? ConfirmPassword { get; set; }
     }
