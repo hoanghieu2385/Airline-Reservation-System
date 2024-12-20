@@ -4,6 +4,7 @@ using System;
 using ARS_API.DTOs;
 using ARS_API.Models;
 using Microsoft.AspNetCore.Authorization;
+using ARS_API.Services;
 
 namespace ARS_API.Controllers
 {
@@ -12,10 +13,12 @@ namespace ARS_API.Controllers
     public class FlightController : ControllerBase
     {
         private readonly ApplicationDBContext _context;
+        private readonly PricingService _pricingService;
 
-        public FlightController(ApplicationDBContext context)
+        public FlightController(ApplicationDBContext context, PricingService pricingService)
         {
             _context = context;
+            _pricingService = pricingService;
         }
 
         // GET: api/Flight
@@ -97,25 +100,36 @@ namespace ARS_API.Controllers
                 return NotFound("No flights found matching the criteria.");
             }
 
+            var searchDate = DateTime.UtcNow;
+            var result = new List<object>();
+
             // Prepare response with seat availability
-            var result = flights.Select(f => new
+            foreach (var flight in flights)
             {
-                f.FlightId,
-                f.FlightNumber,
-                f.OriginAirportId,
-                f.DestinationAirportId,
-                f.DepartureTime,
-                TotalAvailableSeats = f.FlightSeatAllocations.Sum(a => a.AvailableSeats), // Total available seats
-                SeatClasses = f.FlightSeatAllocations.Select(a => new
+                var daysBeforeDeparture = (flight.DepartureTime - searchDate).Days;
+                var priceMultiplier = await _pricingService.GetPriceMultiplierAsync(daysBeforeDeparture);
+
+                var seatClasses = flight.FlightSeatAllocations.Select(fsa => new
                 {
-                    a.SeatClass.ClassName,
-                    a.AvailableSeats
-                })
-            });
+                    fsa.SeatClass.ClassName,
+                    DynamicPrice = _pricingService.CalculateDynamicPrice(
+                        flight.BasePrice,
+                        priceMultiplier,
+                        fsa.SeatClass.BasePriceMultiplier)
+                });
+
+                result.Add(new
+                {
+                    flight.FlightId,
+                    flight.FlightNumber,
+                    flight.DepartureTime,
+                    flight.BasePrice,
+                    SeatClasses = seatClasses
+                });
+            }
 
             return Ok(result);
         }
-
 
         // POST: api/Flight
         [HttpPost]
