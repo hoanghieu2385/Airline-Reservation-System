@@ -75,13 +75,12 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<City> Cities { get; set; }
     public DbSet<Airport> Airports { get; set; }
     public DbSet<Airline> Airlines { get; set; }
+    public DbSet<PricingRule> PricingRules { get; set; }
     public DbSet<Flight> Flights { get; set; }
     public DbSet<SeatClass> SeatClasses { get; set; }
     public DbSet<FlightSeatAllocation> FlightSeatAllocation { get; set; }
     public DbSet<Reservation> Reservations { get; set; }
     public DbSet<Passenger> Passengers { get; set; }
     public DbSet<FlightRoute> Routes { get; set; }
-
-
 
 }
