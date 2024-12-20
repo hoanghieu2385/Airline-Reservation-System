@@ -34,9 +34,20 @@ const Checkout = () => {
   const [voucher, setVoucher] = useState("");
   const [baggagePrice, setBaggagePrice] = useState(0);
   const [contactInfo, setContactInfo] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     phone: "",
     email: "",
+    age: "",
+    gender: "",
+  });
+  const [errors, setErrors] = useState({
+    firstName: false,
+    lastName: false,
+    phone: false,
+    email: false,
+    age: false,
+    gender: false,
   });
 
   const baggageOptions = [
@@ -106,6 +117,29 @@ const Checkout = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setContactInfo({ ...contactInfo, [name]: value });
+    setErrors({ ...errors, [name]: false }); // Reset error on change
+  };
+
+  const validateEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  const validatePhone = (phone) => /^[0-9]{10,15}$/.test(phone.trim());
+
+  const handleSubmit = () => {
+    const newErrors = {
+      firstName: !contactInfo.firstName.trim(),
+      lastName: !contactInfo.lastName.trim(),
+      phone: !validatePhone(contactInfo.phone),
+      email: !validateEmail(contactInfo.email),
+      age: isNaN(contactInfo.age) || contactInfo.age <= 0,
+      gender: !contactInfo.gender,
+    };
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).every((value) => !value)) {
+      alert("Form submitted successfully!");
+    }
   };
 
   if (!flightDetails) return <div>Loading...</div>;
@@ -161,39 +195,99 @@ const Checkout = () => {
 
           <section className="checkout-passenger-info">
             <h4 className="text-primary">Thông tin hành khách</h4>
-            <input
-              className="form-control mb-3"
-              name="name"
-              placeholder="Họ và tên"
-              onChange={handleInputChange}
-            />
-            <input
-              className="form-control mb-3"
-              name="phone"
-              placeholder="Số điện thoại"
-              onChange={handleInputChange}
-            />
-            <input
-              className="form-control mb-3"
-              name="email"
-              placeholder="Email"
-              onChange={handleInputChange}
-            />
+            <div className="mb-3">
+              <input
+                className={`form-control ${
+                  errors.firstName ? "is-invalid" : ""
+                }`}
+                name="firstName"
+                placeholder="First Name"
+                value={contactInfo.firstName}
+                onChange={handleInputChange}
+              />
+              {errors.firstName && (
+                <div className="invalid-feedback">First Name is required</div>
+              )}
+            </div>
+            <div className="mb-3">
+              <input
+                className={`form-control ${
+                  errors.lastName ? "is-invalid" : ""
+                }`}
+                name="lastName"
+                placeholder="Last Name"
+                value={contactInfo.lastName}
+                onChange={handleInputChange}
+              />
+              {errors.lastName && (
+                <div className="invalid-feedback">Last Name is required</div>
+              )}
+            </div>
+            <div className="mb-3">
+              <select
+                className={`form-select ${
+                  errors.gender ? "is-invalid" : ""
+                }`}
+                name="gender"
+                value={contactInfo.gender}
+                onChange={handleInputChange}
+              >
+                <option value="">Select Gender</option>
+                <option value="Mr">Mr</option>
+                <option value="Mrs">Mrs</option>
+              </select>
+              {errors.gender && (
+                <div className="invalid-feedback">Gender is required</div>
+              )}
+            </div>
+            <div className="mb-3">
+              <input
+                className={`form-control ${errors.age ? "is-invalid" : ""}`}
+                name="age"
+                placeholder="Age"
+                type="number"
+                value={contactInfo.age}
+                onChange={handleInputChange}
+              />
+              {errors.age && (
+                <div className="invalid-feedback">Age must be greater than 0</div>
+              )}
+            </div>
+            <div className="mb-3">
+              <input
+                className={`form-control ${
+                  errors.phone ? "is-invalid" : ""
+                }`}
+                name="phone"
+                placeholder="Phone Number"
+                value={contactInfo.phone}
+                onChange={handleInputChange}
+              />
+              {errors.phone && (
+                <div className="invalid-feedback">
+                  Phone must be numeric and 10-15 digits
+                </div>
+              )}
+            </div>
+            <div className="mb-3">
+              <input
+                className={`form-control ${
+                  errors.email ? "is-invalid" : ""
+                }`}
+                name="email"
+                placeholder="Email"
+                value={contactInfo.email}
+                onChange={handleInputChange}
+              />
+              {errors.email && (
+                <div className="invalid-feedback">Enter a valid email</div>
+              )}
+            </div>
           </section>
         </div>
 
         {/* Right Column */}
         <div className="col-md-5">
-          <section className="checkout-voucher-info mb-4">
-            <h4 className="text-primary">Voucher giảm giá</h4>
-            <input
-              className="form-control"
-              placeholder="Nhập mã voucher"
-              value={voucher}
-              onChange={(e) => setVoucher(e.target.value)}
-            />
-          </section>
-
           <section className="checkout-pricing-summary p-3 bg-light border rounded">
             <h4 className="text-primary mb-3">Tóm tắt giá</h4>
             <p>
@@ -229,7 +323,9 @@ const Checkout = () => {
             </p>
           </section>
 
-          <button className="btn btn-primary w-100 mt-4">Tiếp tục</button>
+          <button className="btn btn-primary w-100 mt-4" onClick={handleSubmit}>
+            Tiếp tục
+          </button>
         </div>
       </div>
     </div>
