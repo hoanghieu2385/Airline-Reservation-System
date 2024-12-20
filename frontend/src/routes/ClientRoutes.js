@@ -8,7 +8,7 @@ import ClientLayout from "../layouts/ClientLayout";
 import Login from "../components/common/Login";
 import Register from "../components/common/Register";
 import ClientDashboard from "../pages/client/ClientDashboard";
-
+import PaymentPage  from "../pages/client/Payment";
 
 function ClientRoutes() {
     return (
@@ -18,7 +18,7 @@ function ClientRoutes() {
 
                 <Route path="/policies" element={<Policies />} />
                 <Route path="/checkoutdetail" element={<Checkout />} />
-
+                <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>
 

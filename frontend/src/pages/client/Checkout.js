@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/css/Checkout.css";
 
-// Mock API functions for pricing rules and flight details
+// Mock API functions
 const fetchPricingRules = async () => {
   return [
     { daysBeforeDeparture: 30, multiplier: 1.0 },
@@ -15,14 +15,14 @@ const fetchFlightDetails = async () => {
     departure: {
       airline: "VietJet",
       flightCode: "VJ162",
-      departureTime: "2025-01-02T22:05:00",
-      basePrice: 1000000,
+      departureTime: "2024-12-29T22:05:00",
+      basePrice: 1088000,
     },
     return: {
       airline: "Vietnam Airlines",
       flightCode: "VN787",
       departureTime: "2024-12-30T20:15:00",
-      basePrice: 500000,
+      basePrice: 778040,
     },
   };
 };
@@ -31,7 +31,6 @@ const Checkout = () => {
   const [flightDetails, setFlightDetails] = useState(null);
   const [pricingRules, setPricingRules] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [voucher, setVoucher] = useState("");
   const [baggagePrice, setBaggagePrice] = useState(0);
   const [contactInfo, setContactInfo] = useState({
     firstName: "",
@@ -49,16 +48,6 @@ const Checkout = () => {
     age: false,
     gender: false,
   });
-
-  const baggageOptions = [
-    { label: "Không chọn hành lý", price: 0 },
-    { label: "Thêm 20kgs hành lý - 216,000 VND", price: 216000 },
-    { label: "Thêm 30kgs hành lý - 324,000 VND", price: 324000 },
-    { label: "Thêm 40kgs hành lý - 432,000 VND", price: 432000 },
-    { label: "Thêm 50kgs hành lý - 594,000 VND", price: 594000 },
-    { label: "Thêm 60kgs hành lý - 702,000 VND", price: 702000 },
-    { label: "Thêm 70kgs hành lý - 810,000 VND", price: 810000 },
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,39 +114,6 @@ const Checkout = () => {
 
   const validatePhone = (phone) => /^[0-9]{10,15}$/.test(phone.trim());
 
-  const submitPassenger = async () => {
-    const payload = {
-      reservationId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", // Replace with actual ReservationId
-      firstName: contactInfo.firstName,
-      lastName: contactInfo.lastName,
-      age: parseInt(contactInfo.age),
-      gender: contactInfo.gender,
-      ticketPrice: totalPrice,
-      phone: contactInfo.phone,
-      email: contactInfo.email,
-    };
-
-    try {
-      const response = await fetch("https://your-api-url/api/Passenger", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to submit passenger data");
-      }
-
-      const data = await response.json();
-      alert("Passenger submitted successfully: " + data.passengerId);
-    } catch (error) {
-      console.error("Error submitting passenger data:", error);
-      alert("There was an error submitting your data.");
-    }
-  };
-
   const handleSubmit = () => {
     const newErrors = {
       firstName: !contactInfo.firstName.trim(),
@@ -171,8 +127,19 @@ const Checkout = () => {
     setErrors(newErrors);
 
     if (Object.values(newErrors).every((value) => !value)) {
-      submitPassenger(); // Call API when form is valid
+      saveToLocalStorage(); // Lưu thông tin vào LocalStorage
     }
+  };
+
+  const saveToLocalStorage = () => {
+    const data = {
+      contactInfo,
+      baggagePrice,
+      totalPrice,
+    };
+
+    localStorage.setItem("checkoutData", JSON.stringify(data));
+    alert("Checkout data saved successfully! You can now proceed.");
   };
 
   if (!flightDetails) return <div>Loading...</div>;
@@ -218,104 +185,56 @@ const Checkout = () => {
               value={baggagePrice}
               onChange={handleBaggageChange}
             >
-              {baggageOptions.map((option, index) => (
-                <option key={index} value={option.price}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="0">Không chọn hành lý</option>
+              <option value="216000">Thêm 20kgs hành lý - 216,000 VND</option>
+              <option value="324000">Thêm 30kgs hành lý - 324,000 VND</option>
+              <option value="432000">Thêm 40kgs hành lý - 432,000 VND</option>
+              <option value="594000">Thêm 50kgs hành lý - 594,000 VND</option>
             </select>
           </section>
 
           <section className="checkout-passenger-info">
             <h4 className="text-primary">Thông tin hành khách</h4>
-            <div className="mb-3">
-              <input
-                className={`form-control ${
-                  errors.firstName ? "is-invalid" : ""
-                }`}
-                name="firstName"
-                placeholder="First Name"
-                value={contactInfo.firstName}
-                onChange={handleInputChange}
-              />
-              {errors.firstName && (
-                <div className="invalid-feedback">First Name is required</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <input
-                className={`form-control ${
-                  errors.lastName ? "is-invalid" : ""
-                }`}
-                name="lastName"
-                placeholder="Last Name"
-                value={contactInfo.lastName}
-                onChange={handleInputChange}
-              />
-              {errors.lastName && (
-                <div className="invalid-feedback">Last Name is required</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <select
-                className={`form-select ${
-                  errors.gender ? "is-invalid" : ""
-                }`}
-                name="gender"
-                value={contactInfo.gender}
-                onChange={handleInputChange}
-              >
-                <option value="">Select Gender</option>
-                <option value="Mr">Mr</option>
-                <option value="Mrs">Mrs</option>
-              </select>
-              {errors.gender && (
-                <div className="invalid-feedback">Gender is required</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <input
-                className={`form-control ${errors.age ? "is-invalid" : ""}`}
-                name="age"
-                placeholder="Age"
-                type="number"
-                value={contactInfo.age}
-                onChange={handleInputChange}
-              />
-              {errors.age && (
-                <div className="invalid-feedback">Age must be greater than 0</div>
-              )}
-            </div>
-            <div className="mb-3">
-              <input
-                className={`form-control ${
-                  errors.phone ? "is-invalid" : ""
-                }`}
-                name="phone"
-                placeholder="Phone Number"
-                value={contactInfo.phone}
-                onChange={handleInputChange}
-              />
-              {errors.phone && (
-                <div className="invalid-feedback">
-                  Phone must be numeric and 10-15 digits
-                </div>
-              )}
-            </div>
-            <div className="mb-3">
-              <input
-                className={`form-control ${
-                  errors.email ? "is-invalid" : ""
-                }`}
-                name="email"
-                placeholder="Email"
-                value={contactInfo.email}
-                onChange={handleInputChange}
-              />
-              {errors.email && (
-                <div className="invalid-feedback">Enter a valid email</div>
-              )}
-            </div>
+            <input
+              className="form-control mb-3"
+              name="firstName"
+              placeholder="First Name"
+              onChange={handleInputChange}
+            />
+            <input
+              className="form-control mb-3"
+              name="lastName"
+              placeholder="Last Name"
+              onChange={handleInputChange}
+            />
+            <select
+              className="form-select mb-3"
+              name="gender"
+              onChange={handleInputChange}
+            >
+              <option value="">Select Gender</option>
+              <option value="Mr">Mr</option>
+              <option value="Mrs">Mrs</option>
+            </select>
+            <input
+              className="form-control mb-3"
+              name="age"
+              placeholder="Age"
+              type="number"
+              onChange={handleInputChange}
+            />
+            <input
+              className="form-control mb-3"
+              name="phone"
+              placeholder="Phone Number"
+              onChange={handleInputChange}
+            />
+            <input
+              className="form-control mb-3"
+              name="email"
+              placeholder="Email"
+              onChange={handleInputChange}
+            />
           </section>
         </div>
 
@@ -355,7 +274,6 @@ const Checkout = () => {
               Tổng tiền: {totalPrice.toLocaleString()} VND
             </p>
           </section>
-
           <button className="btn btn-primary w-100 mt-4" onClick={handleSubmit}>
             Tiếp tục
           </button>
