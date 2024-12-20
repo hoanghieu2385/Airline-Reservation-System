@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using ARS_API.Data;
 using ARS_API.Models;
+using ARS_API.Services;
 
 namespace ARS_API
 {
@@ -21,6 +22,13 @@ namespace ARS_API
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
                 options.UseSqlServer(connectionString);
             });
+
+            builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
+            // Configure Email Service
+            builder.Services.Configure<EmailSettings>(
+                builder.Configuration.GetSection("SmtpSettings"));
+            builder.Services.AddTransient<IEmailService, EmailService>();
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
@@ -65,7 +73,7 @@ namespace ARS_API
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000") // Thay URL này bằng domain của frontend
+                    policy.WithOrigins("http://localhost:3000")
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -73,13 +81,20 @@ namespace ARS_API
 
             builder.Services.AddControllers();
 
-            // Swagger configuration
+            // Enhanced Swagger configuration
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "ARS API",
-                    Version = "v1"
+                    Version = "v1",
+                    Description = "An example of an ASP.NET Core Web API",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Example Contact",
+                        Email = "example@example.com",
+                        Url = new Uri("https://example.com/contact"),
+                    }
                 });
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -117,7 +132,13 @@ namespace ARS_API
                 {
                     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                    var context = services.GetRequiredService<ApplicationDBContext>();
+
+                    // Seed Roles and Admin User
                     await DataSeeder.SeedRolesAndAdminAsync(userManager, roleManager);
+
+                    // Seed Database with initial data
+                    await DataSeeder.SeedDatabaseAsync(context);
                 }
                 catch (Exception ex)
                 {
@@ -129,14 +150,14 @@ namespace ARS_API
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                });
             }
 
             app.UseHttpsRedirection();
-
-            // Enable CORS
             app.UseCors("AllowFrontend");
-
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();

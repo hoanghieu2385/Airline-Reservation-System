@@ -12,6 +12,7 @@ namespace ARS_API.Models
         public string ReservationCode { get; set; }
         public string UserId { get; set; }
         public Guid FlightId { get; set; }
+        public Flight Flight { get; set; }
         public Guid AllocationId { get; set; }
         public string ReservationStatus { get; set; }
         
@@ -20,5 +21,6 @@ namespace ARS_API.Models
         public DateTime TravelDate { get; set; }
         public int? NumberOfBlockedSeats { get; set; }
         public DateTime CreatedAt { get; set; }
+        public ICollection<Passenger> Passengers { get; set; }
     }
 }

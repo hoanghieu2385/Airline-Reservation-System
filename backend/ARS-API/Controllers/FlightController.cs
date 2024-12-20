@@ -4,6 +4,7 @@ using System;
 using ARS_API.DTOs;
 using ARS_API.Models;
 using Microsoft.AspNetCore.Authorization;
+using ARS_API.Services;
 
 namespace ARS_API.Controllers
 {
@@ -12,10 +13,12 @@ namespace ARS_API.Controllers
     public class FlightController : ControllerBase
     {
         private readonly ApplicationDBContext _context;
+        private readonly PricingService _pricingService;
 
-        public FlightController(ApplicationDBContext context)
+        public FlightController(ApplicationDBContext context, PricingService pricingService)
         {
             _context = context;
+            _pricingService = pricingService;
         }
 
         // GET: api/Flight
@@ -73,6 +76,59 @@ namespace ARS_API.Controllers
             if (flight == null) return NotFound();
 
             return Ok(flight);
+        }
+
+        // GET: api/Flights/Search
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchFlights(
+            [FromQuery] Guid originAirportId,
+            [FromQuery] Guid destinationAirportId,
+            [FromQuery] DateTime departureDate)
+        {
+            // Query flights with matching criteria and available seats in FlightSeatAllocation
+            var flights = await _context.Flights
+                .Include(f => f.FlightSeatAllocations) // Include seat allocations
+                .ThenInclude(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
+                .Where(f => f.OriginAirportId == originAirportId
+                            && f.DestinationAirportId == destinationAirportId
+                            && f.DepartureTime.Date == departureDate.Date
+                            && f.FlightSeatAllocations.Sum(a => a.AvailableSeats) > 0) // Check available seats
+                .ToListAsync();
+
+            if (!flights.Any())
+            {
+                return NotFound("No flights found matching the criteria.");
+            }
+
+            var searchDate = DateTime.UtcNow;
+            var result = new List<object>();
+
+            // Prepare response with seat availability
+            foreach (var flight in flights)
+            {
+                var daysBeforeDeparture = (flight.DepartureTime - searchDate).Days;
+                var priceMultiplier = await _pricingService.GetPriceMultiplierAsync(daysBeforeDeparture);
+
+                var seatClasses = flight.FlightSeatAllocations.Select(fsa => new
+                {
+                    fsa.SeatClass.ClassName,
+                    DynamicPrice = _pricingService.CalculateDynamicPrice(
+                        flight.BasePrice,
+                        priceMultiplier,
+                        fsa.SeatClass.BasePriceMultiplier)
+                });
+
+                result.Add(new
+                {
+                    flight.FlightId,
+                    flight.FlightNumber,
+                    flight.DepartureTime,
+                    flight.BasePrice,
+                    SeatClasses = seatClasses
+                });
+            }
+
+            return Ok(result);
         }
 
         // POST: api/Flight
