@@ -6,29 +6,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ARS_API.Services
 {
-public class PricingService
-{
-    private readonly ApplicationDBContext _context;
-
-    public PricingService(ApplicationDBContext context)
+    public class PricingService
     {
-        _context = context;
-    }
+        private readonly ApplicationDBContext _context;
 
-    public async Task<decimal> GetPriceMultiplierAsync(int daysBeforeDeparture)
-    {
-        var pricingRule = await _context.PricingRules
-            .Where(rule => rule.DaysBeforeDeparture <= daysBeforeDeparture)
-            .OrderByDescending(rule => rule.DaysBeforeDeparture)
-            .FirstOrDefaultAsync();
+        public PricingService(ApplicationDBContext context)
+        {
+            _context = context;
+        }
 
-        return pricingRule?.PriceMultiplier ?? 1.0m; // Default multiplier if no rule matches
-    }
+        // Get PriceMultiplier based on DaysBeforeDeparture
+        public async Task<decimal> GetPriceMultiplierAsync(int daysBeforeDeparture)
+        {
+            var pricingRule = await _context.PricingRules
+                .Where(rule => rule.DaysBeforeDeparture <= daysBeforeDeparture)
+                .OrderByDescending(rule => rule.DaysBeforeDeparture)
+                .FirstOrDefaultAsync();
 
-    public decimal CalculateDynamicPrice(decimal basePrice, decimal priceMultiplier, decimal basePriceMultiplier)
-    {
-        return basePrice * priceMultiplier * basePriceMultiplier;
+            return pricingRule?.PriceMultiplier ?? 1.0m; // Default multiplier is 1 if no rule matches
+        }
+
+        // Calculate DynamicPrice
+        public decimal CalculateDynamicPrice(decimal basePrice, decimal basePriceMultiplier, decimal priceMultiplier)
+        {
+            return basePrice * basePriceMultiplier * priceMultiplier;
+        }
     }
-}
 
 }
