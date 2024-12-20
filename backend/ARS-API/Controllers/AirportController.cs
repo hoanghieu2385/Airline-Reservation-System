@@ -15,13 +15,9 @@ namespace ARS_API.Controllers
         private readonly IConfiguration _configuration;
         private readonly ApplicationDBContext _context;
 
-        public AirportController(IConfiguration configuration)
+        public AirportController(IConfiguration configuration, ApplicationDBContext context)
         {
             _configuration = configuration;
-        }
-
-        public AirportController(ApplicationDBContext context)
-        {
             _context = context;
         }
 
