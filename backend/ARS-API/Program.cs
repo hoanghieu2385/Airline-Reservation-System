@@ -23,6 +23,8 @@ namespace ARS_API
                 options.UseSqlServer(connectionString);
             });
 
+            builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
             // Configure Email Service
             builder.Services.Configure<EmailSettings>(
                 builder.Configuration.GetSection("SmtpSettings"));
