@@ -85,3 +85,17 @@ export const changePassword = async (userId, data) => {
         throw new Error(error.response?.data?.message || "Failed to change password");
     }
 };
+
+
+// Get all flight from url
+export const searchFlights = async (params) => {
+    try {
+        const response = await api.get('/flight/search', { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching flights:', error);
+        throw new Error(
+            error.response?.data?.message || 'Failed to fetch flights. Please try again.'
+        );
+    }
+};
