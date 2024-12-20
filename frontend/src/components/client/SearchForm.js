@@ -10,6 +10,8 @@ import '../../assets/css/SearchForm.css';
 const SearchForm = () => {
     const [fromQuery, setFromQuery] = useState('');
     const [toQuery, setToQuery] = useState('');
+    const [fromCode, setFromCode] = useState('');
+    const [toCode, setToCode] = useState('');
     const [departureDate, setDepartureDate] = useState(null);
     const [returnDate, setReturnDate] = useState(null);
     const [passengers, setPassengers] = useState(1);
@@ -65,16 +67,19 @@ const SearchForm = () => {
     };
 
     const handleSearch = () => {
-        navigate('/results', {
-            state: {
-                fromQuery,
-                toQuery,
-                departureDate,
-                returnDate,
-                passengers,
-                seatClass,
-            },
+        if (!fromCode || !toCode) {
+            alert("Please select valid airports for both 'From' and 'To'.");
+            return;
+        }
+
+        const params = new URLSearchParams({
+            from: fromCode,
+            to: toCode,
+            date: departureDate ? departureDate.toISOString().split('T')[0] : '',
+            passengers: passengers.toString(),
+            class: seatClass,
         });
+        navigate(`/results?${params.toString()}`);
     };
 
     return (
@@ -112,6 +117,7 @@ const SearchForm = () => {
                                 key={airport.airportId}
                                 onClick={() => {
                                     setFromQuery(`${airport.airportName} (${airport.airportCode})`);
+                                    setFromCode(airport.airportCode); // Lưu mã sân bay vào trạng thái
                                     setFilteredFromAirports([]);
                                 }}
                             >
@@ -155,6 +161,7 @@ const SearchForm = () => {
                                 key={airport.airportId}
                                 onClick={() => {
                                     setToQuery(`${airport.airportName} (${airport.airportCode})`);
+                                    setToCode(airport.airportCode); // Lưu mã sân bay vào trạng thái
                                     setFilteredToAirports([]);
                                 }}
                             >
@@ -191,34 +198,8 @@ const SearchForm = () => {
                 </div>
             </div>
 
-            {/* Return Date */}
-            <div className="form-group">
-                <label htmlFor="returnDate">Return Date</label>
-                <div className="input-wrapper">
-                    <ReactDatePicker
-                        id="returnDate"
-                        selected={returnDate}
-                        onChange={(date) => setReturnDate(date)}
-                        dateFormat="yyyy-MM-dd"
-                        placeholderText="Choose return date"
-                        minDate={departureDate || new Date()}
-                        autoComplete="off"
-                    />
-                    {returnDate && (
-                        <button
-                            className="clear-button"
-                            onClick={() => setReturnDate(null)}
-                            type="button"
-                            aria-label="Clear return date"
-                        >
-                            <X size={16} />
-                        </button>
-                    )}
-                </div>
-            </div>
-
             {/* Passengers and Class */}
-            <div className="pcs-container" ref={passengersDropdownRef}>
+            <div className="form-group" ref={passengersDropdownRef}>
                 <label className="pcs-label" htmlFor="passengers">Passengers / Class</label>
                 <div className="pcs-input-wrapper" onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}>
                     <input
@@ -254,38 +235,30 @@ const SearchForm = () => {
                         <div className="pcs-dropdown__class-section">
                             <span className="pcs-dropdown__label">Class:</span>
                             <div className="pcs-dropdown__class-options">
-                                <div className="pcs-dropdown__class-row">
-                                    <label className="pcs-dropdown__radio-label">
-                                        <input
-                                            type="radio"
-                                            name="seatClass"
-                                            value="Economy"
-                                            checked={seatClass === 'Economy'}
-                                            onChange={() => setSeatClass('Economy')}
-                                            className="pcs-dropdown__radio"
-                                        />
-                                        Economy
-                                    </label>
-                                </div>
-                                <div className="pcs-dropdown__class-row">
-                                    <label className="pcs-dropdown__radio-label">
-                                        <input
-                                            type="radio"
-                                            name="seatClass"
-                                            value="Premium"
-                                            checked={seatClass === 'Premium'}
-                                            onChange={() => setSeatClass('Premium')}
-                                            className="pcs-dropdown__radio"
-                                        />
-                                        Premium
-                                    </label>
-                                </div>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="seatClass"
+                                        value="Economy"
+                                        checked={seatClass === 'Economy'}
+                                        onChange={() => setSeatClass('Economy')}
+                                    />
+                                    Economy
+                                </label>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="seatClass"
+                                        value="Premium"
+                                        checked={seatClass === 'Premium'}
+                                        onChange={() => setSeatClass('Premium')}
+                                    />
+                                    Premium
+                                </label>
                             </div>
                         </div>
 
-
                         <button
-                            className="pcs-dropdown__confirm"
                             onClick={() => setIsPassengerDropdownOpen(false)}
                         >
                             Confirm

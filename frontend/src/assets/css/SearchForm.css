@@ -9,7 +9,6 @@
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     align-items: center;
     justify-content: space-between;
-    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -52,6 +51,7 @@ select:focus,
     top: calc(100% + 5px);
     left: 0;
     background-color: #fff;
+    color: rgb(0, 0, 0);
     border: 1px solid #ddd;
     border-radius: 6px;
     margin: 0;
@@ -114,10 +114,6 @@ select:focus,
 }
 
 /* Passenger Dropdown */
-.pcs-container {
-  position: relative;
-}
-
 .pcs-label {
   display: block;
   margin-bottom: 5px;
