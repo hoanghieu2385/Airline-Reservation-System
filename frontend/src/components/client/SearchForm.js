@@ -1,4 +1,3 @@
-// src/components/client/SearchForm.js
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -14,6 +13,7 @@ const SearchForm = () => {
     const [departureDate, setDepartureDate] = useState(null);
     const [returnDate, setReturnDate] = useState(null);
     const [passengers, setPassengers] = useState(1);
+    const [seatClass, setSeatClass] = useState('Economy');
     const [filteredFromAirports, setFilteredFromAirports] = useState([]);
     const [filteredToAirports, setFilteredToAirports] = useState([]);
     const [isPassengerDropdownOpen, setIsPassengerDropdownOpen] = useState(false);
@@ -44,7 +44,6 @@ const SearchForm = () => {
             }
         }, 300)
     ).current;
-    
 
     useEffect(() => {
         return () => {
@@ -73,6 +72,7 @@ const SearchForm = () => {
                 departureDate,
                 returnDate,
                 passengers,
+                seatClass,
             },
         });
     };
@@ -217,21 +217,79 @@ const SearchForm = () => {
                 </div>
             </div>
 
-            {/* Passengers */}
-            <div className="form-group" ref={passengersDropdownRef}>
-                <label htmlFor="passengers">Passengers</label>
-                <input
-                    type="text"
-                    id="passengers"
-                    value={`${passengers} Passenger${passengers > 1 ? 's' : ''}`}
-                    readOnly
-                    onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}
-                />
+            {/* Passengers and Class */}
+            <div className="pcs-container" ref={passengersDropdownRef}>
+                <label className="pcs-label" htmlFor="passengers">Passengers / Class</label>
+                <div className="pcs-input-wrapper" onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}>
+                    <input
+                        type="text"
+                        id="passengers"
+                        className="pcs-input"
+                        value={`${passengers} Passenger${passengers > 1 ? 's' : ''} (${seatClass})`}
+                        readOnly
+                    />
+                </div>
                 {isPassengerDropdownOpen && (
-                    <div className="passenger-dropdown">
-                        <button onClick={decrementPassengers}>-</button>
-                        <span>{passengers}</span>
-                        <button onClick={incrementPassengers}>+</button>
+                    <div className="pcs-dropdown">
+                        <div className="pcs-dropdown__row">
+                            <span className="pcs-dropdown__label">Passengers:</span>
+                            <div className="pcs-dropdown__controls">
+                                <button
+                                    className="pcs-dropdown__btn"
+                                    onClick={decrementPassengers}
+                                    disabled={passengers <= 1}
+                                >
+                                    -
+                                </button>
+                                <span className="pcs-dropdown__count">{passengers}</span>
+                                <button
+                                    className="pcs-dropdown__btn"
+                                    onClick={incrementPassengers}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="pcs-dropdown__class-section">
+                            <span className="pcs-dropdown__label">Class:</span>
+                            <div className="pcs-dropdown__class-options">
+                                <div className="pcs-dropdown__class-row">
+                                    <label className="pcs-dropdown__radio-label">
+                                        <input
+                                            type="radio"
+                                            name="seatClass"
+                                            value="Economy"
+                                            checked={seatClass === 'Economy'}
+                                            onChange={() => setSeatClass('Economy')}
+                                            className="pcs-dropdown__radio"
+                                        />
+                                        Economy
+                                    </label>
+                                </div>
+                                <div className="pcs-dropdown__class-row">
+                                    <label className="pcs-dropdown__radio-label">
+                                        <input
+                                            type="radio"
+                                            name="seatClass"
+                                            value="Premium"
+                                            checked={seatClass === 'Premium'}
+                                            onChange={() => setSeatClass('Premium')}
+                                            className="pcs-dropdown__radio"
+                                        />
+                                        Premium
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <button
+                            className="pcs-dropdown__confirm"
+                            onClick={() => setIsPassengerDropdownOpen(false)}
+                        >
+                            Confirm
+                        </button>
                     </div>
                 )}
             </div>
