@@ -42,6 +42,7 @@ namespace ARS_API.Controllers
             var authClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -137,9 +138,13 @@ namespace ARS_API.Controllers
         public async Task<IActionResult> GetProfileById(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId == null)
+            {
+                return Unauthorized("Invalid token: Missing user identifier.");
+            }
+
             var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
-            // if not admin, clerk, user dont see another profile   
             if (!roles.Contains("ADMIN") && !roles.Contains("CLERK") && currentUserId != id)
             {
                 return Forbid("You are not authorized to view this profile.");
