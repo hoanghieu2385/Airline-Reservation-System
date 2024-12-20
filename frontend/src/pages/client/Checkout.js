@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/css/Checkout.css";
 
-// Mock API functions
+// Mock API functions for pricing rules and flight details
 const fetchPricingRules = async () => {
   return [
     { daysBeforeDeparture: 30, multiplier: 1.0 },
@@ -15,14 +15,14 @@ const fetchFlightDetails = async () => {
     departure: {
       airline: "VietJet",
       flightCode: "VJ162",
-      departureTime: "2024-12-29T22:05:00",
-      basePrice: 1088000,
+      departureTime: "2025-01-02T22:05:00",
+      basePrice: 1000000,
     },
     return: {
       airline: "Vietnam Airlines",
       flightCode: "VN787",
       departureTime: "2024-12-30T20:15:00",
-      basePrice: 778040,
+      basePrice: 500000,
     },
   };
 };
@@ -125,6 +125,39 @@ const Checkout = () => {
 
   const validatePhone = (phone) => /^[0-9]{10,15}$/.test(phone.trim());
 
+  const submitPassenger = async () => {
+    const payload = {
+      reservationId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", // Replace with actual ReservationId
+      firstName: contactInfo.firstName,
+      lastName: contactInfo.lastName,
+      age: parseInt(contactInfo.age),
+      gender: contactInfo.gender,
+      ticketPrice: totalPrice,
+      phone: contactInfo.phone,
+      email: contactInfo.email,
+    };
+
+    try {
+      const response = await fetch("https://your-api-url/api/Passenger", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit passenger data");
+      }
+
+      const data = await response.json();
+      alert("Passenger submitted successfully: " + data.passengerId);
+    } catch (error) {
+      console.error("Error submitting passenger data:", error);
+      alert("There was an error submitting your data.");
+    }
+  };
+
   const handleSubmit = () => {
     const newErrors = {
       firstName: !contactInfo.firstName.trim(),
@@ -138,7 +171,7 @@ const Checkout = () => {
     setErrors(newErrors);
 
     if (Object.values(newErrors).every((value) => !value)) {
-      alert("Form submitted successfully!");
+      submitPassenger(); // Call API when form is valid
     }
   };
 
