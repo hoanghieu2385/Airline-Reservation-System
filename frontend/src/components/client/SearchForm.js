@@ -198,6 +198,33 @@ const SearchForm = () => {
                 </div>
             </div>
 
+            
+            {/* Return Date */}
+            <div className="form-group">
+                <label htmlFor="returnDate">Return Date</label>
+                <div className="input-wrapper">
+                    <ReactDatePicker
+                        id="returnDate"
+                        selected={returnDate}
+                        onChange={(date) => setReturnDate(date)}
+                        dateFormat="yyyy-MM-dd"
+                        placeholderText="Choose return date"
+                        minDate={departureDate || new Date()}
+                        autoComplete="off"
+                    />
+                    {returnDate && (
+                        <button
+                            className="clear-button"
+                            onClick={() => setReturnDate(null)}
+                            type="button"
+                            aria-label="Clear return date"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
+                </div>
+            </div>
+
             {/* Passengers and Class */}
             <div className="form-group" ref={passengersDropdownRef}>
                 <label className="pcs-label" htmlFor="passengers">Passengers / Class</label>
