@@ -7,6 +7,7 @@ using ARS_API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ARS_API.Services;
 
 namespace ARS_API.Controllers
 {
@@ -16,10 +17,12 @@ namespace ARS_API.Controllers
     public class ReservationsController : ControllerBase
     {
         private readonly ApplicationDBContext _context;
+        private readonly PricingService _pricingService;
 
-        public ReservationsController(ApplicationDBContext context)
+        public ReservationsController(ApplicationDBContext context, PricingService pricingService)
         {
             _context = context;
+            _pricingService = pricingService;
         }
 
         // GET: api/Reservations
@@ -111,6 +114,82 @@ namespace ARS_API.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
+        }
+
+        // POST: api/Reservations/FinalizeReservation
+        [HttpPost("FinalizeReservation")]
+        public async Task<ActionResult<Reservation>> FinalizeReservation(CreateReservationDTO createReservationDto)
+        {
+            // Validate seat allocation
+            var allocation = await _context.FlightSeatAllocation.FindAsync(createReservationDto.AllocationId);
+            if (allocation == null || allocation.AvailableSeats < createReservationDto.Passengers.Count)
+            {
+                return BadRequest("Invalid seat allocation or insufficient seats.");
+            }
+
+            // Validate flight
+            var flight = await _context.Flights.FindAsync(createReservationDto.FlightId);
+            if (flight == null)
+            {
+                return BadRequest("Invalid flight ID.");
+            }
+
+            // Process data received from frontend
+            // NOTE: Adjust the names or structure here if your teammate changes how data is sent.
+            var travelDate = flight.DepartureTime;
+            var daysBeforeDeparture = (travelDate - DateTime.UtcNow).Days;
+            var priceMultiplier = await _pricingService.GetPriceMultiplierAsync(daysBeforeDeparture);
+
+            // Calculate total price
+            var totalPrice = createReservationDto.Passengers.Sum(p =>
+                _pricingService.CalculateDynamicPrice(
+                    flight.BasePrice,
+                    allocation.SeatClass.BasePriceMultiplier,
+                    priceMultiplier)
+            );
+
+            // Create a new reservation
+            var reservation = new Reservation
+            {
+                ReservationId = Guid.NewGuid(),
+                ReservationCode = GenerateReservationCode(),
+                UserId = createReservationDto.UserId,
+                FlightId = createReservationDto.FlightId,
+                AllocationId = createReservationDto.AllocationId,
+                ReservationStatus = "Confirmed", // Always set to Confirmed for this flow
+                TotalPrice = totalPrice,
+                TravelDate = travelDate,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Reservations.Add(reservation);
+
+            // Deduct seats
+            allocation.AvailableSeats -= createReservationDto.Passengers.Count;
+
+            // Add passengers
+            var passengers = createReservationDto.Passengers.Select(p => new Passenger
+            {
+                PassengerId = Guid.NewGuid(),
+                ReservationId = reservation.ReservationId,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Age = p.Age,
+                Gender = p.Gender,
+                TicketCode = GenerateTicketCode(),
+                TicketPrice = _pricingService.CalculateDynamicPrice(
+                    flight.BasePrice,
+                    allocation.SeatClass.BasePriceMultiplier,
+                    priceMultiplier)
+            }).ToList();
+
+            _context.Passengers.AddRange(passengers);
+
+            // Save changes
+            await _context.SaveChangesAsync();
+
+            // Return confirmation
             return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
         }
 
