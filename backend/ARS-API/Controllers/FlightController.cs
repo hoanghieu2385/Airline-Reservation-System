@@ -149,7 +149,7 @@ namespace ARS_API.Controllers
 
         // POST: api/Flight
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateFlight([FromBody] CreateFlightDto flightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
