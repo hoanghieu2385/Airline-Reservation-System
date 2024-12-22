@@ -52,78 +52,11 @@ namespace ARS_API.Controllers
         public async Task<ActionResult<Reservation>> PostReservation(CreateReservationDTO createReservationDto)
         {
             // Validate foreign keys
-            var allocation = await _context.FlightSeatAllocation.FindAsync(createReservationDto.AllocationId);
-            if (allocation == null || allocation.AvailableSeats < createReservationDto.NumberOfBlockedSeats)
-            {
-                return BadRequest("Invalid seat allocation or insufficient seats.");
-            }
+            var allocation = await _context.FlightSeatAllocation
+                .Include(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
+                .FirstOrDefaultAsync(fsa => fsa.AllocationId == createReservationDto.AllocationId);
 
-            // Fetch the flight to get the BasePrice and DepartureTime
-            var flight = await _context.Flights.FindAsync(createReservationDto.FlightId);
-            if (flight == null)
-            {
-                return BadRequest("Invalid flight ID.");
-            }
-
-            // Automatically set TravelDate to the flight's DepartureTime
-            var travelDate = flight.DepartureTime;
-
-            // Calculate TotalPrice (BasePrice * NumberOfBlockedSeats)
-            // TODO: totalPrice is to be calculated via BasePrice * BasePriceMultiplier * PriceMultiplier * number of Passengers OR number of Blocked seats
-            var totalPrice = flight.BasePrice * createReservationDto.NumberOfBlockedSeats ?? 0;
-
-            // Create a new reservation
-            var reservation = new Reservation
-            {
-                ReservationId = Guid.NewGuid(),
-                ReservationCode = GenerateReservationCode(),
-                UserId = createReservationDto.UserId,
-                FlightId = createReservationDto.FlightId,
-                AllocationId = createReservationDto.AllocationId,
-                ReservationStatus = createReservationDto.ReservationStatus ?? "Blocked", // Default is "Blocked"
-                TotalPrice = totalPrice,
-                TravelDate = travelDate,
-                NumberOfBlockedSeats = createReservationDto.NumberOfBlockedSeats,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            // Deduct seats
-            allocation.AvailableSeats -= createReservationDto.NumberOfBlockedSeats ?? 0;
-
-            // Add Reservation to the context and save it
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
-
-            // Add passengers if ReservationStatus is "Confirmed"
-            if (createReservationDto.ReservationStatus == "Confirmed" && createReservationDto.Passengers != null)
-            {
-                var passengers = createReservationDto.Passengers.Select(passengerDto => new Passenger
-                {
-                    PassengerId = Guid.NewGuid(),
-                    ReservationId = reservation.ReservationId, // Link FK after saving Reservation
-                    FirstName = passengerDto.FirstName,
-                    LastName = passengerDto.LastName,
-                    Age = passengerDto.Age,
-                    Gender = passengerDto.Gender,
-                    TicketCode = GenerateTicketCode(),
-                    // TODO: Adjust TicketPrice accordingly to line 69
-                    TicketPrice = flight.BasePrice
-                }).ToList();
-
-                _context.Passengers.AddRange(passengers);
-                await _context.SaveChangesAsync();
-            }
-
-            return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
-        }
-
-        // POST: api/Reservations/FinalizeReservation
-        [HttpPost("FinalizeReservation")]
-        public async Task<ActionResult<Reservation>> FinalizeReservation(CreateReservationDTO createReservationDto)
-        {
-            // Validate seat allocation
-            var allocation = await _context.FlightSeatAllocation.FindAsync(createReservationDto.AllocationId);
-            if (allocation == null || allocation.AvailableSeats < createReservationDto.Passengers.Count)
+            if (allocation == null || allocation.AvailableSeats < createReservationDto.Passengers?.Count)
             {
                 return BadRequest("Invalid seat allocation or insufficient seats.");
             }
@@ -135,19 +68,48 @@ namespace ARS_API.Controllers
                 return BadRequest("Invalid flight ID.");
             }
 
-            // Process data received from frontend
-            // NOTE: Adjust the names or structure here if your teammate changes how data is sent.
+            // Validate passengers
+            if (createReservationDto.Passengers == null || !createReservationDto.Passengers.Any())
+            {
+                return BadRequest("Passenger details must be provided.");
+            }
+
+            // Validate seat class
+            if (allocation.SeatClass == null)
+            {
+                return BadRequest("Seat class information is missing or invalid.");
+            }
+
+            // Process data and calculate dynamic price
             var travelDate = flight.DepartureTime;
             var daysBeforeDeparture = (travelDate - DateTime.UtcNow).Days;
             var priceMultiplier = await _pricingService.GetPriceMultiplierAsync(daysBeforeDeparture);
 
-            // Calculate total price
-            var totalPrice = createReservationDto.Passengers.Sum(p =>
+            // Calculate total price for passengers
+            decimal totalPrice = createReservationDto.Passengers.Sum(p =>
                 _pricingService.CalculateDynamicPrice(
                     flight.BasePrice,
                     allocation.SeatClass.BasePriceMultiplier,
                     priceMultiplier)
             );
+
+            // Determine block expiration time if ReservationStatus is "Blocked"
+            DateTime? blockExpirationTime = null;
+            if (createReservationDto.ReservationStatus == "Blocked")
+            {
+                if (daysBeforeDeparture >= 14)
+                {
+                    blockExpirationTime = DateTime.UtcNow.AddHours(72); // 72 hours
+                }
+                else if (daysBeforeDeparture < 14 && daysBeforeDeparture >= 1)
+                {
+                    blockExpirationTime = DateTime.UtcNow.AddHours(2); // 2 hours
+                }
+                else if (daysBeforeDeparture < 1)
+                {
+                    blockExpirationTime = DateTime.UtcNow.AddMinutes(10); // 10 minutes
+                }
+            }
 
             // Create a new reservation
             var reservation = new Reservation
@@ -157,18 +119,21 @@ namespace ARS_API.Controllers
                 UserId = createReservationDto.UserId,
                 FlightId = createReservationDto.FlightId,
                 AllocationId = createReservationDto.AllocationId,
-                ReservationStatus = "Confirmed", // Always set to Confirmed for this flow
+                ReservationStatus = createReservationDto.ReservationStatus ?? "Blocked", // Default to "Blocked"
                 TotalPrice = totalPrice,
                 TravelDate = travelDate,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                NumberOfBlockedSeats = createReservationDto.ReservationStatus == "Blocked" ? createReservationDto.Passengers.Count : null,
+                BlockExpirationTime = blockExpirationTime // New column in the Reservations table
             };
 
-            _context.Reservations.Add(reservation);
-
-            // Deduct seats
+            // Deduct seats for "Blocked" or "Confirmed" reservations
             allocation.AvailableSeats -= createReservationDto.Passengers.Count;
 
-            // Add passengers
+            // Add Reservation to the context
+            _context.Reservations.Add(reservation);
+
+            // Add passengers for all reservations
             var passengers = createReservationDto.Passengers.Select(p => new Passenger
             {
                 PassengerId = Guid.NewGuid(),
@@ -192,6 +157,102 @@ namespace ARS_API.Controllers
             // Return confirmation
             return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
         }
+
+        // POST: api/Reservations/FinalizeReservation
+        [HttpPost("FinalizeReservation")]
+        public async Task<ActionResult<Reservation>> FinalizeReservation(CreateReservationDTO createReservationDto)
+        {
+            // Validate seat allocation
+            var allocation = await _context.FlightSeatAllocation.FindAsync(createReservationDto.AllocationId);
+            if (allocation == null || allocation.AvailableSeats < createReservationDto.Passengers.Count)
+            {
+                return BadRequest("Invalid seat allocation or insufficient seats.");
+            }
+
+            // Validate flight
+            var flight = await _context.Flights.FindAsync(createReservationDto.FlightId);
+            if (flight == null)
+            {
+                return BadRequest("Invalid flight ID.");
+            }
+
+            // Process data received from frontend
+            var travelDate = flight.DepartureTime;
+            var daysBeforeDeparture = (travelDate - DateTime.UtcNow).Days;
+            var priceMultiplier = await _pricingService.GetPriceMultiplierAsync(daysBeforeDeparture);
+
+            // Calculate total price for passengers
+            decimal totalPrice = createReservationDto.Passengers.Sum(p =>
+                _pricingService.CalculateDynamicPrice(
+                    flight.BasePrice,
+                    allocation.SeatClass.BasePriceMultiplier,
+                    priceMultiplier)
+            );
+
+            // Determine block expiration time if ReservationStatus is "Blocked"
+            DateTime? blockExpirationTime = null;
+            if (createReservationDto.ReservationStatus == "Blocked")
+            {
+                if (daysBeforeDeparture >= 14)
+                {
+                    blockExpirationTime = DateTime.UtcNow.AddHours(72); // 72 hours
+                }
+                else if (daysBeforeDeparture < 14 && daysBeforeDeparture >= 1)
+                {
+                    blockExpirationTime = DateTime.UtcNow.AddHours(2); // 2 hours
+                }
+                else if (daysBeforeDeparture < 1)
+                {
+                    blockExpirationTime = DateTime.UtcNow.AddMinutes(10); // 10 minutes
+                }
+            }
+
+            // Create a new reservation
+            var reservation = new Reservation
+            {
+                ReservationId = Guid.NewGuid(),
+                ReservationCode = GenerateReservationCode(),
+                UserId = createReservationDto.UserId,
+                FlightId = createReservationDto.FlightId,
+                AllocationId = createReservationDto.AllocationId,
+                ReservationStatus = createReservationDto.ReservationStatus,
+                TotalPrice = totalPrice,
+                TravelDate = travelDate,
+                CreatedAt = DateTime.UtcNow,
+                NumberOfBlockedSeats = createReservationDto.ReservationStatus == "Blocked" ? createReservationDto.Passengers.Count : null,
+                BlockExpirationTime = blockExpirationTime // New column in the Reservations table
+            };
+
+            _context.Reservations.Add(reservation);
+
+            // Deduct seats
+            allocation.AvailableSeats -= createReservationDto.Passengers.Count;
+
+            // Add passengers regardless of ReservationStatus
+            var passengers = createReservationDto.Passengers.Select(p => new Passenger
+            {
+                PassengerId = Guid.NewGuid(),
+                ReservationId = reservation.ReservationId,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Age = p.Age,
+                Gender = p.Gender,
+                TicketCode = GenerateTicketCode(),
+                TicketPrice = _pricingService.CalculateDynamicPrice(
+                    flight.BasePrice,
+                    allocation.SeatClass.BasePriceMultiplier,
+                    priceMultiplier)
+            }).ToList();
+
+            _context.Passengers.AddRange(passengers);
+
+            // Save changes
+            await _context.SaveChangesAsync();
+
+            // Return confirmation
+            return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
+        }
+
 
         private string GenerateTicketCode()
         {
