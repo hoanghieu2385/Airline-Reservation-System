@@ -16,8 +16,8 @@ const SearchResults = () => {
 
     const [flights, setFlights] = useState([]);
     const [error, setError] = useState(null);
-    const [filterPrice, setFilterPrice] = useState(1000); 
-    const [sortOption, setSortOption] = useState("priceAsc"); 
+    const [filterPrice, setFilterPrice] = useState(1000);
+    const [sortOption, setSortOption] = useState("priceAsc");
 
     useEffect(() => {
         const fetchFlights = async () => {
@@ -38,11 +38,17 @@ const SearchResults = () => {
         fetchFlights();
     }, [from, to, date, passengers, seatClass]);
 
-  const handleFlightSelect = (flight) => {
-    // Chỉ lưu FlightId
-    localStorage.setItem("selectedFlightId", flight.flightId);
-    navigate("/customerdetail");
-};
+    const handleFlightSelect = (flight) => {
+        // Lưu cả FlightId và seatClass
+        localStorage.setItem(
+            "selectedFlight",
+            JSON.stringify({
+                flightId: flight.flightId,
+                seatClass: seatClass,
+            })
+        );
+        navigate("/customerdetail");
+    };
 
     // Lọc chuyến bay dựa trên giá
     const filteredFlights = flights.filter((flight) => flight.dynamicPrice <= filterPrice);
