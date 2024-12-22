@@ -360,6 +360,9 @@ namespace ARS_API.Migrations
                     b.Property<Guid>("AllocationId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("BlockExpirationTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -443,32 +446,6 @@ namespace ARS_API.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "b8d41314-052d-42a8-9152-5eab37414cca",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        },
-                        new
-                        {
-                            Id = "5b0c3b0a-0535-4f6d-8e82-ecd027d724e2",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = "d74e296f-0dc6-4a1b-b1ea-1f01cf2afba2",
-                            Name = "Clerk",
-                            NormalizedName = "CLERK"
-                        },
-                        new
-                        {
-                            Id = "b526f538-d98f-4f71-8d81-e603525257c2",
-                            Name = "Guest",
-                            NormalizedName = "GUEST"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
