@@ -52,19 +52,24 @@ const SearchForm = () => {
             handleAirportSearch.cancel();
         };
     }, []);
-
-    const incrementPassengers = () => {
-        setPassengers((prev) => Math.min(prev + 1, 10));
-    };
-
-    const decrementPassengers = () => {
-        setPassengers((prev) => Math.max(prev - 1, 1));
-    };
-
+    
     const clearInput = (setter, setFilteredAirports) => {
         setter('');
         setFilteredAirports([]);
     };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (passengersDropdownRef.current && !passengersDropdownRef.current.contains(event.target)) {
+                setIsPassengerDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const handleSearch = () => {
         if (!fromCode || !toCode) {
@@ -233,12 +238,15 @@ const SearchForm = () => {
             </div>
 
             {/* Passengers and Class */}
+            {/* Passengers and Class */}
             <div className="form-group" ref={passengersDropdownRef}>
-                <label className="pcs-label" htmlFor="passengers">Passengers / Class</label>
-                <div className="pcs-input-wrapper" onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}>
+                <label className="pcs-label">Passengers / Class</label>
+                <div 
+                    className="pcs-input-wrapper" 
+                    onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}
+                >
                     <input
                         type="text"
-                        id="passengers"
                         className="pcs-input"
                         value={`${passengers} Passenger${passengers > 1 ? 's' : ''} (${seatClass})`}
                         readOnly
@@ -250,16 +258,24 @@ const SearchForm = () => {
                             <span className="pcs-dropdown__label">Passengers:</span>
                             <div className="pcs-dropdown__controls">
                                 <button
+                                    type="button"
                                     className="pcs-dropdown__btn"
-                                    onClick={decrementPassengers}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (passengers > 1) setPassengers(passengers - 1);
+                                    }}
                                     disabled={passengers <= 1}
                                 >
                                     -
                                 </button>
                                 <span className="pcs-dropdown__count">{passengers}</span>
                                 <button
+                                    type="button"
                                     className="pcs-dropdown__btn"
-                                    onClick={incrementPassengers}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (passengers < 10) setPassengers(passengers + 1);
+                                    }}
                                 >
                                     +
                                 </button>
@@ -269,34 +285,22 @@ const SearchForm = () => {
                         <div className="pcs-dropdown__class-section">
                             <span className="pcs-dropdown__label">Class:</span>
                             <div className="pcs-dropdown__class-options">
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="seatClass"
-                                        value="Economy"
-                                        checked={seatClass === 'Economy'}
-                                        onChange={() => setSeatClass('Economy')}
-                                    />
-                                    Economy
-                                </label>
-                                <label>
-                                    <input
-                                        type="radio"
-                                        name="seatClass"
-                                        value="Premium"
-                                        checked={seatClass === 'Premium'}
-                                        onChange={() => setSeatClass('Premium')}
-                                    />
-                                    Premium
-                                </label>
+                                {['Economy', 'Premium'].map((classOption) => (
+                                    <label key={classOption} className="pcs-dropdown__radio-label">
+                                        <input
+                                            type="radio"
+                                            name="seatClass"
+                                            value={classOption}
+                                            checked={seatClass === classOption}
+                                            onChange={() => setSeatClass(classOption)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="pcs-dropdown__radio"
+                                        />
+                                        {classOption}
+                                    </label>
+                                ))}
                             </div>
                         </div>
-
-                        <button
-                            onClick={() => setIsPassengerDropdownOpen(false)}
-                        >
-                            Confirm
-                        </button>
                     </div>
                 )}
             </div>
