@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/css/Payment.css";
 
-const PaymentPage = () => {
+const Payment = () => {
   const [tripDetails, setTripDetails] = useState({});
   const [contactInfo, setContactInfo] = useState({});
   const [totalPrice, setTotalPrice] = useState(0);
@@ -82,4 +82,4 @@ const PaymentPage = () => {
   );
 };
 
-export default PaymentPage;
+export default Payment;

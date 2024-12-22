@@ -27,7 +27,7 @@ const fetchFlightDetails = async () => {
   };
 };
 
-const Checkout = () => {
+const CustomerDetail = () => {
   const [flightDetails, setFlightDetails] = useState(null);
   const [pricingRules, setPricingRules] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -283,4 +283,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
+export default CustomerDetail;

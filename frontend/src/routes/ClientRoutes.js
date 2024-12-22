@@ -9,19 +9,19 @@ import Login from "../components/common/Login";
 import Register from "../components/common/Register";
 import ClientDashboard from "../pages/client/ClientDashboard";
 import SearchResults from "../pages/client/SearchResults";
+import Payment from "../pages/client/Payment";
 
 function ClientRoutes() {
     return (
         <ClientLayout>
             <Routes>
                 <Route path="/" element={<HomePage />} />
-
                 <Route path="/policies" element={<Policies />} />
                 <Route path="/customerdetail" element={<CustomerDetail />} />
-                <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/payment" element={<Payment />} />
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>
-
+                <Route path="/customerdetail" element={<CustomerDetail/>}/>
                 <Route path="/user/dashboard" element={<ClientDashboard />} />
                 <Route path="/results" element={<SearchResults />} />
             </Routes>
