@@ -105,10 +105,10 @@ const Payment = () => {
         <p><strong>Total Price:</strong> {totalPrice.toLocaleString()} USD</p>
         <h3>Contact Information</h3>
         <p><strong>Name:</strong> {contactInfo.firstName} {contactInfo.lastName}</p>
-        <p><strong>Age:</strong> {contactInfo.age}</p>
+        {/* <p><strong>Age:</strong> {contactInfo.age}</p> */}
         <p><strong>Email:</strong> {contactInfo.email}</p>
         <p><strong>Phone:</strong> {contactInfo.phone}</p>
-        <p><strong>Address:</strong> {contactInfo.address}</p>
+        {/* <p><strong>Address:</strong> {contactInfo.address}</p> */}
       </div>
       <div className="payment-proceed">
         <button onClick={handleProceed} className="proceed-button">
