@@ -3,7 +3,7 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "../pages/client/HomePage";
 import Policies from "../pages/client/Policies";
-import Checkout from "../pages/client/Checkout";
+import CustomerDetail from "../pages/client/CustomerDetail";
 import ClientLayout from "../layouts/ClientLayout";
 import Login from "../components/common/Login";
 import Register from "../components/common/Register";
@@ -17,7 +17,7 @@ function ClientRoutes() {
                 <Route path="/" element={<HomePage />} />
 
                 <Route path="/policies" element={<Policies />} />
-                <Route path="/checkoutdetail" element={<Checkout />} />
+                <Route path="/customerdetail" element={<CustomerDetail />} />
                 <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>

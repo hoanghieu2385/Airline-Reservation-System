@@ -21,7 +21,7 @@ const PaymentPage = () => {
         setContactInfo(contactInfo || {});
         setTotalPrice(totalPrice || 0);
       } else {
-        console.error("No data found in localStorage for 'tripDetails'");
+        console.error("No data found in localStorage for 'checkoutData'");
       }
     } catch (error) {
       console.error("Error parsing data from localStorage:", error);
@@ -39,46 +39,44 @@ const PaymentPage = () => {
   ];
 
   return (
-    <div className="payment-page">
-      <div className="payment-container">
-        <div className="payment-methods">
-          <h3>Select your preferred payment method</h3>
-          <div className="payment-methods-list">
-            {paymentMethods.map((method) => (
-              <div key={method.id} className="payment-method-box">
-                <input
-                  type="radio"
-                  id={method.id}
-                  name="payment"
-                  value={method.id}
-                />
-                <label htmlFor={method.id}>{method.label}</label>
-              </div>
-            ))}
-          </div>
+    <div className="payment-page-container">
+      <div className="payment-methods">
+        <h3>Select your preferred payment method</h3>
+        <div className="payment-methods-list">
+          {paymentMethods.map((method) => (
+            <div key={method.id} className="payment-method-box">
+              <input
+                type="radio"
+                id={method.id}
+                name="payment"
+                value={method.id}
+              />
+              <label htmlFor={method.id}>{method.label}</label>
+            </div>
+          ))}
         </div>
-        <div className="trip-details">
-          <h3>Trip details</h3>
-          <p>
-            <strong>Baggage Price:</strong> {tripDetails.baggagePrice} VND
-          </p>
-          <h4>Total Price</h4>
-          <p className="total-price">{totalPrice} VND</p>
+      </div>
+      <div className="payment-summary">
+        <h3>Trip details</h3>
+        <p>
+          <strong>Baggage Price:</strong> {tripDetails.baggagePrice} VND
+        </p>
+        <h4>Total Price</h4>
+        <p className="total-price">{totalPrice} VND</p>
 
-          <h4>Contact Information</h4>
-          <p>
-            <strong>Name:</strong> {contactInfo.firstName} {contactInfo.lastName}
-          </p>
-          <p>
-            <strong>Phone:</strong> {contactInfo.phone}
-          </p>
-          <p>
-            <strong>Email:</strong> {contactInfo.email}
-          </p>
-          <p>
-            <strong>Age:</strong> {contactInfo.age}
-          </p>
-        </div>
+        <h4>Contact Information</h4>
+        <p>
+          <strong>Name:</strong> {contactInfo.firstName} {contactInfo.lastName}
+        </p>
+        <p>
+          <strong>Phone:</strong> {contactInfo.phone}
+        </p>
+        <p>
+          <strong>Email:</strong> {contactInfo.email}
+        </p>
+        <p>
+          <strong>Age:</strong> {contactInfo.age}
+        </p>
       </div>
     </div>
   );
