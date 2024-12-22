@@ -16,8 +16,8 @@ const SearchResults = () => {
 
     const [flights, setFlights] = useState([]);
     const [error, setError] = useState(null);
-    const [filterPrice, setFilterPrice] = useState(1000); // Giá tối đa
-    const [sortOption, setSortOption] = useState("priceAsc"); // Mặc định sắp xếp theo giá tăng dần
+    const [filterPrice, setFilterPrice] = useState(1000); 
+    const [sortOption, setSortOption] = useState("priceAsc"); 
 
     useEffect(() => {
         const fetchFlights = async () => {
@@ -92,7 +92,7 @@ const SearchResults = () => {
                     </div>
                 </div>
 
-                {/* Nội dung chính */}
+                {/* Main Content */}
                 <div className="col-md-8 main-content">
                     <h4>Choose flight: {sortedFlights.length} search results found</h4>
                     <div>
@@ -100,16 +100,29 @@ const SearchResults = () => {
                             <div
                                 key={flight.flightId}
                                 onClick={() => handleFlightSelect(flight)}
-                                className="flight-card mb-3"
+                                className="flight-card mb-3 p-3 shadow-sm"
+                                style={{ borderRadius: "8px", cursor: "pointer" }}
                             >
-                                <div className="d-flex justify-content-between">
+                                <div className="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <p>Flight Number: {flight.flightNumber}</p>
-                                        <p>Departure Time: {new Date(flight.departureTime).toLocaleString()}</p>
+                                        <p className="mb-1"><strong>{flight.airlineName}</strong></p>
+                                        <p className="text-muted mb-0">
+                                            {new Date(flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {" "} - {" "}
+                                            {new Date(flight.arrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="mb-0 text-uppercase" style={{ fontWeight: "bold", fontSize: "14px" }}>
+                                            {flight.originAirportCode} → {flight.destinationAirportCode}
+                                        </p>
+                                        <p className="text-muted" style={{ fontSize: "12px" }}>
+                                            {new Date(flight.departureTime).toLocaleDateString()}
+                                        </p>
                                     </div>
                                     <div className="text-end">
-                                        <p>Price: ${flight.dynamicPrice}</p>
-                                        <p>Seats: {flight.availableSeats}</p>
+                                        <h5 className="mb-0"><strong>${flight.dynamicPrice}</strong></h5>
+                                        <p className="text-muted mb-0">Seats: {flight.availableSeats}</p>
                                     </div>
                                 </div>
                             </div>
