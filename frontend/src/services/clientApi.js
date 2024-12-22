@@ -87,15 +87,20 @@ export const changePassword = async (userId, data) => {
 };
 
 
-// Get all flight from url
+// Search flights based on query parameters
 export const searchFlights = async (params) => {
     try {
-        const response = await api.get('/flight/search', { params });
+        console.log('Fetching flights with params:', params);
+
+        // Sử dụng params để truyền đúng dữ liệu tìm kiếm
+        const response = await api.get('/Flight/Search', { params });
         return response.data;
     } catch (error) {
-        console.error('Error fetching flights:', error);
-        throw new Error(
-            error.response?.data?.message || 'Failed to fetch flights. Please try again.'
-        );
+        console.error('Error fetching flights:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message,
+        });
+        throw new Error(error.response?.data?.message || 'Failed to fetch flights. Please try again.');
     }
 };
