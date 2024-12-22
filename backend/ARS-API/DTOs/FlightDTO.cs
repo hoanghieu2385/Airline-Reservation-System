@@ -19,6 +19,7 @@ namespace ARS_API.DTOs
         public int TotalSeats { get; set; }
         public decimal BasePrice { get; set; }
         public string Status { get; set; }
+        public List<FlightSeatAllocationDTO> SeatAllocations { get; internal set; }
     }
 
     public class CreateFlightDto

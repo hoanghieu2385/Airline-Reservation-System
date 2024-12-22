@@ -71,15 +71,30 @@ const SearchForm = () => {
             alert("Please select valid airports for both 'From' and 'To'.");
             return;
         }
-
+    
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+    
         const params = new URLSearchParams({
-            from: fromCode,
-            to: toCode,
-            date: departureDate ? departureDate.toISOString().split('T')[0] : '',
+            from: fromCode.toUpperCase(), // Chuyển UUID sang chữ hoa
+            to: toCode.toUpperCase(),    // Chuyển UUID sang chữ hoa
+            date: departureDate ? formatDate(departureDate) : '',
             passengers: passengers.toString(),
-            class: seatClass,
+            seatClass: seatClass,        // Sửa từ `class` thành `seatClass`
         });
-        navigate(`/results?${params.toString()}`);
+    
+        const searchUrl = `/results?${params.toString()}`;
+        navigate(searchUrl);
+    };
+
+    const handleAirportSelection = (airport, setterQuery, setterCode, setFilteredAirports) => {
+        setterQuery(`${airport.airportName} (${airport.airportCode})`);
+        setterCode(airport.airportId); // Lưu UUID của sân bay vào trạng thái
+        setFilteredAirports([]);
     };
 
     return (
@@ -115,11 +130,7 @@ const SearchForm = () => {
                         {filteredFromAirports.map((airport) => (
                             <li
                                 key={airport.airportId}
-                                onClick={() => {
-                                    setFromQuery(`${airport.airportName} (${airport.airportCode})`);
-                                    setFromCode(airport.airportCode); // Lưu mã sân bay vào trạng thái
-                                    setFilteredFromAirports([]);
-                                }}
+                                onClick={() => handleAirportSelection(airport, setFromQuery, setFromCode, setFilteredFromAirports)}
                             >
                                 {airport.airportName} ({airport.airportCode})
                             </li>
@@ -159,11 +170,7 @@ const SearchForm = () => {
                         {filteredToAirports.map((airport) => (
                             <li
                                 key={airport.airportId}
-                                onClick={() => {
-                                    setToQuery(`${airport.airportName} (${airport.airportCode})`);
-                                    setToCode(airport.airportCode); // Lưu mã sân bay vào trạng thái
-                                    setFilteredToAirports([]);
-                                }}
+                                onClick={() => handleAirportSelection(airport, setToQuery, setToCode, setFilteredToAirports)}
                             >
                                 {airport.airportName} ({airport.airportCode})
                             </li>
@@ -198,7 +205,7 @@ const SearchForm = () => {
                 </div>
             </div>
 
-            
+
             {/* Return Date */}
             <div className="form-group">
                 <label htmlFor="returnDate">Return Date</label>
