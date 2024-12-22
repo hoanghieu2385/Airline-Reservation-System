@@ -1,64 +1,69 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/css/Checkout.css";
 
-// Mock API functions
-const fetchPricingRules = async () => {
-  return [
-    { daysBeforeDeparture: 30, multiplier: 1.0 },
-    { daysBeforeDeparture: 15, multiplier: 1.25 },
-    { daysBeforeDeparture: 7, multiplier: 1.5 },
-  ];
+const fetchFlightById = async (flightId) => {
+  try {
+    const response = await fetch(`https://localhost:7238/api/Flight/${flightId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching flight:", error);
+    throw new Error("Failed to fetch flight data");
+  }
 };
 
-const fetchFlightDetails = async () => {
-  return {
-    departure: {
-      airline: "VietJet",
-      flightCode: "VJ162",
-      departureTime: "2024-12-29T22:05:00",
-      basePrice: 1088000,
-    },
-    return: {
-      airline: "Vietnam Airlines",
-      flightCode: "VN787",
-      departureTime: "2024-12-30T20:15:00",
-      basePrice: 778040,
-    },
-  };
-};
+const fetchPricingRules = async () => [
+  { daysBeforeDeparture: 30, multiplier: 1.0 },
+  { daysBeforeDeparture: 15, multiplier: 1.25 },
+  { daysBeforeDeparture: 7, multiplier: 1.5 },
+];
 
 const CustomerDetail = () => {
   const [flightDetails, setFlightDetails] = useState(null);
   const [pricingRules, setPricingRules] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [baggagePrice, setBaggagePrice] = useState(0);
-  const [contactInfo, setContactInfo] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-    age: "",
-    gender: "",
-  });
-  const [errors, setErrors] = useState({
-    firstName: false,
-    lastName: false,
-    phone: false,
-    email: false,
-    age: false,
-    gender: false,
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [gender, setGender] = useState("Mr");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [age, setAge] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
-      const rules = await fetchPricingRules();
-      const flights = await fetchFlightDetails();
+      try {
+        setLoading(true);
+        const flightId = localStorage.getItem("selectedFlightId");
+        if (!flightId) {
+          throw new Error("No flight selected. Please select a flight first.");
+        }
 
-      setPricingRules(rules);
-      setFlightDetails(flights);
+        const flightData = await fetchFlightById(flightId);
+        const rules = await fetchPricingRules();
 
-      const calculatedPrice = calculateTotalPrice(flights, rules, baggagePrice);
-      setTotalPrice(calculatedPrice);
+        setPricingRules(rules);
+        setFlightDetails({ departure: flightData, return: null });
+
+        const calculatedPrice = calculateTotalPrice(
+          { departure: flightData, return: { basePrice: 0, departureTime: new Date() } },
+          rules,
+          baggagePrice
+        );
+        setTotalPrice(calculatedPrice);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error:", error);
+        setError(error.message);
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -70,17 +75,7 @@ const CustomerDetail = () => {
     const daysBeforeDeparture = Math.ceil(
       (departure - today) / (1000 * 60 * 60 * 24)
     );
-    let multiplier = 1.0;
-
-    for (const rule of rules.sort(
-      (a, b) => a.daysBeforeDeparture - b.daysBeforeDeparture
-    )) {
-      if (daysBeforeDeparture <= rule.daysBeforeDeparture) {
-        multiplier = rule.multiplier;
-        break;
-      }
-    }
-    return multiplier;
+    return rules.find((rule) => daysBeforeDeparture <= rule.daysBeforeDeparture)?.multiplier || 1.0;
   };
 
   const calculateTotalPrice = (flights, rules, baggage) => {
@@ -88,195 +83,182 @@ const CustomerDetail = () => {
       flights.departure.departureTime,
       rules
     );
-    const returnMultiplier = calculateMultiplier(
-      flights.return.departureTime,
-      rules
-    );
-
-    const departurePrice = flights.departure.basePrice * departureMultiplier;
-    const returnPrice = flights.return.basePrice * returnMultiplier;
-
-    return Math.round(departurePrice + returnPrice + baggage - 20000);
+    const departurePrice =
+      flights.departure?.basePrice && departureMultiplier
+        ? flights.departure.basePrice * departureMultiplier
+        : 0;
+    return Math.round(departurePrice + baggage - 5);
   };
 
   const handleBaggageChange = (e) => {
     setBaggagePrice(Number(e.target.value));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setContactInfo({ ...contactInfo, [name]: value });
-    setErrors({ ...errors, [name]: false }); // Reset error on change
-  };
-
-  const validateEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-
-  const validatePhone = (phone) => /^[0-9]{10,15}$/.test(phone.trim());
-
-  const handleSubmit = () => {
-    const newErrors = {
-      firstName: !contactInfo.firstName.trim(),
-      lastName: !contactInfo.lastName.trim(),
-      phone: !validatePhone(contactInfo.phone),
-      email: !validateEmail(contactInfo.email),
-      age: isNaN(contactInfo.age) || contactInfo.age <= 0,
-      gender: !contactInfo.gender,
+  const handleProceedToPayment = () => {
+    const contactInfo = {
+      gender,
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      age,
     };
 
-    setErrors(newErrors);
-
-    if (Object.values(newErrors).every((value) => !value)) {
-      saveToLocalStorage(); // Lưu thông tin vào LocalStorage
-    }
-  };
-
-  const saveToLocalStorage = () => {
-    const data = {
-      contactInfo,
+    const checkoutData = {
+      flightDetails,
       baggagePrice,
       totalPrice,
+      contactInfo,
     };
 
-    localStorage.setItem("checkoutData", JSON.stringify(data));
-    alert("Checkout data saved successfully! You can now proceed.");
+    localStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+    window.location.href = "/payment";
   };
 
-  if (!flightDetails) return <div>Loading...</div>;
+  if (loading) return <div className="text-center p-5">Loading flight information...</div>;
+  if (error) return <div className="alert alert-danger m-5">{error}</div>;
+  if (!flightDetails || !flightDetails.departure) return <div className="alert alert-warning m-5">No flight information available</div>;
 
   return (
     <div className="container checkout-container my-5">
       <div className="row g-4">
-        {/* Left Column */}
         <div className="col-md-7">
           <section className="checkout-flight-info mb-4">
-            <h4 className="text-primary">Thông tin chuyến bay</h4>
-            <div className="mb-3">
-              <h5>Chiều đi: {flightDetails.departure.airline}</h5>
-              <p>Mã chuyến bay: {flightDetails.departure.flightCode}</p>
-              <p>
-                Thời gian:{" "}
-                {new Date(
-                  flightDetails.departure.departureTime
-                ).toLocaleString()}
-              </p>
-              <p>
-                Giá gốc: {flightDetails.departure.basePrice.toLocaleString()}{" "}
-                VND
-              </p>
-            </div>
-            <div>
-              <h5>Chiều về: {flightDetails.return.airline}</h5>
-              <p>Mã chuyến bay: {flightDetails.return.flightCode}</p>
-              <p>
-                Thời gian:{" "}
-                {new Date(flightDetails.return.departureTime).toLocaleString()}
-              </p>
-              <p>
-                Giá gốc: {flightDetails.return.basePrice.toLocaleString()} VND
-              </p>
-            </div>
+            <h4 className="text-primary">Flight Information</h4>
+            <p><strong>Airline:</strong> {flightDetails.departure.airlineName}</p>
+            <p><strong>Flight Number:</strong> {flightDetails.departure.flightNumber}</p>
+            <p><strong>Departure Time:</strong> {new Date(flightDetails.departure.departureTime).toLocaleString()}</p>
+            <p><strong>Class: </strong> {flightDetails.departure.seatClass}</p>
+            <p><strong>Base Price:</strong> {flightDetails.departure.basePrice.toLocaleString()} USD</p>
           </section>
 
           <section className="checkout-baggage-info mb-4">
-            <h4 className="text-primary">Chọn hành lý</h4>
-            <select
-              className="form-select"
-              value={baggagePrice}
-              onChange={handleBaggageChange}
-            >
-              <option value="0">Không chọn hành lý</option>
-              <option value="216000">Thêm 20kgs hành lý - 216,000 VND</option>
-              <option value="324000">Thêm 30kgs hành lý - 324,000 VND</option>
-              <option value="432000">Thêm 40kgs hành lý - 432,000 VND</option>
-              <option value="594000">Thêm 50kgs hành lý - 594,000 VND</option>
+            <h4 className="text-primary">Select Baggage</h4>
+            <select className="form-select" value={baggagePrice} onChange={handleBaggageChange}>
+              <option value="0">No Baggage</option>
+              <option value="10">Add 20kg - 10 USD</option>
+              <option value="15">Add 30kg - 15 USD</option>
+              <option value="20">Add 40kg - 20 USD</option>
+              <option value="30">Add 50kg - 30 USD</option>
             </select>
           </section>
 
-          <section className="checkout-passenger-info">
-            <h4 className="text-primary">Thông tin hành khách</h4>
-            <input
-              className="form-control mb-3"
-              name="firstName"
-              placeholder="First Name"
-              onChange={handleInputChange}
-            />
-            <input
-              className="form-control mb-3"
-              name="lastName"
-              placeholder="Last Name"
-              onChange={handleInputChange}
-            />
-            <select
-              className="form-select mb-3"
-              name="gender"
-              onChange={handleInputChange}
-            >
-              <option value="">Select Gender</option>
-              <option value="Mr">Mr</option>
-              <option value="Mrs">Mrs</option>
-            </select>
-            <input
-              className="form-control mb-3"
-              name="age"
-              placeholder="Age"
-              type="number"
-              onChange={handleInputChange}
-            />
-            <input
-              className="form-control mb-3"
-              name="phone"
-              placeholder="Phone Number"
-              onChange={handleInputChange}
-            />
-            <input
-              className="form-control mb-3"
-              name="email"
-              placeholder="Email"
-              onChange={handleInputChange}
-            />
+          <section className="checkout-customer-info mb-4">
+            <h4 className="text-primary">Customer Information</h4>
+            <form>
+              <div className="mb-3">
+                <label htmlFor="gender" className="form-label">Gender</label>
+                <select
+                  id="gender"
+                  className="form-select"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <option value="Mr">Mr</option>
+                  <option value="Mrs">Mrs</option>
+                </select>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="firstName" className="form-label">First Name</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  className="form-control"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="lastName" className="form-label">Last Name</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  className="form-control"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="age" className="form-label">Age</label>
+                <input
+                  type="number"
+                  id="age"
+                  className="form-control"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  className="form-control"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="phone" className="form-label">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  className="form-control"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="address" className="form-label">Address</label>
+                <textarea
+                  id="address"
+                  className="form-control"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows="3"
+                  required
+                />
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary mt-3"
+                onClick={handleProceedToPayment}
+              >
+                Proceed to Payment
+              </button>
+            </form>
           </section>
         </div>
 
-        {/* Right Column */}
         <div className="col-md-5">
-          <section className="checkout-pricing-summary p-3 bg-light border rounded">
-            <h4 className="text-primary mb-3">Tóm tắt giá</h4>
+          <section className="checkout-pricing-summary p-3 bg-light border rounded sticky-top">
+            <h4 className="text-primary mb-3">Price Summary</h4>
             <p>
-              Chiều đi:{" "}
+              Outbound:{" "}
               <strong>
-                {(
-                  flightDetails.departure.basePrice *
-                  calculateMultiplier(
-                    flightDetails.departure.departureTime,
-                    pricingRules
-                  )
-                ).toLocaleString()}{" "}
-                VND
+                {flightDetails.departure?.basePrice
+                  ? (
+                      flightDetails.departure.basePrice *
+                      calculateMultiplier(flightDetails.departure.departureTime, pricingRules)
+                    ).toLocaleString() + " USD"
+                  : "N/A"}
               </strong>
             </p>
             <p>
-              Chiều về:{" "}
-              <strong>
-                {(
-                  flightDetails.return.basePrice *
-                  calculateMultiplier(
-                    flightDetails.return.departureTime,
-                    pricingRules
-                  )
-                ).toLocaleString()}{" "}
-                VND
-              </strong>
+              Baggage: <strong>{baggagePrice.toLocaleString()} USD</strong>
             </p>
-            <p>Hành lý: <strong>{baggagePrice.toLocaleString()} VND</strong></p>
-            <p>Giảm giá: <strong>20,000 VND</strong></p>
+            <p>Discount: <strong>5 USD</strong></p>
+            <hr />
             <p className="checkout-total-price text-success fs-5 fw-bold">
-              Tổng tiền: {totalPrice.toLocaleString()} VND
+              Total: {totalPrice.toLocaleString()} USD
             </p>
           </section>
-          <button className="btn btn-primary w-100 mt-4" onClick={handleSubmit}>
-            Tiếp tục
-          </button>
         </div>
       </div>
     </div>

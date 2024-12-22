@@ -331,9 +331,24 @@ namespace ARS_API.Migrations
 
                     b.HasIndex("ReservationId");
 
-                    b.HasKey("PassengerId");
-
                     b.ToTable("Passengers");
+                });
+
+            modelBuilder.Entity("ARS_API.Models.PricingRule", b =>
+                {
+                    b.Property<Guid>("RuleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("DaysBeforeDeparture")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PriceMultiplier")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("RuleId");
+
+                    b.ToTable("PricingRules");
                 });
 
             modelBuilder.Entity("ARS_API.Models.Reservation", b =>
@@ -432,25 +447,25 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "66fa88d8-7f39-4f4b-9eb3-bd86f3c313eb",
+                            Id = "0d621798-f721-44af-b462-5400d793d976",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "b3ba751f-fb8a-4cd5-abdb-12e878c9f943",
+                            Id = "14dcd829-d823-4979-9708-f8b381f94a00",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "0fd788bc-0c47-4773-944a-ac34bb831897",
+                            Id = "5cfd8ef3-fe4b-4560-bdf3-04fea6eee263",
                             Name = "Clerk",
                             NormalizedName = "CLERK"
                         },
                         new
                         {
-                            Id = "1243c755-29df-4421-a891-8ca6957f3953",
+                            Id = "f2e0b852-edd9-4270-9def-1cb727d0343d",
                             Name = "Guest",
                             NormalizedName = "GUEST"
                         });
@@ -711,17 +726,15 @@ namespace ARS_API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ARS_API.Models.Airline", b =>
+            modelBuilder.Entity("ARS_API.Models.Flight", b =>
                 {
-                    b.Navigation("Flights");
+                    b.Navigation("FlightSeatAllocations");
                 });
 
             modelBuilder.Entity("ARS_API.Models.Reservation", b =>
                 {
                     b.Navigation("Passengers");
-                {
-                    b.Navigation("FlightSeatAllocations");
-         } });
+                });
 #pragma warning restore 612, 618
         }
     }

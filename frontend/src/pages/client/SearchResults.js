@@ -35,10 +35,11 @@ const SearchResults = () => {
         fetchFlights();
     }, [from, to, date, passengers, seatClass]);
 
-    const handleFlightSelect = (flight) => {
-        // Điều hướng đến trang nhập thông tin hành khách
-        navigate("/customer-detail", { state: { flight } });
-    };
+  const handleFlightSelect = (flight) => {
+    // Chỉ lưu FlightId
+    localStorage.setItem("selectedFlightId", flight.flightId);
+    navigate("/customerdetail");
+};
 
     if (error) {
         return <div>Error: {error}</div>;
