@@ -19,8 +19,8 @@ namespace ARS_API.Services
         public async Task<decimal> GetPriceMultiplierAsync(int daysBeforeDeparture)
         {
             var pricingRule = await _context.PricingRules
-                .Where(rule => rule.DaysBeforeDeparture <= daysBeforeDeparture)
-                .OrderByDescending(rule => rule.DaysBeforeDeparture)
+                .Where(rule => rule.DaysBeforeDeparture >= daysBeforeDeparture)
+                .OrderBy(rule => rule.DaysBeforeDeparture)
                 .FirstOrDefaultAsync();
 
             return pricingRule?.PriceMultiplier ?? 1.0m; // Default multiplier is 1 if no rule matches
