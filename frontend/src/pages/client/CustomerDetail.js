@@ -100,9 +100,9 @@ const CustomerDetail = () => {
       firstName,
       lastName,
       email,
-      phone,
-      address,
-      age,
+      phone
+      // address,
+      // age,
     };
 
     const checkoutData = {
@@ -148,7 +148,7 @@ const CustomerDetail = () => {
             <h4 className="text-primary">Customer Information</h4>
             <form>
               <div className="mb-3">
-                <label htmlFor="gender" className="form-label">Gender</label>
+                <label htmlFor="gender" className="form-label">Title</label>
                 <select
                   id="gender"
                   className="form-select"
@@ -181,7 +181,7 @@ const CustomerDetail = () => {
                   required
                 />
               </div>
-              <div className="mb-3">
+              {/* <div className="mb-3">
                 <label htmlFor="age" className="form-label">Age</label>
                 <input
                   type="number"
@@ -191,7 +191,7 @@ const CustomerDetail = () => {
                   onChange={(e) => setAge(e.target.value)}
                   required
                 />
-              </div>
+              </div> */}
               <div className="mb-3">
                 <label htmlFor="email" className="form-label">Email</label>
                 <input
@@ -214,7 +214,7 @@ const CustomerDetail = () => {
                   required
                 />
               </div>
-              <div className="mb-3">
+              {/* <div className="mb-3">
                 <label htmlFor="address" className="form-label">Address</label>
                 <textarea
                   id="address"
@@ -224,7 +224,7 @@ const CustomerDetail = () => {
                   rows="3"
                   required
                 />
-              </div>
+              </div> */}
               <button
                 type="button"
                 className="btn btn-primary mt-3"
