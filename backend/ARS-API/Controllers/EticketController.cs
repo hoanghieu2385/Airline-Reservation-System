@@ -34,7 +34,7 @@ namespace ARS_API.Controllers
                 .Include(p => p.Reservation)
                     .ThenInclude(r => r.Flight)
                         .ThenInclude(f => f.FlightSeatAllocations)
-                            .ThenInclude(fsa => fsa.Class)
+                            .ThenInclude(fsa => fsa.SeatClass)
                 .ToListAsync();
 
             var eTickets = tickets.Select(passenger =>
@@ -57,7 +57,7 @@ namespace ARS_API.Controllers
                     FromTo = $"{flight.OriginAirport.AirportName} -> {flight.DestinationAirport.AirportName}",
                     FlightDate = passenger.Reservation.TravelDate.ToString("dddd, d MMMM yyyy"),
                     Airline = flight.Airline.AirlineName,
-                    Amenities = $"{flightSeatAllocation?.Class.LuggageAllowance}kg luggage",
+                    Amenities = $"{flightSeatAllocation?.SeatClass.LuggageAllowance}kg luggage",
                     ReservationCode = passenger.Reservation.ReservationCode
                 };
             });
@@ -83,7 +83,7 @@ namespace ARS_API.Controllers
                 .Include(p => p.Reservation)
                     .ThenInclude(r => r.Flight)
                         .ThenInclude(f => f.FlightSeatAllocations)
-                            .ThenInclude(fsa => fsa.Class)
+                            .ThenInclude(fsa => fsa.SeatClass)
                 .FirstOrDefaultAsync(p => p.TicketCode == ticketCode);
 
             if (passenger == null)
@@ -92,7 +92,7 @@ namespace ARS_API.Controllers
             var reservation = passenger.Reservation;
             var flight = reservation.Flight;
             var flightSeatAllocation = await _dbContext.Set<FlightSeatAllocation>()
-                .Include(fsa => fsa.Class)
+                .Include(fsa => fsa.SeatClass)
                 .FirstOrDefaultAsync(fsa => fsa.AllocationId == reservation.AllocationId);
 
             if (flightSeatAllocation == null)
@@ -112,7 +112,7 @@ namespace ARS_API.Controllers
                 FromTo = $"{flight.OriginAirport.AirportName} -> {flight.DestinationAirport.AirportName}",
                 FlightDate = reservation.TravelDate.ToString("dddd, d MMMM yyyy"),
                 Airline = flight.Airline.AirlineName,
-                Amenities = $"{flightSeatAllocation.Class.LuggageAllowance}kg luggage",
+                Amenities = $"{flightSeatAllocation.SeatClass.LuggageAllowance}kg luggage",
                 ReservationCode = reservation.ReservationCode
             };
 

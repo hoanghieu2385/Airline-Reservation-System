@@ -37,39 +37,42 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
 
         // FlightSeatAllocation -> SeatClass (many-to-one)
         builder.Entity<FlightSeatAllocation>()
-            .HasOne(fsa => fsa.Class)
+            .HasOne(fsa => fsa.SeatClass)                   // previously fsa.Class, changed to fsa.SeatClass
             .WithMany()
             .HasForeignKey(fsa => fsa.ClassId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // FlightSeatAllocation -> Flight
+        builder.Entity<FlightSeatAllocation>()
+            .HasOne(fsa => fsa.Flight)
+            .WithMany(f => f.FlightSeatAllocations)
+            .HasForeignKey(fsa => fsa.FlightId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Passenger ticket price configuration
         builder.Entity<Passenger>()
             .Property(p => p.TicketPrice)
             .HasColumnType("decimal(18,2)");
 
+        // FlightRoute -> Origin Airport (many-to-one)
         builder.Entity<FlightRoute>()
             .HasOne(r => r.OriginAirport)
             .WithMany()
             .HasForeignKey(r => r.OriginAirportId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // FlightRoute -> Destination Airport (many-to-one)
         builder.Entity<FlightRoute>()
             .HasOne(r => r.DestinationAirport)
             .WithMany()
             .HasForeignKey(r => r.DestinationAirportId)
             .OnDelete(DeleteBehavior.Restrict);
-            
+
+        // Flight -> FlightSeatAllocations (one-to-many)
         builder.Entity<Flight>()
             .HasMany(f => f.FlightSeatAllocations)
             .WithOne(fa => fa.Flight)
             .HasForeignKey(fa => fa.FlightId);
-
-        // FlightSeatAllocation -> SeatClass (many-to-one)
-        builder.Entity<FlightSeatAllocation>()
-            .HasOne(fa => fa.SeatClass)
-            .WithMany()
-            .HasForeignKey(fa => fa.ClassId)
-            .OnDelete(DeleteBehavior.Restrict);
-
     }
 
     public DbSet<City> Cities { get; set; }
@@ -82,5 +85,4 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Reservation> Reservations { get; set; }
     public DbSet<Passenger> Passengers { get; set; }
     public DbSet<FlightRoute> Routes { get; set; }
-
 }

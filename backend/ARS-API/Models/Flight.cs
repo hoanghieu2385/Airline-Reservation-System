@@ -9,8 +9,6 @@ namespace ARS_API.Models
         [Key]
         public Guid FlightId { get; set; } 
 
-        public Guid FlightRouteId { get; set; }
-
         [Required]
         [StringLength(10)]
         public string FlightNumber { get; set; }
@@ -32,9 +30,6 @@ namespace ARS_API.Models
 
         [ForeignKey("DestinationAirportId")]
         public Airport DestinationAirport { get; set; } 
-
-        [ForeignKey("FlightRouteId")]
-        public virtual FlightRoute FlightRoute { get; set; }
 
         [Required]
         public DateTime DepartureTime { get; set; } 
