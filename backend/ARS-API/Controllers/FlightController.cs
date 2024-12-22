@@ -100,6 +100,7 @@ namespace ARS_API.Controllers
             [FromQuery] DateTime date,
             [FromQuery] int passengers,
             [FromQuery] string seatClass)
+
         {
             var searchDate = DateTime.UtcNow;
 
