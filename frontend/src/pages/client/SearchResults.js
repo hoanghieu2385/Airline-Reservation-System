@@ -38,9 +38,11 @@ const SearchResults = () => {
         fetchFlights();
     }, [from, to, date, passengers, seatClass]);
 
-    const handleFlightSelect = (flight) => {
-        navigate("/customer-detail", { state: { flight } });
-    };
+  const handleFlightSelect = (flight) => {
+    // Chỉ lưu FlightId
+    localStorage.setItem("selectedFlightId", flight.flightId);
+    navigate("/customerdetail");
+};
 
     // Lọc chuyến bay dựa trên giá
     const filteredFlights = flights.filter((flight) => flight.dynamicPrice <= filterPrice);

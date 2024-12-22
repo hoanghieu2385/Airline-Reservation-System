@@ -15,7 +15,7 @@ function RegisterPage() {
   const [success, setSuccess] = useState('');
   const [passwordConditions, setPasswordConditions] = useState({
     hasUppercase: false,
-    hasSpecialChar: false,
+    hasSpecialChar  : false,
     hasMinLength: false,
   });
 

@@ -53,3 +53,18 @@
     padding: 10px;
   }
 }
+
+.baggage-info {
+  margin-top: 15px;
+}
+
+.baggage-dropdown {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-top: 5px;
+}
+
