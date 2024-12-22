@@ -43,11 +43,21 @@ namespace ARS_API.Controllers
                 return NotFound("User not found");
 
             // Xác nhận email
-            var result = await _userManager.ConfirmEmailAsync(user, token);
-            if (!result.Succeeded)
-                return BadRequest("Email confirmation failed");
+            try
+            {
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(new { Message = "Invalid or expired email confirmation token." });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error confirming email: {ex.Message}");
+                return StatusCode(500, "An error occurred while confirming email.");
+            }
 
-            return Ok("Email confirmed successfully. You can now login to your account.");
+            return Redirect("http://localhost:3000/login");
         }
 
         [HttpPost("login")]
@@ -149,11 +159,19 @@ namespace ARS_API.Controllers
                 <a href='{confirmationLink}'>Xác nhận email</a>
             ";
 
-            await _emailService.SendEmailAsync(
-                user.Email,
-                "Xác nhận đăng ký tài khoản",
-                emailContent
-            );
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Xác nhận đăng ký tài khoản",
+                    emailContent
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
+                return StatusCode(500, "Failed to send confirmation email. Please try again.");
+            }
 
             return Ok(new
             {
