@@ -41,7 +41,7 @@ public class FlightSeatAllocationController : ControllerBase
 
     // POST: api/FlightSeatAllocation
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<FlightSeatAllocation>> PostFlightSeatAllocation(FlightSeatAllocation allocation)
     {
         allocation.AllocationId = Guid.NewGuid();
@@ -53,7 +53,7 @@ public class FlightSeatAllocationController : ControllerBase
 
     // PUT: api/FlightSeatAllocation/{id}
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> PutFlightSeatAllocation(Guid id, UpdateFlightSeatAllocationDTO updateDto)
     {
         // Retrieve the existing FlightSeatAllocation from the database
@@ -87,7 +87,7 @@ public class FlightSeatAllocationController : ControllerBase
 
     // DELETE: api/FlightSeatAllocation/{id}
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> DeleteFlightSeatAllocation(Guid id)
     {
         var allocation = await _context.FlightSeatAllocation.FindAsync(id);

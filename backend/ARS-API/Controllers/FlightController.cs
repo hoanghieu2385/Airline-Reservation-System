@@ -105,6 +105,9 @@ namespace ARS_API.Controllers
             var searchDate = DateTime.UtcNow;
 
             var flights = await _context.Flights
+                .Include(f => f.Airline)
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
                 .Include(f => f.FlightSeatAllocations)
                 .ThenInclude(fsa => fsa.SeatClass)
                 .Where(f => f.OriginAirportId == from
@@ -128,7 +131,11 @@ namespace ARS_API.Controllers
             {
                 FlightId = f.Flight.FlightId,
                 FlightNumber = f.Flight.FlightNumber,
+                AirlineName = f.Flight.Airline.AirlineName,
+                OriginAirportCode = f.Flight.OriginAirport.AirportCode,
                 DepartureTime = f.Flight.DepartureTime,
+                DestinationAirportCode = f.Flight.DestinationAirport.AirportCode,
+                ArrivalTime = f.Flight.ArrivalTime,
                 DynamicPrice = _pricingService.CalculateDynamicPrice(
                     f.Flight.BasePrice,
                     f.SeatAllocation.SeatClass.BasePriceMultiplier,
@@ -140,10 +147,9 @@ namespace ARS_API.Controllers
             return Ok(result);
         }
 
-
         // POST: api/Flight
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateFlight([FromBody] CreateFlightDto flightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
