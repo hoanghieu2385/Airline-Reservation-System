@@ -27,6 +27,8 @@ namespace ARS_API
 
             builder.Services.AddScoped<PricingService>();
 
+            builder.Services.AddHostedService<ReservationCleanupService>();
+
             // Configure Email Service
             builder.Services.Configure<EmailSettings>(
                 builder.Configuration.GetSection("SmtpSettings"));
