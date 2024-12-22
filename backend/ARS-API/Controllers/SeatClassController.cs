@@ -44,7 +44,7 @@ namespace ARS_API.Controllers
 
         // POST: api/SeatClass
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<ActionResult<SeatClass>> PostSeatClass(SeatClass seatClass)
         {
             seatClass.ClassId = Guid.NewGuid();
@@ -56,7 +56,7 @@ namespace ARS_API.Controllers
 
         // PUT: api/SeatClass/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")] 
+        [Authorize(Roles = "ADMIN")] 
         public async Task<IActionResult> PutSeatClass(Guid id, UpdateSeatClassDto updateDto)
         {
             // Retrieve the existing SeatClass from the database
@@ -103,7 +103,7 @@ namespace ARS_API.Controllers
 
         // DELETE: api/SeatClass/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteSeatClass(Guid id)
         {
             var seatClass = await _context.SeatClasses.FindAsync(id);
