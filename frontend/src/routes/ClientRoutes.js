@@ -8,7 +8,7 @@ import ClientLayout from "../layouts/ClientLayout";
 import Login from "../components/common/Login";
 import Register from "../components/common/Register";
 import ClientDashboard from "../pages/client/ClientDashboard";
-
+import SearchResults from "../pages/client/SearchResults";
 
 function ClientRoutes() {
     return (
@@ -23,6 +23,7 @@ function ClientRoutes() {
                 <Route path="/register" element={<Register/>}/>
 
                 <Route path="/user/dashboard" element={<ClientDashboard />} />
+                <Route path="/results" element={<SearchResults />} />
             </Routes>
         </ClientLayout>
     );
