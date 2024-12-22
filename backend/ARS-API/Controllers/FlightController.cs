@@ -99,7 +99,7 @@ namespace ARS_API.Controllers
             [FromQuery] Guid to,
             [FromQuery] DateTime date,
             [FromQuery] int passengers,
-            [FromQuery] Guid seatClass)
+            [FromQuery] string className)
         {
             var searchDate = DateTime.UtcNow;
 
@@ -109,12 +109,12 @@ namespace ARS_API.Controllers
                 .Where(f => f.OriginAirportId == from
                             && f.DestinationAirportId == to
                             && f.DepartureTime.Date == date.Date
-                            && f.FlightSeatAllocations.Any(fsa => fsa.ClassId == seatClass && fsa.AvailableSeats >= passengers))
+                            && f.FlightSeatAllocations.Any(fsa => fsa.SeatClass.ClassName == className && fsa.AvailableSeats >= passengers))
                 .Select(f => new
                 {
                     Flight = f,
                     DaysBeforeDeparture = (f.DepartureTime - searchDate).Days,
-                    SeatAllocation = f.FlightSeatAllocations.FirstOrDefault(fsa => fsa.ClassId == seatClass)
+                    SeatAllocation = f.FlightSeatAllocations.FirstOrDefault(fsa => fsa.SeatClass.ClassName == className)
                 })
                 .ToListAsync();
 
