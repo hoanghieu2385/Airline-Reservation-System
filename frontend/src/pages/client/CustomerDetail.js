@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/css/Checkout.css";
+import { getCurrentUser } from '../../services/clientApi';
 
 const fetchFlightById = async (flightId) => {
   try {
@@ -41,23 +42,40 @@ const CustomerDetail = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+
+        // Lấy thông tin chuyến bay từ localStorage
         const flightId = localStorage.getItem("selectedFlightId");
         if (!flightId) {
           throw new Error("No flight selected. Please select a flight first.");
         }
 
+        // Lấy thông tin chuyến bay từ API
         const flightData = await fetchFlightById(flightId);
+
+        // Lấy quy tắc tính giá
         const rules = await fetchPricingRules();
 
+        // Lấy thông tin người dùng
+        const userData = await getCurrentUser();
+
+        // Cập nhật state với thông tin người dùng
+        setFirstName(userData.firstName || "");
+        setLastName(userData.lastName || "");
+        setEmail(userData.email || "");
+        setPhone(userData.phoneNumber || "");
+
+        // Cập nhật state cho quy tắc giá và chi tiết chuyến bay
         setPricingRules(rules);
         setFlightDetails({ departure: flightData, return: null });
 
+        // Tính tổng giá ban đầu
         const calculatedPrice = calculateTotalPrice(
           { departure: flightData, return: { basePrice: 0, departureTime: new Date() } },
           rules,
           baggagePrice
         );
         setTotalPrice(calculatedPrice);
+
         setLoading(false);
       } catch (error) {
         console.error("Error:", error);
@@ -75,7 +93,7 @@ const CustomerDetail = () => {
     const daysBeforeDeparture = Math.ceil(
       (departure - today) / (1000 * 60 * 60 * 24)
     );
-    return rules.find((rule) => daysBeforeDeparture <= rule.daysBeforeDeparture)?.multiplier || 1.0;
+    return rules.find((rule) => daysBeforeDeparture >= rule.daysBeforeDeparture)?.multiplier || 1.0;
   };
 
   const calculateTotalPrice = (flights, rules, baggage) => {
@@ -244,9 +262,9 @@ const CustomerDetail = () => {
               <strong>
                 {flightDetails.departure?.basePrice
                   ? (
-                      flightDetails.departure.basePrice *
-                      calculateMultiplier(flightDetails.departure.departureTime, pricingRules)
-                    ).toLocaleString() + " USD"
+                    flightDetails.departure.basePrice *
+                    calculateMultiplier(flightDetails.departure.departureTime, pricingRules)
+                  ).toLocaleString() + " USD"
                   : "N/A"}
               </strong>
             </p>
