@@ -1,0 +1,120 @@
+/* Search Results - General Container */
+.search-results {
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    background-color: #fdfdfd;
+    box-sizing: border-box;
+}
+
+/* Sidebar styles */
+.sidebar {
+    background: #f5f5f5;
+    margin-right: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    max-width: 300px;
+    flex: 0 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Main content styles */
+.main-content {
+    flex: 1;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Filter Price Styles */
+.filter-price label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.form-range {
+    width: 100%;
+}
+
+/* Sort Dropdown Styles */
+.sort-dropdown {
+    margin-top: 20px;
+}
+
+.sort-dropdown label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.form-select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Flight Card Styles */
+.flight-card {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.flight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Flight Card Content */
+.flight-card .d-flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flight-card p {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+.flight-card .text-end {
+    text-align: right;
+}
+
+/* General Typography */
+h4 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+p {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .search-results {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        max-width: 100%;
+    }
+
+    .main-content {
+        margin-top: 20px;
+    }
+}
