@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../assets/css/AdminLayout.css";
+import "../assets/css/Admin/AdminLayout.css";
 
 const AdminLayout = ({ children }) => {
   return (
