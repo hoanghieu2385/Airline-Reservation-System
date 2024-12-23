@@ -1,0 +1,52 @@
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  font-family: 'Arial', sans-serif;
+}
+
+.header {
+  background-color: #001529;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+.layout-container {
+  display: flex;
+  flex: 1;
+}
+
+.sider {
+  width: 250px;
+  background-color: #001529;
+  padding: 20px;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  margin-bottom: 10px;
+}
+
+.menu-item a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px;
+  display: block;
+  border-radius: 5px;
+}
+
+.menu-item a:hover {
+  background-color: #1890ff;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}

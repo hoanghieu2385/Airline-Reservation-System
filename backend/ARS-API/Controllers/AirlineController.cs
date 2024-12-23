@@ -39,8 +39,8 @@ namespace ARS_API.Controllers
             return Ok(airline);
         }
 
-        // POST: api/Airline
-        [HttpPost]
+        // POST: api/Airline/CreateAirline
+        [HttpPost("CreateAirline")]
         public async Task<IActionResult> CreateAirline([FromBody] CreateAirlineDTO createAirlineDto)
         {
             if (!ModelState.IsValid)
