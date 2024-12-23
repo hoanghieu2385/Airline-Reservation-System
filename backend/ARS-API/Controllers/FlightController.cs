@@ -70,6 +70,7 @@ namespace ARS_API.Controllers
                 {
                     FlightId = f.FlightId,
                     FlightNumber = f.FlightNumber,
+                    AirlineId = f.AirlineId,
                     AirlineName = f.Airline.AirlineName,
                     OriginAirportName = f.OriginAirport.AirportName,
                     DestinationAirportName = f.DestinationAirport.AirportName,

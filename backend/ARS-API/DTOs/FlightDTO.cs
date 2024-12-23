@@ -10,6 +10,7 @@ namespace ARS_API.DTOs
     {
         public Guid FlightId { get; set; }
         public string FlightNumber { get; set; }
+        public Guid AirlineId { get; set; }
         public string AirlineName { get; set; }
         public string OriginAirportName { get; set; }
         public string DestinationAirportName { get; set; }
