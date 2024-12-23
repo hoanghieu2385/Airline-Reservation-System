@@ -140,7 +140,6 @@ namespace ARS_API.Controllers
                 ReservationId = reservation.ReservationId,
                 FirstName = p.FirstName,
                 LastName = p.LastName,
-                Age = p.Age,
                 Gender = p.Gender,
                 TicketCode = GenerateTicketCode(),
                 TicketPrice = _pricingService.CalculateDynamicPrice(
@@ -163,7 +162,10 @@ namespace ARS_API.Controllers
         public async Task<ActionResult<Reservation>> FinalizeReservation(CreateReservationDTO createReservationDto)
         {
             // Validate seat allocation
-            var allocation = await _context.FlightSeatAllocation.FindAsync(createReservationDto.AllocationId);
+            var allocation = await _context.FlightSeatAllocation
+                .Include(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
+                .FirstOrDefaultAsync(fsa => fsa.AllocationId == createReservationDto.AllocationId);
+
             if (allocation == null || allocation.AvailableSeats < createReservationDto.Passengers.Count)
             {
                 return BadRequest("Invalid seat allocation or insufficient seats.");
@@ -235,7 +237,6 @@ namespace ARS_API.Controllers
                 ReservationId = reservation.ReservationId,
                 FirstName = p.FirstName,
                 LastName = p.LastName,
-                Age = p.Age,
                 Gender = p.Gender,
                 TicketCode = GenerateTicketCode(),
                 TicketPrice = _pricingService.CalculateDynamicPrice(
@@ -334,7 +335,6 @@ namespace ARS_API.Controllers
                                     ReservationId = reservation.ReservationId,
                                     FirstName = passengerDto.FirstName,
                                     LastName = passengerDto.LastName,
-                                    Age = passengerDto.Age,
                                     Gender = passengerDto.Gender,
                                     TicketCode = GenerateTicketCode(),
                                     // TODO: Adjust TicketPRice accordingly to line 245
