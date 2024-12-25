@@ -32,15 +32,25 @@ const LoginPage = () => {
 
     try {
       const response = await login({ email, password });
+      const { token, roles } = response; // Assuming roles are returned as an array
       sessionStorage.setItem("userEmail", email);
-      sessionStorage.setItem("token", response.token);
+      sessionStorage.setItem("token", token);
+
       setError("");
       setSuccess(true);
 
-      setTimeout(() => navigate("/"), 2000);
+      // Redirect based on role
+      if (roles.includes("ADMIN")) {
+        setTimeout(() => navigate("/admin"), 2000);
+      } else if (roles.includes("CLERK")) {
+        setTimeout(() => navigate("/clerk"), 2000);
+      } else {
+        setTimeout(() => navigate("/"), 2000);
+      }
     } catch (error) {
       setSuccess(false);
-      setError(error.response?.data || "Login failed. Please check your email and password."
+      setError(
+        error.response?.data || "Login failed. Please check your email and password."
       );
     }
   };
@@ -61,8 +71,9 @@ const LoginPage = () => {
             <input
               type="email"
               placeholder="Email"
-              className={`login-form__input ${email && !validateEmail(email) ? "login-form__input--invalid" : ""
-                }`}
+              className={`login-form__input ${
+                email && !validateEmail(email) ? "login-form__input--invalid" : ""
+              }`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

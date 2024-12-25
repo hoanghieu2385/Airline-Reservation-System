@@ -5,6 +5,8 @@ import Dashboard from "../pages/admin/Dashboard";
 import AirlinesManagement from "../components/admin/AirlinesManagement";
 import AirportsManagement from "../components/admin/AirportsManagement";
 import CitiesManagement from "../components/admin/CitiesManagement";
+import UserManagement from "../components/admin/UserManagement";
+
 const AdminRoutes = () => {
   return (
     <AdminLayout>
@@ -12,7 +14,8 @@ const AdminRoutes = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/airlines" element={<AirlinesManagement />} />
         <Route path="/airports" element={<AirportsManagement />} />
-        <Route path="/cities" element={<CitiesManagement />} />
+        <Route path="/users" element={<UserManagement />} />
+
       </Routes>
     </AdminLayout>
   );
