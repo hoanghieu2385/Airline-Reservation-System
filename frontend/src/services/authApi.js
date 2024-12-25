@@ -18,3 +18,12 @@ export const register = async (userDetails) => {
     const response = await api.post(`/User/register`, userDetails);
     return response.data;
 };
+export const forgotPassword = async (email) => {
+    const response = await api.post(`/User/forgot-password`, { email });
+    return response.data;
+};
+
+export const resetPassword = async (data) => {
+    const response = await api.post(`/User/reset-password`, data);
+    return response.data;
+};
