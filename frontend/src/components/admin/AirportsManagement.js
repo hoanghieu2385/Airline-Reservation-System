@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "../../assets/css/AirportsManagement.css";
 import { getAirports, addAirport, updateAirport, deleteAirport } from "../../services/adminApi";
 
 const AirportsManagement = () => {
@@ -7,17 +6,16 @@ const AirportsManagement = () => {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
-  const [form, setForm] = useState({ name: "", code: "", city: "", country: "" });
+  const [form, setForm] = useState({ airportName: "", airportCode: "", cityId: "", country: "" });
 
   useEffect(() => {
     fetchAirports();
-  });
-
+  }, []);
   const fetchAirports = async () => {
     setLoading(true);
     try {
       const response = await getAirports();
-      setData(response.data);
+      setData(response.data || []);
     } catch (error) {
       alert("Failed to fetch airports");
     } finally {
@@ -29,7 +27,7 @@ const AirportsManagement = () => {
     setLoading(true);
     try {
       if (editingRecord) {
-        await updateAirport(editingRecord.id, form);
+        await updateAirport(editingRecord.airportId, form);
         alert("Airport updated successfully");
       } else {
         await addAirport(form);
@@ -47,7 +45,7 @@ const AirportsManagement = () => {
   const handleDelete = async (record) => {
     setLoading(true);
     try {
-      await deleteAirport(record.id);
+      await deleteAirport(record.airportId);
       alert("Airport deleted successfully");
       fetchAirports();
     } catch (error) {
@@ -60,7 +58,7 @@ const AirportsManagement = () => {
   return (
     <div className="airports-management">
       <button className="add-button" onClick={() => {
-        setForm({ name: "", code: "", city: "", country: "" });
+        setForm({ airportName: "", airportCode: "", cityId: "", country: "" });
         setEditingRecord(null);
         setModalVisible(true);
       }}>Add Airport</button>
@@ -76,32 +74,43 @@ const AirportsManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {data.map((record) => (
-            <tr key={record.id}>
-              <td>{record.name}</td>
-              <td>{record.code}</td>
-              <td>{record.city}</td>
-              <td>{record.country}</td>
-              <td>
-                <button
-                  className="edit-button"
-                  onClick={() => {
-                    setForm(record);
-                    setEditingRecord(record);
-                    setModalVisible(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="delete-button"
-                  onClick={() => handleDelete(record)}
-                >
-                  Delete
-                </button>
-              </td>
+          {data.length > 0 ? (
+            data.map((record) => (
+              <tr key={record.airportId}>
+                <td>{record.airportName}</td>
+                <td>{record.airportCode}</td>
+                <td>{record.city.cityName}</td>
+                <td>{record.city.country}</td>
+                <td>
+                  <button
+                    className="edit-button"
+                    onClick={() => {
+                      setForm({
+                        airportName: record.airportName,
+                        airportCode: record.airportCode,
+                        cityId: record.city.cityId,
+                        country: record.city.country,
+                      });
+                      setEditingRecord(record);
+                      setModalVisible(true);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDelete(record)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="5">No airports available</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
@@ -119,8 +128,8 @@ const AirportsManagement = () => {
                 <label>Airport Name</label>
                 <input
                   type="text"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  value={form.airportName}
+                  onChange={(e) => setForm({ ...form, airportName: e.target.value })}
                   required
                 />
               </div>
@@ -128,8 +137,8 @@ const AirportsManagement = () => {
                 <label>Code</label>
                 <input
                   type="text"
-                  value={form.code}
-                  onChange={(e) => setForm({ ...form, code: e.target.value })}
+                  value={form.airportCode}
+                  onChange={(e) => setForm({ ...form, airportCode: e.target.value })}
                   required
                 />
               </div>
@@ -137,8 +146,9 @@ const AirportsManagement = () => {
                 <label>City</label>
                 <input
                   type="text"
-                  value={form.city}
-                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  value={form.cityId}
+                  onChange={(e) => setForm({ ...form, cityId: e.target.value })}
+                  required
                 />
               </div>
               <div className="form-group">

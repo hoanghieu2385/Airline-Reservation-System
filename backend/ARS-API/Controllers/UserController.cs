@@ -1,4 +1,5 @@
 ﻿using ARS_API.DTOs;
+using ARS_API.DTOs.User;
 using ARS_API.Models;
 using ARS_API.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -244,25 +245,98 @@ namespace ARS_API.Controllers
             return await GetProfileById(userId);
         }
 
+        [HttpPost("create-user")]
+        [Authorize(Roles = "ADMIN")] // Only ADMIN can create users
+        public async Task<IActionResult> CreateUser([FromBody] AdminCreateUserDTO model)
+        {
+            // Check if the provided role is valid
+            string[] validRoles = { "USER", "CLERK", "ADMIN" };
+            if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role.ToUpper()))
+            {
+                return BadRequest("Role does not exist or input is incorrect.");
+            }
+
+            var role = string.IsNullOrEmpty(model.Role) ? "USER" : model.Role.ToUpper();
+
+            // Create the user instance
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                SkyMiles = model.SkyMiles,
+                EmailConfirmed = false // Admin-created accounts are confirmed by default
+            };
+
+            // Create the user with the specified password
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Message = "Failed to create user.",
+                    Errors = result.Errors.Select(e => e.Description)
+                });
+            }
+
+            // Assign the role to the user
+            var roleResult = await _userManager.AddToRoleAsync(user, role);
+            if (!roleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user); // Rollback user creation
+                return BadRequest(new
+                {
+                    Message = "Failed to assign role.",
+                    Errors = roleResult.Errors.Select(e => e.Description)
+                });
+            }
+
+            return Ok(new
+            {
+                Message = "User created successfully.",
+                UserId = user.Id
+            });
+        }
+
+
+        // Only ADMIN and CLERK can read the list of users
         [HttpGet("read")]
-        [Authorize(Roles = "Admin,Clerk")]
+        [Authorize(Roles = "Admin,Clerk")] // allow for admin, clerk
         public async Task<IActionResult> GetAllUsers()
         {
             var users = _userManager.Users.ToList();
-            var userList = new List<object>();
+            if (users.Count == 0)
+            {
+                return Ok(new { Message = "No users found in the system." });
+            }
 
+            var userList = new List<object>();
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
+                if (!string.IsNullOrEmpty(role) && !roles.Contains(role.ToUpper()))
+                {
+                    continue; // Skip users who don't match the role
+                }
                 userList.Add(new
                 {
                     user.Id,
-                    user.UserName,
-                    user.Email,
                     user.FirstName,
                     user.LastName,
+                    user.Email,
+                    user.EmailConfirmed,
+                    user.PhoneNumber,
+                    user.PhoneNumberConfirmed,
+                    user.SkyMiles,
                     Roles = roles
                 });
+            }
+
+            if (userList.Count == 0)
+            {
+                return Ok(new { Message = $"No users found with role {role}" });
             }
 
             return Ok(userList);
@@ -385,8 +459,94 @@ namespace ARS_API.Controllers
             });
         }
 
+
+        [HttpPut("admin-update-user/{id}")]
+        [Authorize(Roles = "ADMIN")] // Only ADMIN can update user information
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Cập nhật các trường cơ bản (không bắt buộc phải có)
+            if (!string.IsNullOrEmpty(model.FirstName))
+                user.FirstName = model.FirstName;
+
+            if (!string.IsNullOrEmpty(model.LastName))
+                user.LastName = model.LastName;
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+                user.PhoneNumber = model.PhoneNumber;
+
+            // Cập nhật trạng thái EmailConfirmed (nếu có)
+            if (model.EmailConfirmed.HasValue)
+                user.EmailConfirmed = model.EmailConfirmed.Value;
+
+            // Cập nhật trạng thái PhoneNumberConfirmed (nếu có)
+            if (model.PhoneNumberConfirmed.HasValue)
+                user.PhoneNumberConfirmed = model.PhoneNumberConfirmed.Value;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Message = "Failed to update user details.",
+                    Errors = updateResult.Errors.Select(e => e.Description)
+                });
+            }
+
+            // Cập nhật Role (nếu có và hợp lệ)
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                string[] validRoles = { "USER", "CLERK", "ADMIN" };
+                if (!validRoles.Contains(model.Role.ToUpper()))
+                {
+                    return BadRequest("Role does not exist or input is incorrect.");
+                }
+
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                var roleUpdateResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!roleUpdateResult.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Failed to remove existing roles.",
+                        Errors = roleUpdateResult.Errors.Select(e => e.Description)
+                    });
+                }
+
+                var newRoleResult = await _userManager.AddToRoleAsync(user, model.Role.ToUpper());
+                if (!newRoleResult.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Failed to assign new role.",
+                        Errors = newRoleResult.Errors.Select(e => e.Description)
+                    });
+                }
+            }
+
+            return Ok(new
+            {
+                Message = "User updated successfully.",
+                UpdatedFields = new
+                {
+                    user.FirstName,
+                    user.LastName,
+                    user.PhoneNumber,
+                    user.EmailConfirmed,
+                    user.PhoneNumberConfirmed,
+                    Role = model.Role
+                }
+            });
+        }
+
+        // Only ADMIN can delete a user
         [HttpDelete("delete/{id}")]
-        [Authorize]
+        [Authorize(Roles = "ADMIN")] // Only ADMIN allowed
         public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);

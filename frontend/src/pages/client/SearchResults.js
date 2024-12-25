@@ -18,15 +18,16 @@ const SearchResults = () => {
     const [error, setError] = useState(null);
     const [filterPrice, setFilterPrice] = useState(1000);
     const [sortOption, setSortOption] = useState("priceAsc");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // Check login state
     const [showLoginPopup, setShowLoginPopup] = useState(false);
 
-    const modalRef = useRef(null); // Ref for modal content
+    const modalRef = useRef(null);
 
     useEffect(() => {
+        // Check login status
         const checkLoginStatus = () => {
-            const token = localStorage.getItem("authToken");
-            setIsLoggedIn(!!token);
+            const token = sessionStorage.getItem("token");
+            setIsLoggedIn(!!token); // Update login state
         };
         checkLoginStatus();
     }, []);
@@ -53,7 +54,7 @@ const SearchResults = () => {
     useEffect(() => {
         const handleOutsideClick = (event) => {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
-                setShowLoginPopup(false); // Close the popup if clicked outside
+                setShowLoginPopup(false); // Close popup if clicked outside
             }
         };
 
@@ -70,11 +71,12 @@ const SearchResults = () => {
 
     const handleFlightSelect = (flight) => {
         if (!isLoggedIn) {
-            setShowLoginPopup(true);
+            setShowLoginPopup(true); // Show login popup if not logged in
             return;
         }
 
-        localStorage.setItem(
+        // Save selected flight details to sessionStorage
+        sessionStorage.setItem(
             "selectedFlight",
             JSON.stringify({
                 flightId: flight.flightId,

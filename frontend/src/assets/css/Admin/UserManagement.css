@@ -1,0 +1,29 @@
+.user-management__modal .input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.user-management__modal .input-group input {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    outline: none;
+}
+
+.user-management__modal .input-group .password-toggle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
