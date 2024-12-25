@@ -34,19 +34,28 @@
   margin-bottom: 10px;
 }
 
-.menu-item a {
+.menu-item a,
+.menu-item button {
   color: #fff;
   text-decoration: none;
   padding: 10px;
   display: block;
   border-radius: 5px;
+  background: none; /* Xóa nền mặc định của button */
+  border: none;     /* Xóa viền mặc định của button */
+  text-align: left; /* Canh trái giống với link */
+  cursor: pointer;  /* Hiển thị con trỏ khi hover */
+  width: 100%;      /* Đảm bảo chiếm toàn bộ chiều rộng container */
+  box-sizing: border-box; /* Đảm bảo padding không ảnh hưởng đến kích thước */
 }
 
-.menu-item a.active {
+.menu-item a.active,
+.menu-item button.active {
   background-color: #1890ff;
 }
 
-.menu-item a:hover {
+.menu-item a:hover,
+.menu-item button:hover {
   background-color: #1890ff;
 }
 

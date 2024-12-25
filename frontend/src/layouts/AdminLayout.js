@@ -1,13 +1,24 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../assets/css/Admin/AdminLayout.css";
 
 const AdminLayout = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => {
     return location.pathname === path ? "active" : "";
   };
+
+  // Logout
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("userEmail");
+    sessionStorage.clear();
+
+    navigate("/login");
+  };
+
 
   return (
     <div className="admin-layout">
@@ -19,26 +30,37 @@ const AdminLayout = ({ children }) => {
           <nav>
             <ul className="menu">
               <li className="menu-item">
-                <Link to="/admin" className={isActive("/admin")}>Dashboard</Link>
+                <Link to="/admin" className={`menu-link ${isActive("/admin")}`}>
+                  Dashboard
+                </Link>
               </li>
               <li className="menu-item">
-                <Link to="/admin/airlines" className={isActive("/admin/airlines")}>Manage Airlines</Link>
+                <Link to="/admin/airlines" className={`menu-link ${isActive("/admin/airlines")}`}>
+                  Manage Airlines
+                </Link>
               </li>
               <li className="menu-item">
-                <Link to="/admin/airports" className={isActive("/admin/airports")}>Manage Airports</Link>
+                <Link to="/admin/airports" className={`menu-link ${isActive("/admin/airports")}`}>
+                  Manage Airports
+                </Link>
               </li>
               <li className="menu-item">
-                <Link to="/admin/cities" className={isActive("/admin/cities")}>Manage Cities</Link>
+                <Link to="/admin/cities" className={`menu-link ${isActive("/admin/cities")}`}>
+                  Manage Cities
+                </Link>
               </li>
               <li className="menu-item">
-                <Link to="/admin/users" className={isActive("/admin/users")}>Manage Users</Link>
+
+              </li>
+              <li className="menu-item">
+                <button className="menu-link" onClick={handleLogout}>
+                  Logout
+                </button>
               </li>
             </ul>
           </nav>
         </aside>
-        <main className="content">
-          {children}
-        </main>
+        <main className="content">{children}</main>
       </div>
     </div>
   );
