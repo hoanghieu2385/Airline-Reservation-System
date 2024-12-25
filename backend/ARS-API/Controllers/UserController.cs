@@ -33,32 +33,71 @@ namespace ARS_API.Controllers
             _emailService = emailService;
         }
 
-        [HttpGet("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
-                return BadRequest("Invalid email confirmation token");
-
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return NotFound("User not found");
+            {
+                return BadRequest("User not found.");
+            }
 
-            // Xác nhận email
+            // Generate reset token
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Create reset link
+            var resetLink = Url.Action("ResetPassword", "User",
+                new { token = resetToken, email = user.Email },
+                protocol: HttpContext.Request.Scheme);
+
+            // Send reset email
+            var emailContent = $@"
+                <h2>Reset Your Password</h2>
+                <p>Click the link below to reset your password:</p>
+                <a href='{resetLink}'>Reset Password</a>";
+
             try
             {
-                var result = await _userManager.ConfirmEmailAsync(user, token);
-                if (!result.Succeeded)
-                {
-                    return BadRequest(new { Message = "Invalid or expired email confirmation token." });
-                }
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Reset Password",
+                    emailContent
+                );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error confirming email: {ex.Message}");
-                return StatusCode(500, "An error occurred while confirming email.");
+                Console.WriteLine($"Error sending email: {ex.Message}");
+                return StatusCode(500, "Failed to send reset password email. Please try again.");
             }
 
-            return Redirect("http://localhost:3000/login");
+            return Ok("Password reset email sent.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        {
+            if (model.NewPassword != model.ConfirmPassword)
+            {
+                return BadRequest("Passwords do not match.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest("Invalid email.");
+            }
+
+            var resetResult = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (!resetResult.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Message = "Failed to reset password.",
+                    Errors = resetResult.Errors.Select(e => e.Description)
+                });
+            }
+
+            return Ok("Password has been reset successfully.");
         }
 
         [HttpPost("login")]
@@ -70,7 +109,7 @@ namespace ARS_API.Controllers
                 return Unauthorized("Email or password is incorrect.");
             }
 
-            // Kiểm tra xem email đã được xác nhận chưa
+            // Check if email is confirmed
             if (!user.EmailConfirmed)
             {
                 return BadRequest("Please confirm your email before logging in.");
@@ -108,27 +147,22 @@ namespace ARS_API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            // List of valid roles
             string[] validRoles = { "USER", "CLERK", "ADMIN" };
 
-            // Check if the provided role is valid
             if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role.ToUpper()))
             {
                 return BadRequest("Role does not exist or input is incorrect.");
             }
 
-            // Default role is "USER" if no role is provided
             var role = string.IsNullOrEmpty(model.Role) ? "USER" : model.Role.ToUpper();
 
-            // Create a new user instance
             var user = new ApplicationUser
             {
                 UserName = model.Email,
                 Email = model.Email,
-                EmailConfirmed = false // Đảm bảo email chưa được xác nhận
+                EmailConfirmed = false
             };
 
-            // Create the user with the provided password
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
@@ -136,7 +170,6 @@ namespace ARS_API.Controllers
                 return BadRequest(new { Message = "Registration failed.", Errors = errors });
             }
 
-            // Assign the role to the user
             var roleResult = await _userManager.AddToRoleAsync(user, role);
             if (!roleResult.Succeeded)
             {
@@ -145,26 +178,22 @@ namespace ARS_API.Controllers
                 return BadRequest(new { Message = "Failed to assign role.", Errors = errors });
             }
 
-            // Tạo token xác nhận email
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            // Tạo link xác nhận
             var confirmationLink = Url.Action("ConfirmEmail", "User",
                 new { userId = user.Id, token = token },
                 protocol: HttpContext.Request.Scheme);
 
-            // Gửi email xác nhận
             var emailContent = $@"
-                <h2>Xác nhận đăng ký tài khoản</h2>
-                <p>Vui lòng click vào link bên dưới để xác nhận email của bạn:</p>
-                <a href='{confirmationLink}'>Xác nhận email</a>
-            ";
+                <h2>Confirm Your Registration</h2>
+                <p>Click the link below to confirm your email:</p>
+                <a href='{confirmationLink}'>Confirm Email</a>";
 
             try
             {
                 await _emailService.SendEmailAsync(
                     user.Email,
-                    "Xác nhận đăng ký tài khoản",
+                    "Confirm Your Account",
                     emailContent
                 );
             }
@@ -176,9 +205,44 @@ namespace ARS_API.Controllers
 
             return Ok(new
             {
-                Message = "Đăng ký thành công. Vui lòng kiểm tra email để xác nhận tài khoản.",
+                Message = "Registration successful. Please check your email to confirm your account.",
                 UserId = user.Id
             });
+        }
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+                return BadRequest("Invalid email confirmation token");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("User not found");
+
+            try
+            {
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(new { Message = "Invalid or expired email confirmation token." });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error confirming email: {ex.Message}");
+                return StatusCode(500, "An error occurred while confirming email.");
+            }
+
+            return Redirect("http://localhost:3000/login");
+        }
+
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return await GetProfileById(userId);
         }
 
         [HttpPost("create-user")]
@@ -239,8 +303,8 @@ namespace ARS_API.Controllers
 
         // Only ADMIN and CLERK can read the list of users
         [HttpGet("read")]
-        [Authorize(Roles = "ADMIN,CLERK")] // ADMIN and CLERK allowed
-        public async Task<IActionResult> GetAllUsers([FromQuery] string role)
+        [Authorize(Roles = "Admin,Clerk")] // allow for admin, clerk
+        public async Task<IActionResult> GetAllUsers()
         {
             var users = _userManager.Users.ToList();
             if (users.Count == 0)
@@ -314,14 +378,6 @@ namespace ARS_API.Controllers
             });
         }
 
-        // Users get personal information through session
-        [HttpGet("profile")]
-        [Authorize]
-        public async Task<IActionResult> GetProfile()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return await GetProfileById(userId); // reuse logic from GetProfileById
-        }
 
         [HttpPut("update/{id}")]
         [Authorize]
@@ -340,7 +396,6 @@ namespace ARS_API.Controllers
                 return Forbid("You are not authorized to update this profile.");
             }
 
-            // Update other user details
             if (!string.IsNullOrEmpty(model.FirstName))
                 user.FirstName = model.FirstName;
 
@@ -355,9 +410,6 @@ namespace ARS_API.Controllers
 
             if (model.DateOfBirth.HasValue)
                 user.DateOfBirth = model.DateOfBirth;
-
-            //if (!string.IsNullOrEmpty(model.PreferredCreditCard))
-            //    user.PreferredCreditCard = model.PreferredCreditCard;
 
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
@@ -376,13 +428,11 @@ namespace ARS_API.Controllers
                     return BadRequest("Passwords do not match.");
                 }
 
-                // Validate current password
                 if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
                 {
                     return BadRequest("Current password is incorrect.");
                 }
 
-                // Update the password
                 var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var passwordResult = await _userManager.ResetPasswordAsync(user, resetToken, model.NewPassword);
                 if (!passwordResult.Succeeded)
@@ -404,8 +454,7 @@ namespace ARS_API.Controllers
                     user.LastName,
                     user.Address,
                     user.PhoneNumber,
-                    user.DateOfBirth,
-                    //user.PreferredCreditCard
+                    user.DateOfBirth
                 }
             });
         }
