@@ -15,7 +15,7 @@ export const updateAirline = (airlineId, data) => api.put(`/Airline/${airlineId}
 export const deleteAirline = (airlineId) => api.delete(`/Airline/${airlineId}`);
 
 export const getAirports = () => api.get("/Airport");
-export const addAirport = (data) => api.post("Airport/CreateAirport", data);
+export const addAirport = (data) => api.post("/Airport/CreateAirport", data);
 export const updateAirport = (airportId, data) => api.put(`/Airport/${airportId}`, data);
 export const deleteAirport = (airportId) => api.delete(`/Airport/${airportId}`);
 
