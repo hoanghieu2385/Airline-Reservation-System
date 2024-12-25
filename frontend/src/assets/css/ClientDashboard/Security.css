@@ -1,0 +1,85 @@
+.security-container {
+    padding: 20px;
+    max-width: 800px;
+}
+
+.security-form h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+    display: block;
+    text-align: left;
+}
+
+.password-input {
+    position: relative;
+    width: 80%;
+}
+
+.password-input input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding-right: 40px;
+    font-size: 14px;
+}
+
+.password-input input.input-invalid {
+    border-color: red;
+    background-color: #ffe6e6;
+}
+
+.password-input .toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.password-hints {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.password-hint {
+    font-size: 12px;
+    margin: 5px 0;
+    color: gray;
+}
+
+.password-hint.valid {
+    color: green;
+}
+
+.btn-primary-change-pass{
+    width: 20%;
+    background-color: #0d6efd;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.btn-primary-change-pass:hover {
+    background-color: #0056b3;
+}

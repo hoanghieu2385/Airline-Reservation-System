@@ -13,10 +13,12 @@ namespace ARS_API.Controllers
     public class AirportController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDBContext _context;
 
-        public AirportController(IConfiguration configuration)
+        public AirportController(IConfiguration configuration, ApplicationDBContext context)
         {
             _configuration = configuration;
+            _context = context;
         }
 
         [HttpGet("search")]
@@ -43,6 +45,63 @@ namespace ARS_API.Controllers
             var airports = await connection.QueryAsync<AirportDTO>(sql, new { Query = $"%{query}%" });
 
             return Ok(airports);
+        }
+
+        // GET: api/Airport
+        [HttpGet]
+        public async Task<IActionResult> GetAllAirports()
+        {
+            var airports = await _context.Airports.Include(a => a.City).ToListAsync();
+            return Ok(airports);
+        }
+
+        // GET: api/Airport/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAirportById(Guid id)
+        {
+            var airport = await _context.Airports.Include(a => a.City).FirstOrDefaultAsync(a => a.AirportId == id);
+            if (airport == null)
+                return NotFound();
+
+            return Ok(airport);
+        }
+
+        // POST: api/Airport
+        [HttpPost]
+        public async Task<IActionResult> CreateAirport([FromBody] Airport airport)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            airport.AirportId = Guid.NewGuid();
+            _context.Airports.Add(airport);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetAirportById), new { id = airport.AirportId }, airport);
+        }
+
+        // PUT: api/Airport/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAirport(Guid id, [FromBody] Airport airport)
+        {
+            if (id != airport.AirportId)
+                return BadRequest("Airport ID mismatch");
+
+            _context.Entry(airport).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // DELETE: api/Airport/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAirport(Guid id)
+        {
+            var airport = await _context.Airports.FindAsync(id);
+            if (airport == null)
+                return NotFound();
+
+            _context.Airports.Remove(airport);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
 
     }

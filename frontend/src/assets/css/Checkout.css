@@ -1,128 +1,70 @@
-/* Toàn bộ CSS được giới hạn trong phạm vi của .checkout-page */
-.checkout-page {
-    /* Định dạng chung */
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    padding: 20px;
+/* Checkout Component Custom Styles */
+.checkout-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 60px !important;
+  padding: 20px 20px 0 20px;
 }
 
-.checkout-page .container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 15px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+.checkout-flight-info h4,
+.checkout-passenger-info h4,
+.checkout-voucher-info h4,
+.checkout-pricing-summary h4 {
+  color: #007bff; /* Primary blue color */
+  margin-bottom: 15px;
 }
 
-.checkout-page .text-center {
-    text-align: center;
+.checkout-flight-info h5 {
+  font-weight: bold;
 }
 
-.checkout-page .mb-3,
-.checkout-page .mb-4 {
-    margin-bottom: 1rem;
+.checkout-pricing-summary {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 15px;
 }
 
-/* Header và thẻ section */
-.checkout-page h2 {
-    color: #333;
+.checkout-total-price {
+  color: #28a745; /* Success green */
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
-.checkout-page .card {
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    overflow: hidden;
+/* Spacing and Input Styles */
+.form-control {
+  margin-bottom: 15px;
 }
 
-.checkout-page .card-header {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 15px;
-    font-size: 1.1rem;
-    font-weight: bold;
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
 }
 
-.checkout-page .card-body {
-    padding: 15px;
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
 }
 
-.checkout-page .summary-box {
-    background: #f1f3f5;
-    padding: 20px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.checkout-page .summary-box h4 {
-    margin-bottom: 15px;
-    color: #007bff;
-}
-
-.checkout-page .total-price {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #e63946;
-}
-
-/* Form và button */
-.checkout-page .form-label {
-    font-weight: bold;
-    color: #555;
-}
-
-.checkout-page .form-control,
-.checkout-page .form-select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.checkout-page .input-group {
-    display: flex;
-    align-items: center;
-}
-
-.checkout-page .input-group .form-control {
-    flex: 1;
-}
-
-.checkout-page .input-group .btn {
-    margin-left: 10px;
-}
-
-.checkout-page .btn {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-.checkout-page .btn-primary {
-    background-color: #007bff;
-    color: white;
-    transition: background-color 0.3s;
-}
-
-.checkout-page .btn-primary:hover {
-    background-color: #0056b3;
-}
-
-.checkout-page .w-100 {
-    width: 100%;
-}
-
-/* Responsive */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .checkout-page .card-body .row {
-        flex-direction: column;
-    }
-
-    .checkout-page .summary-box {
-        text-align: center;
-    }
+  .checkout-container {
+    padding: 10px;
+  }
 }
+
+.baggage-info {
+  margin-top: 15px;
+}
+
+.baggage-dropdown {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-top: 5px;
+}
+

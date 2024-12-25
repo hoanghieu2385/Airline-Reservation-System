@@ -2,18 +2,29 @@ backend/
 ├── ARS-API/
 │   ├── bin/             
 │   ├── Controller/                
-│   │   ├── UserController.cs 
+│   │   ├── AirportController.cs
+│   │   ├── FlightController.cs
+│   │   ├── UserController.cs
+│   │   ├── RequestController.cs
 │   ├── Data/            
 │   │   ├── DataSeeder.cs
-│   ├── Dtos/              # File để tôi chỉnh những gì muốn sử dụng khi model có nhiều thứ mà không cần thiết phải upload lên (Data transfer object)
-│   │   ├── LoginDto.cs
-│   │   ├── RegisterDto.cs
-│   │   ├── UpdateUserDto.cs
+│   ├── Dtos/               # File để tôi chỉnh những gì muốn sử dụng khi model có nhiều thứ mà không cần thiết phải upload lên (Data transfer object)
+│   │   ├── User
+│   │   |   ├── LoginDto.cs
+│   │   |   ├── RegisterDto.cs
+│   │   |   ├── UpdateUserDto.cs
+│   │   ├── AirlineDto.cs
+│   │   ├── AirportDto.cs
+│   │   ├── FlightDto.cs
 │   ├── Model/            
+│   │   ├── Airline.cs   
+│   │   ├── Airport.cs       
 │   │   ├── ApplicationUser.cs       
+│   │   ├── City.cs       
+│   │   ├── Flight.cs       
 │   ├── Services/            
 │   │   ├── ApplicationDBContext.cs    
 │   ├── appsettings.json    # chứa DefaultConnection(chuỗi kết nối)
-│   ├── program.cs     # tìm tới app settings.json và lấy kết nối chuỗi DefaultConnection rồi kết nối
+│   ├── Program.cs          # tìm tới app settings.json và lấy kết nối chuỗi DefaultConnection rồi kết nối
 ├── .gitignore
 

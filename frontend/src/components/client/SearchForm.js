@@ -1,4 +1,3 @@
-// src/components/client/SearchForm.js
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -11,9 +10,12 @@ import '../../assets/css/SearchForm.css';
 const SearchForm = () => {
     const [fromQuery, setFromQuery] = useState('');
     const [toQuery, setToQuery] = useState('');
+    const [fromCode, setFromCode] = useState('');
+    const [toCode, setToCode] = useState('');
     const [departureDate, setDepartureDate] = useState(null);
     const [returnDate, setReturnDate] = useState(null);
     const [passengers, setPassengers] = useState(1);
+    const [seatClass, setSeatClass] = useState('Economy');
     const [filteredFromAirports, setFilteredFromAirports] = useState([]);
     const [filteredToAirports, setFilteredToAirports] = useState([]);
     const [isPassengerDropdownOpen, setIsPassengerDropdownOpen] = useState(false);
@@ -44,37 +46,60 @@ const SearchForm = () => {
             }
         }, 300)
     ).current;
-    
 
     useEffect(() => {
         return () => {
             handleAirportSearch.cancel();
         };
     }, []);
-
-    const incrementPassengers = () => {
-        setPassengers((prev) => Math.min(prev + 1, 10));
-    };
-
-    const decrementPassengers = () => {
-        setPassengers((prev) => Math.max(prev - 1, 1));
-    };
-
+    
     const clearInput = (setter, setFilteredAirports) => {
         setter('');
         setFilteredAirports([]);
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (passengersDropdownRef.current && !passengersDropdownRef.current.contains(event.target)) {
+                setIsPassengerDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const handleSearch = () => {
-        navigate('/results', {
-            state: {
-                fromQuery,
-                toQuery,
-                departureDate,
-                returnDate,
-                passengers,
-            },
+        if (!fromCode || !toCode) {
+            alert("Please select valid airports for both 'From' and 'To'.");
+            return;
+        }
+    
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+    
+        const params = new URLSearchParams({
+            from: fromCode.toUpperCase(), // Chuyển UUID sang chữ hoa
+            to: toCode.toUpperCase(),    // Chuyển UUID sang chữ hoa
+            date: departureDate ? formatDate(departureDate) : '',
+            passengers: passengers.toString(),
+            seatClass: seatClass,        // Sửa từ `class` thành `seatClass`
         });
+    
+        const searchUrl = `/results?${params.toString()}`;
+        navigate(searchUrl);
+    };
+
+    const handleAirportSelection = (airport, setterQuery, setterCode, setFilteredAirports) => {
+        setterQuery(`${airport.airportName} (${airport.airportCode})`);
+        setterCode(airport.airportId); // Lưu UUID của sân bay vào trạng thái
+        setFilteredAirports([]);
     };
 
     return (
@@ -110,10 +135,7 @@ const SearchForm = () => {
                         {filteredFromAirports.map((airport) => (
                             <li
                                 key={airport.airportId}
-                                onClick={() => {
-                                    setFromQuery(`${airport.airportName} (${airport.airportCode})`);
-                                    setFilteredFromAirports([]);
-                                }}
+                                onClick={() => handleAirportSelection(airport, setFromQuery, setFromCode, setFilteredFromAirports)}
                             >
                                 {airport.airportName} ({airport.airportCode})
                             </li>
@@ -153,10 +175,7 @@ const SearchForm = () => {
                         {filteredToAirports.map((airport) => (
                             <li
                                 key={airport.airportId}
-                                onClick={() => {
-                                    setToQuery(`${airport.airportName} (${airport.airportCode})`);
-                                    setFilteredToAirports([]);
-                                }}
+                                onClick={() => handleAirportSelection(airport, setToQuery, setToCode, setFilteredToAirports)}
                             >
                                 {airport.airportName} ({airport.airportCode})
                             </li>
@@ -191,6 +210,7 @@ const SearchForm = () => {
                 </div>
             </div>
 
+
             {/* Return Date */}
             <div className="form-group">
                 <label htmlFor="returnDate">Return Date</label>
@@ -217,21 +237,70 @@ const SearchForm = () => {
                 </div>
             </div>
 
-            {/* Passengers */}
+            {/* Passengers and Class */}
+            {/* Passengers and Class */}
             <div className="form-group" ref={passengersDropdownRef}>
-                <label htmlFor="passengers">Passengers</label>
-                <input
-                    type="text"
-                    id="passengers"
-                    value={`${passengers} Passenger${passengers > 1 ? 's' : ''}`}
-                    readOnly
+                <label className="pcs-label">Passengers / Class</label>
+                <div 
+                    className="pcs-input-wrapper" 
                     onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}
-                />
+                >
+                    <input
+                        type="text"
+                        className="pcs-input"
+                        value={`${passengers} Passenger${passengers > 1 ? 's' : ''} (${seatClass})`}
+                        readOnly
+                    />
+                </div>
                 {isPassengerDropdownOpen && (
-                    <div className="passenger-dropdown">
-                        <button onClick={decrementPassengers}>-</button>
-                        <span>{passengers}</span>
-                        <button onClick={incrementPassengers}>+</button>
+                    <div className="pcs-dropdown">
+                        <div className="pcs-dropdown__row">
+                            <span className="pcs-dropdown__label">Passengers:</span>
+                            <div className="pcs-dropdown__controls">
+                                <button
+                                    type="button"
+                                    className="pcs-dropdown__btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (passengers > 1) setPassengers(passengers - 1);
+                                    }}
+                                    disabled={passengers <= 1}
+                                >
+                                    -
+                                </button>
+                                <span className="pcs-dropdown__count">{passengers}</span>
+                                <button
+                                    type="button"
+                                    className="pcs-dropdown__btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (passengers < 10) setPassengers(passengers + 1);
+                                    }}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="pcs-dropdown__class-section">
+                            <span className="pcs-dropdown__label">Class:</span>
+                            <div className="pcs-dropdown__class-options">
+                                {['Economy', 'Premium'].map((classOption) => (
+                                    <label key={classOption} className="pcs-dropdown__radio-label">
+                                        <input
+                                            type="radio"
+                                            name="seatClass"
+                                            value={classOption}
+                                            checked={seatClass === classOption}
+                                            onChange={() => setSeatClass(classOption)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="pcs-dropdown__radio"
+                                        />
+                                        {classOption}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

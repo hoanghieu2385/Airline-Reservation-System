@@ -10,6 +10,7 @@ namespace ARS_API.DTOs
     {
         public Guid FlightId { get; set; }
         public string FlightNumber { get; set; }
+        public Guid AirlineId { get; set; }
         public string AirlineName { get; set; }
         public string OriginAirportName { get; set; }
         public string DestinationAirportName { get; set; }
@@ -19,6 +20,7 @@ namespace ARS_API.DTOs
         public int TotalSeats { get; set; }
         public decimal BasePrice { get; set; }
         public string Status { get; set; }
+        public List<FlightSeatAllocationDTO> SeatAllocations { get; internal set; }
     }
 
     public class CreateFlightDto
@@ -57,6 +59,8 @@ namespace ARS_API.DTOs
         [Required]
         [StringLength(50)]
         public string Status { get; set; }
+
+        public List<FlightSeatAllocationDTO> SeatAllocations { get; set; }
     }
 
     public class UpdateFlightDto

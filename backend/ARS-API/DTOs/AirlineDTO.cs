@@ -12,4 +12,16 @@ namespace ARS_API.DTOs
         public string AirlineCode { get; set; }
         public string Country { get; set; }
     }
+
+    public class CreateAirlineDTO
+    {
+        public Guid AirlineId { get; set; }
+        public string AirlineName { get; set; }
+        public string AirlineCode { get; set; }
+        public string Country { get; set; }
+        public string LogoUrl { get; set; }
+        public string ContactNumber { get; set; }
+        public string WebsiteUrl { get; set; }
+        public List<SeatClassDTO>? SeatClasses { get; set; } // Optional: Defaults will be used if null
+    }
 }

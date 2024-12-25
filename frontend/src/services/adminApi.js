@@ -1,11 +1,25 @@
-// src/services/adminApi.js
 import api from "./api";
 
-// Hàm lấy danh sách người dùng
-export const getUsers = () => api.get("/admin/users");
 
-// Hàm xóa người dùng
+export const getUsers = () => api.get("/admin/users");
 export const deleteUser = (userId) => api.delete(`/admin/users/${userId}`);
 
-// Hàm thêm chuyến bay
-export const addFlight = (data) => api.post("/admin/flights", data);
+export const getAirlines = () => api.get("/Airline");
+export const addAirline = (data) => api.post("/Airline", data);
+export const updateAirline = (airlineId, data) =>
+  api.put(`/Airline/${airlineId}`, data);
+export const deleteAirline = (airlineId) =>
+  api.delete(`/Airline/${airlineId}`);
+
+export const getAirports = () => api.get("/Airport");
+export const addAirport = (data) => api.post("/Airport", data);
+export const updateAirport = (airportId, data) =>
+  api.put(`/Airport/${airportId}`, data);
+export const deleteAirport = (airportId) =>
+  api.delete(`/Airport/${airportId}`);
+
+export const getCities = () => api.get("/Citiy");
+export const addCity = (data) => api.post("/City", data);
+export const updateCity = (cityId, data) =>
+  api.put(`/City/${cityId}`, data);
+export const deleteCity = (cityId) => api.delete(`/City/${cityId}`);
