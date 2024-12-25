@@ -13,9 +13,9 @@ namespace ARS_API.Models
         public string CityName { get; set; }
 
         [StringLength(100)]
-        public string State { get; set; } 
+        public string? State { get; set; } 
 
         [StringLength(100)]
-        public string Country { get; set; }
+        public string? Country { get; set; }
     }
 }
