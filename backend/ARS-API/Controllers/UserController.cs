@@ -240,14 +240,22 @@ namespace ARS_API.Controllers
         // Only ADMIN and CLERK can read the list of users
         [HttpGet("read")]
         [Authorize(Roles = "ADMIN,CLERK")] // ADMIN and CLERK allowed
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] string role)
         {
             var users = _userManager.Users.ToList();
-            var userList = new List<object>();
+            if (users.Count == 0)
+            {
+                return Ok(new { Message = "No users found in the system." });
+            }
 
+            var userList = new List<object>();
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
+                if (!string.IsNullOrEmpty(role) && !roles.Contains(role.ToUpper()))
+                {
+                    continue; // Skip users who don't match the role
+                }
                 userList.Add(new
                 {
                     user.Id,
@@ -260,6 +268,11 @@ namespace ARS_API.Controllers
                     user.SkyMiles,
                     Roles = roles
                 });
+            }
+
+            if (userList.Count == 0)
+            {
+                return Ok(new { Message = $"No users found with role {role}" });
             }
 
             return Ok(userList);
