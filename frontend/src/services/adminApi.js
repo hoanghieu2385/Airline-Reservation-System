@@ -1,6 +1,20 @@
+// src/services/adminApi.js
 import api from "./api";
-export const getUsers = () => api.get("/admin/users");
-export const deleteUser = (userId) => api.delete(`/admin/users/${userId}`);
+
+// Lấy danh sách người dùng (yêu cầu token với quyền ADMIN hoặc CLERK)
+export const getUsers = () => api.get("/user/read");
+
+export const addUser = (data) => api.post("/user/create-user", data);
+
+// Cập nhật thông tin người dùng
+export const updateUser = (userId, data) => api.put(`/user/admin-update-user/${userId}`, data);
+
+// Xóa người dùng (ADMIN-only)
+export const deleteUser = (userId) => api.delete(`/user/delete/${userId}`);
+
+// Lấy thông tin cá nhân của người dùng hiện tại (cần token)
+export const getUserProfile = () => api.get("/user/profile");
+
 
 export const getAirlines = () => api.get("/Airline");
 export const addAirline = (data) => api.post("/Airline/CreateAirline", data);

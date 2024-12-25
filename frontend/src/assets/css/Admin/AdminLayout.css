@@ -42,6 +42,10 @@
   border-radius: 5px;
 }
 
+.menu-item a.active {
+  background-color: #1890ff;
+}
+
 .menu-item a:hover {
   background-color: #1890ff;
 }
