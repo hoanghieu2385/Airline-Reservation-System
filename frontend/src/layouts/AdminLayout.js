@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../assets/css/Admin/AdminLayout.css";
 
@@ -10,6 +10,15 @@ const AdminLayout = ({ children }) => {
     return location.pathname === path ? "active" : "";
   };
 
+  // check login session
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+
+      navigate("/login");
+    }
+  }, [navigate]);
+
   // Logout
   const handleLogout = () => {
     sessionStorage.removeItem("token");
@@ -18,7 +27,6 @@ const AdminLayout = ({ children }) => {
 
     navigate("/login");
   };
-
 
   return (
     <div className="admin-layout">
@@ -48,9 +56,6 @@ const AdminLayout = ({ children }) => {
                 <Link to="/admin/cities" className={`menu-link ${isActive("/admin/cities")}`}>
                   Manage Cities
                 </Link>
-              </li>
-              <li className="menu-item">
-
               </li>
               <li className="menu-item">
                 <button className="menu-link" onClick={handleLogout}>
