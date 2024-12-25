@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faSortDown, faSortUp } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/css/Admin/UserManagement.css"
 
-const UserManagement = () => {
+const ClerkManagement = () => {
     const [data, setData] = useState([]);
     const [searchText, setSearchText] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -20,20 +20,27 @@ const UserManagement = () => {
         emailConfirmed: false,
         phoneNumber: "",
         phoneNumberConfirmed: false,
-        role: "USER",
+        role: "CLERK",
         password: "",
     });
 
     useEffect(() => {
-        fetchUsers();
+        fetchClerks();
     }, []);
 
-    const fetchUsers = async () => {
+    const fetchClerks = async () => {
         try {
-            const response = await getUsers();
-            setData(response.data);
+            const response = await getUsers({ role: "CLERK" });
+            console.log("API Response:", response.data); // Log dữ liệu trả về
+            if (Array.isArray(response.data)) {
+                setData(response.data); // Đặt data nếu là mảng
+            } else {
+                console.error("Data is not an array:", response.data);
+                setData([]); // Nếu không phải mảng, đặt thành mảng rỗng
+            }
         } catch (error) {
-            alert("Failed to fetch users");
+            console.error("Failed to fetch users:", error); // Log lỗi
+            setData([]); // Nếu lỗi, đặt data thành mảng rỗng
         }
     };
 
@@ -77,7 +84,7 @@ const UserManagement = () => {
                 alert("User added successfully");
             }
             setModalVisible(false);
-            fetchUsers();
+            fetchClerks();
         } catch (error) {
             alert("Failed to save user");
         }
@@ -92,7 +99,7 @@ const UserManagement = () => {
         try {
             await deleteUser(record.id);
             alert("User deleted successfully");
-            fetchUsers();
+            fetchClerks();
         } catch (error) {
             alert("Failed to delete user");
         }
@@ -128,7 +135,7 @@ const UserManagement = () => {
 
     return (
         <div className="user-management__container mt-4">
-            <h2>User Management</h2>
+            <h2>CLERK Management</h2>
 
             {/* Search form */}
             <div className="user-management__search mb-3">
@@ -152,14 +159,14 @@ const UserManagement = () => {
                         emailConfirmed: false,
                         phoneNumber: "",
                         phoneNumberConfirmed: false,
-                        role: "USER",
+                        role: "CLERK",
                         password: "",
                     });
                     setEditingRecord(null);
                     setModalVisible(true);
                 }}
             >
-                Add User
+                Add Clerk
             </button>
 
             {/* Table user */}
@@ -329,9 +336,9 @@ const UserManagement = () => {
                                             value={form.role}
                                             onChange={(e) => setForm({ ...form, role: e.target.value })}
                                         >
-                                            <option value="USER">User</option>
+                                            {/* <option value="USER">User</option> */}
                                             <option value="CLERK">Clerk</option>
-                                            <option value="ADMIN">Admin</option>
+                                            {/* <option value="ADMIN">Admin</option> */}
                                         </select>
                                     </div>
                                     {/* Email Confirmed */}
@@ -414,4 +421,4 @@ const UserManagement = () => {
     );
 };
 
-export default UserManagement;
+export default ClerkManagement;
