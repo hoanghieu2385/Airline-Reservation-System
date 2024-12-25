@@ -9,8 +9,6 @@ export const login = async (credentials) => {
     return response.data;
 };
 
-
-// Thêm hàm để lấy thông tin user
 export const getUserProfile = async () => {
     const response = await api.get(`/User/profile`);
     return response.data;

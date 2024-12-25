@@ -42,6 +42,21 @@ namespace ARS_API.Controllers
             return seatClass;
         }
 
+        // GET: api/SeatClass/multiplier
+        [HttpGet("multiplier")]
+        public async Task<ActionResult<decimal>> GetBasePriceMultiplier([FromQuery] Guid airlineId, [FromQuery] string className)
+        {
+            var seatClass = await _context.SeatClasses
+                .FirstOrDefaultAsync(sc => sc.AirlineId == airlineId && sc.ClassName == className);
+
+            if (seatClass == null)
+            {
+                return NotFound("Seat class not found.");
+            }
+
+            return Ok(seatClass.BasePriceMultiplier);
+        }
+
         // POST: api/SeatClass
         [HttpPost]
         [Authorize(Roles = "ADMIN")]

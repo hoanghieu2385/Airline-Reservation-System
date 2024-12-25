@@ -40,6 +40,23 @@ namespace ARS_API.Controllers
             return pricingRule;
         }
 
+        // GET: api/PricingRule/multiplier/{daysBeforeDeparture}
+        [HttpGet("multiplier/{daysBeforeDeparture}")]
+        public async Task<ActionResult<decimal>> GetPriceMultiplier(int daysBeforeDeparture)
+        {
+            var pricingRule = await _context.PricingRules
+                .Where(rule => rule.DaysBeforeDeparture >= daysBeforeDeparture)
+                .OrderBy(rule => rule.DaysBeforeDeparture)
+                .FirstOrDefaultAsync();
+
+            if (pricingRule == null)
+            {
+                return Ok(1.0m); // Default multiplier
+            }
+
+            return Ok(pricingRule.PriceMultiplier);
+        }
+
         // POST: api/PricingRule
         [HttpPost]
         public async Task<ActionResult<PricingRule>> CreatePricingRule(PricingRule pricingRule)
