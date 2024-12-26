@@ -52,14 +52,16 @@ const AirlinesManagement = () => {
     setLoading(true);
     try {
       if (editingAirline) {
-        await updateAirline(editingAirline.airlineId, form);
+        // Update existing airline
+        await updateAirline(editingAirline.airlineId, form); // Call update API
         alert("Airline updated successfully.");
       } else {
-        await addAirline(form);
+        // Add new airline
+        await addAirline(form); // Call add API
         alert("Airline added successfully.");
       }
       closeModal();
-      fetchAirlines();
+      fetchAirlines(); // Refresh the airline list
     } catch (error) {
       console.error("Error saving airline:", error.response?.data || error.message);
       alert("Failed to save airline. Please try again.");
@@ -110,7 +112,7 @@ const AirlinesManagement = () => {
       ) : (
         <table className="data-table">
           <thead>
-            <tr>              
+            <tr>
               <th>Name</th>
               <th>Code</th>
               <th>Country</th>
@@ -123,7 +125,7 @@ const AirlinesManagement = () => {
           <tbody>
             {airlines.length > 0 ? (
               airlines.map((airline) => (
-                <tr key={airline.airlineId}>                  
+                <tr key={airline.airlineId}>
                   <td>{airline.airlineName}</td>
                   <td>{airline.airlineCode}</td>
                   <td>{airline.country}</td>
@@ -134,13 +136,24 @@ const AirlinesManagement = () => {
                     <button
                       className="edit-button"
                       onClick={() => {
-                        setForm(airline);
-                        setEditingAirline(airline);
-                        setIsModalOpen(true);
+                        setForm({
+                          airlineId: airline.airlineId, // Include AirlineId here
+                          airlineName: airline.airlineName,
+                          airlineCode: airline.airlineCode,
+                          country: airline.country,
+                          contactNumber: airline.contactNumber,
+                          logoUrl: airline.logoUrl,
+                          websiteUrl: airline.websiteUrl,
+                          seatClasses: airline.seatClasses || [], // Ensure seatClasses is set
+                        });
+                        setEditingAirline(airline); // Store the airline being edited
+                        setIsModalOpen(true); // Open the modal
                       }}
                     >
                       Edit
                     </button>
+
+
                     <button
                       className="delete-button"
                       onClick={() => handleDelete(airline)}
@@ -214,14 +227,14 @@ const AirlinesManagement = () => {
                       <option value="">Select Class</option>
                       <option value="Economy">Economy</option>
                       <option value="Business">Business</option>
-                      <option value="FirstClass">First Class</option>                      
+                      <option value="FirstClass">First Class</option>
                     </select>
                     <br></br>
                     <br></br>
                     <input
                       type="number"
                       placeholder="Luggage Allowance"
-                      value={seat.luggageAllowance}                      
+                      value={seat.luggageAllowance}
                       onChange={(e) =>
                         handleSeatClassChange(
                           index,
@@ -231,7 +244,7 @@ const AirlinesManagement = () => {
                       }
                     />
                     <br></br>
-                    <br></br>                    
+                    <br></br>
                     <input
                       type="number"
                       placeholder="Base Multiplier"
@@ -247,7 +260,7 @@ const AirlinesManagement = () => {
                   </div>
                 ))}
                 <br></br>
-                    <br></br>
+                <br></br>
                 <button
                   type="button"
                   onClick={() =>
