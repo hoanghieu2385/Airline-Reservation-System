@@ -16,7 +16,14 @@ export const deleteAirline = (airlineId) => api.delete(`/Airline/${airlineId}`);
 
 export const getAirports = () => api.get("/Airport");
 export const addAirport = (data) => api.post("/Airport/CreateAirport", data);
-export const updateAirport = (airportId, data) => api.put(`/Airport/${airportId}`, data);
+export const updateAirport = (airportId, data) => {
+    return api.put(`/Airport/${airportId}`, {
+        AirportId: airportId, 
+        airportCode: data.airportCode,
+        airportName: data.airportName,
+        cityId: data.cityId,
+    });
+};
 export const deleteAirport = (airportId) => api.delete(`/Airport/${airportId}`);
 
 export const getCities = () => api.get("/City");
