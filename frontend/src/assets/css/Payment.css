@@ -49,18 +49,28 @@
 .payment-summary .total-price {
   margin: 10px 0;
 }
-.proceed-button {
-  padding: 10px 20px;
-  background-color: #28a745;
+
+.confirm-button {
+  background-color: #4caf50;
   color: white;
+  padding: 10px 20px;
   border: none;
-  border-radius: 5px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 16px;
+  margin-right: 10px;
 }
 
-.proceed-button:hover {
-  background-color: #218838;
+.block-button {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.confirm-button:hover, .block-button:hover {
+  opacity: 0.8;
 }
 
 

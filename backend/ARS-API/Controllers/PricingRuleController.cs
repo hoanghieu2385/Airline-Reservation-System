@@ -44,6 +44,7 @@ namespace ARS_API.Controllers
         [HttpGet("multiplier/{daysBeforeDeparture}")]
         public async Task<ActionResult<decimal>> GetPriceMultiplier(int daysBeforeDeparture)
         {
+            Console.WriteLine($"Received daysBeforeDeparture: {daysBeforeDeparture}");
             var pricingRule = await _context.PricingRules
                 .Where(rule => rule.DaysBeforeDeparture >= daysBeforeDeparture)
                 .OrderBy(rule => rule.DaysBeforeDeparture)
