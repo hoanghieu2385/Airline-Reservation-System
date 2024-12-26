@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import "../../assets/css/Payment.css";
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
 const Payment = () => {
   const [tripDetails, setTripDetails] = useState({});
   const [contactInfo, setContactInfo] = useState({});
@@ -30,21 +40,22 @@ const Payment = () => {
     { id: "alipay", label: "Alipay" },
   ];
 
-  // Hàm xử lý khi nhấn nút Proceed
-  const handleProceed = async () => {
+  // Function to handle reservation actions
+  const handleReservation = async (status) => {
     try {
+      const passengers = JSON.parse(localStorage.getItem("passengers")) || [];
       const reservationData = {
-        flightDetails: tripDetails,
-        contactInfo: contactInfo,
-        totalPrice: totalPrice,
+        ReservationStatus: status,
+        FlightId: tripDetails.flightId,
+        AllocationId: tripDetails.allocationId, // Assuming allocationId exists
+        Passengers: passengers.map((passenger) => ({
+          FirstName: passenger.firstName,
+          LastName: passenger.lastName,
+          Gender: passenger.gender,
+        })),
       };
 
-      const passengerData = {
-        passengers: JSON.parse(localStorage.getItem("passengers")) || [],
-      };
-
-      // Gửi dữ liệu Reservation
-      const reservationResponse = await fetch("/api/reservation", {
+      const response = await fetch("/api/Reservations/FinalizeReservation", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,34 +63,14 @@ const Payment = () => {
         body: JSON.stringify(reservationData),
       });
 
-      if (!reservationResponse.ok) {
-        throw new Error("Failed to create reservation. Please try again.");
+      if (!response.ok) {
+        throw new Error(`Failed to ${status.toLowerCase()} reservation. Please try again.`);
       }
 
-      const reservationResult = await reservationResponse.json();
-
-      // Gắn reservationId vào dữ liệu hành khách
-      const passengersWithReservation = passengerData.passengers.map((passenger) => ({
-        ...passenger,
-        reservationId: reservationResult.id,
-      }));
-
-      // Gửi dữ liệu Passenger
-      const passengerResponse = await fetch("/api/passenger", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(passengersWithReservation),
-      });
-
-      if (!passengerResponse.ok) {
-        throw new Error("Failed to create passengers. Please try again.");
-      }
-
-      alert("Proceed successfully completed!");
+      const result = await response.json();
+      alert(`Reservation ${status.toLowerCase()} successfully!`);
     } catch (error) {
-      console.error("Error during proceed:", error);
+      console.error(`Error during ${status.toLowerCase()} reservation:`, error);
       alert(`An error occurred: ${error.message}`);
     }
   };
@@ -91,7 +82,12 @@ const Payment = () => {
         <div className="payment-methods-list">
           {paymentMethods.map((method) => (
             <div key={method.id} className="payment-method-box">
-              <input type="radio" id={method.id} name="payment" value={method.id} />
+              <input
+                type="radio"
+                id={method.id}
+                name="payment"
+                value={method.id}
+              />
               <label htmlFor={method.id}>{method.label}</label>
             </div>
           ))}
@@ -99,20 +95,44 @@ const Payment = () => {
       </div>
       <div className="payment-summary">
         <h3>Trip Details</h3>
-        <p><strong>Airline:</strong> {tripDetails?.departure?.airlineName}</p>
-        <p><strong>Flight Number:</strong> {tripDetails?.departure?.flightNumber}</p>
-        <p><strong>Departure Time:</strong> {tripDetails?.departure?.departureTime}</p>
-        <p><strong>Total Price:</strong> {totalPrice.toLocaleString()} USD</p>
+        <p>
+          <strong>Airline:</strong> {tripDetails?.airlineName}
+        </p>
+        <p>
+          <strong>Flight Number:</strong> {tripDetails?.flightNumber}
+        </p>
+        <p>
+          <strong>Departure Time:</strong>{" "}
+          {formatDate(tripDetails?.departureTime)}
+        </p>
+        <p>
+          <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
+        </p>
         <h3>Contact Information</h3>
-        <p><strong>Name:</strong> {contactInfo.firstName} {contactInfo.lastName}</p>
+        <p>
+          <strong>Name:</strong> {contactInfo.firstName} {contactInfo.lastName}
+        </p>
         {/* <p><strong>Age:</strong> {contactInfo.age}</p> */}
-        <p><strong>Email:</strong> {contactInfo.email}</p>
-        <p><strong>Phone:</strong> {contactInfo.phone}</p>
+        <p>
+          <strong>Email:</strong> {contactInfo.email}
+        </p>
+        <p>
+          <strong>Phone:</strong> {contactInfo.phone}
+        </p>
         {/* <p><strong>Address:</strong> {contactInfo.address}</p> */}
       </div>
       <div className="payment-proceed">
-        <button onClick={handleProceed} className="proceed-button">
-          Proceed
+        <button
+          onClick={() => handleReservation("Confirmed")}
+          className="confirm-button"
+        >
+          Confirm Reservation
+        </button>
+        <button
+          onClick={() => handleReservation("Blocked")}
+          className="block-button"
+        >
+          Block Reservation
         </button>
       </div>
     </div>

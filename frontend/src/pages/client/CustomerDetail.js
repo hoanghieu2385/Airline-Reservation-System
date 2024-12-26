@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/css/Checkout.css";
-import { getCurrentUser } from '../../services/clientApi';
+
+// Helper function to format date
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
 
 const fetchFlightById = async (flightId) => {
   try {
@@ -9,6 +19,7 @@ const fetchFlightById = async (flightId) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
+    console.log("Flight Details Response:", data); // Debugging log
     return data;
   } catch (error) {
     console.error("Error fetching flight:", error);
@@ -16,15 +27,43 @@ const fetchFlightById = async (flightId) => {
   }
 };
 
-const fetchPricingRules = async () => [
-  { daysBeforeDeparture: 30, multiplier: 1.0 },
-  { daysBeforeDeparture: 15, multiplier: 1.25 },
-  { daysBeforeDeparture: 7, multiplier: 1.5 },
-];
+const fetchPriceMultiplier = async (daysBeforeDeparture) => {
+  const url = `https://localhost:7238/api/PricingRule/multiplier/${daysBeforeDeparture}`;
+  console.log("Fetching Pricing Rule Multiplier from:", url); // Log the correct URL
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Error fetching price multiplier: ${response.status} ${response.statusText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const multiplier = await response.json();
+    console.log("Fetched Pricing Rule Multiplier:", multiplier); // Log the fetched multiplier
+    return multiplier;
+  } catch (error) {
+    console.error("Error in fetchPriceMultiplier:", error);
+    return 1.0; // Default multiplier
+  }
+};
+
+const fetchBasePriceMultiplier = async (airlineId, seatClass) => {
+  try {
+    const response = await fetch(
+      `https://localhost:7238/api/SeatClass/multiplier?airlineId=${airlineId}&className=${seatClass}`
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const multiplier = await response.json();
+    console.log("Base Price Multiplier Response:", multiplier); // Debugging log
+    return multiplier;
+  } catch (error) {
+    console.error("Error fetching base price multiplier:", error);
+    return 1.0; // Default multiplier
+  }
+};
 
 const CustomerDetail = () => {
   const [flightDetails, setFlightDetails] = useState(null);
-  const [pricingRules, setPricingRules] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [baggagePrice, setBaggagePrice] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -35,47 +74,45 @@ const CustomerDetail = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [age, setAge] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Lấy thông tin chuyến bay từ localStorage
-        const flightId = localStorage.getItem("selectedFlightId");
-        if (!flightId) {
+        const selectedFlight = JSON.parse(localStorage.getItem("selectedFlight"));
+        if (!selectedFlight) {
           throw new Error("No flight selected. Please select a flight first.");
         }
 
-        // Lấy thông tin chuyến bay từ API
+        const { flightId, seatClass } = selectedFlight;
         const flightData = await fetchFlightById(flightId);
+        const basePriceMultiplier = await fetchBasePriceMultiplier(flightData.airlineId, seatClass);
 
-        // Lấy quy tắc tính giá
-        const rules = await fetchPricingRules();
+        console.log("Airline ID:", flightData.airlineId);
+        console.log("Selected Seat Class:", seatClass);
 
-        // Lấy thông tin người dùng
-        const userData = await getCurrentUser();
+        const departureDate = new Date(flightData.departureTime);
+        const today = new Date();
+        const daysBeforeDeparture = Math.ceil(
+          (departureDate - today) / (1000 * 60 * 60 * 24)
+        );
 
-        // Cập nhật state với thông tin người dùng
-        setFirstName(userData.firstName || "");
-        setLastName(userData.lastName || "");
-        setEmail(userData.email || "");
-        setPhone(userData.phoneNumber || "");
+        console.log("Calculated daysBeforeDeparture:", daysBeforeDeparture);
 
-        // Cập nhật state cho quy tắc giá và chi tiết chuyến bay
-        setPricingRules(rules);
-        setFlightDetails({ departure: flightData, return: null });
+        const priceMultiplier = await fetchPriceMultiplier(daysBeforeDeparture);
 
-        // Tính tổng giá ban đầu
+        console.log("Base Price Multiplier:", basePriceMultiplier);
+        console.log("Pricing Rule Multiplier:", priceMultiplier);
+
         const calculatedPrice = calculateTotalPrice(
-          { departure: flightData, return: { basePrice: 0, departureTime: new Date() } },
-          rules,
+          flightData.basePrice,
+          basePriceMultiplier,
+          priceMultiplier,
           baggagePrice
         );
-        setTotalPrice(calculatedPrice);
 
+        setFlightDetails({ ...flightData, basePriceMultiplier, priceMultiplier, seatClass });
+        setTotalPrice(calculatedPrice);
         setLoading(false);
       } catch (error) {
         console.error("Error:", error);
@@ -87,25 +124,23 @@ const CustomerDetail = () => {
     fetchData();
   }, [baggagePrice]);
 
-  const calculateMultiplier = (departureDate, rules) => {
-    const today = new Date();
-    const departure = new Date(departureDate);
-    const daysBeforeDeparture = Math.ceil(
-      (departure - today) / (1000 * 60 * 60 * 24)
-    );
-    return rules.find((rule) => daysBeforeDeparture >= rule.daysBeforeDeparture)?.multiplier || 1.0;
-  };
+  const calculateTotalPrice = (
+    basePrice,
+    basePriceMultiplier,
+    priceMultiplier,
+    baggage
+  ) => {
+    console.log("Calculating Total Price with:", {
+      basePrice,
+      basePriceMultiplier,
+      priceMultiplier,
+      baggage,
+    }); // Debugging log
 
-  const calculateTotalPrice = (flights, rules, baggage) => {
-    const departureMultiplier = calculateMultiplier(
-      flights.departure.departureTime,
-      rules
-    );
-    const departurePrice =
-      flights.departure?.basePrice && departureMultiplier
-        ? flights.departure.basePrice * departureMultiplier
-        : 0;
-    return Math.round(departurePrice + baggage - 5);
+    if (isNaN(basePrice) || isNaN(basePriceMultiplier) || isNaN(priceMultiplier)) {
+      return 0; // Fallback for invalid values
+    }
+    return Math.round(basePrice * basePriceMultiplier * priceMultiplier + baggage);
   };
 
   const handleBaggageChange = (e) => {
@@ -113,14 +148,17 @@ const CustomerDetail = () => {
   };
 
   const handleProceedToPayment = () => {
+    if (!firstName || !lastName || !email || !phone) {
+      alert("Please fill in all customer information fields before proceeding.");
+      return;
+    }
+
     const contactInfo = {
       gender,
       firstName,
       lastName,
       email,
-      phone
-      // address,
-      // age,
+      phone,
     };
 
     const checkoutData = {
@@ -136,7 +174,7 @@ const CustomerDetail = () => {
 
   if (loading) return <div className="text-center p-5">Loading flight information...</div>;
   if (error) return <div className="alert alert-danger m-5">{error}</div>;
-  if (!flightDetails || !flightDetails.departure) return <div className="alert alert-warning m-5">No flight information available</div>;
+  if (!flightDetails) return <div className="alert alert-warning m-5">No flight information available</div>;
 
   return (
     <div className="container checkout-container my-5">
@@ -144,11 +182,11 @@ const CustomerDetail = () => {
         <div className="col-md-7">
           <section className="checkout-flight-info mb-4">
             <h4 className="text-primary">Flight Information</h4>
-            <p><strong>Airline:</strong> {flightDetails.departure.airlineName}</p>
-            <p><strong>Flight Number:</strong> {flightDetails.departure.flightNumber}</p>
-            <p><strong>Departure Time:</strong> {new Date(flightDetails.departure.departureTime).toLocaleString()}</p>
-            <p><strong>Class: </strong> {flightDetails.departure.seatClass}</p>
-            <p><strong>Base Price:</strong> {flightDetails.departure.basePrice.toLocaleString()} USD</p>
+            <p><strong>Airline:</strong> {flightDetails.airlineName}</p>
+            <p><strong>Flight Number:</strong> {flightDetails.flightNumber}</p>
+            <p><strong>Departure Time:</strong> {formatDate(flightDetails.departureTime)}</p>
+            <p><strong>Class: </strong> {flightDetails.seatClass}</p>
+            {/* <p><strong>Base Price:</strong> {flightDetails.basePrice.toLocaleString()} USD</p> */}
           </section>
 
           <section className="checkout-baggage-info mb-4">
@@ -178,7 +216,7 @@ const CustomerDetail = () => {
                 </select>
               </div>
               <div className="mb-3">
-                <label htmlFor="firstName" className="form-label">First Name</label>
+                <label htmlFor="firstName" className="form-label">First name/middle name according to passport</label>
                 <input
                   type="text"
                   id="firstName"
@@ -189,7 +227,7 @@ const CustomerDetail = () => {
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="lastName" className="form-label">Last Name</label>
+                <label htmlFor="lastName" className="form-label">Last name according to passport</label>
                 <input
                   type="text"
                   id="lastName"
@@ -199,17 +237,6 @@ const CustomerDetail = () => {
                   required
                 />
               </div>
-              {/* <div className="mb-3">
-                <label htmlFor="age" className="form-label">Age</label>
-                <input
-                  type="number"
-                  id="age"
-                  className="form-control"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  required
-                />
-              </div> */}
               <div className="mb-3">
                 <label htmlFor="email" className="form-label">Email</label>
                 <input
@@ -232,17 +259,6 @@ const CustomerDetail = () => {
                   required
                 />
               </div>
-              {/* <div className="mb-3">
-                <label htmlFor="address" className="form-label">Address</label>
-                <textarea
-                  id="address"
-                  className="form-control"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  rows="3"
-                  required
-                />
-              </div> */}
               <button
                 type="button"
                 className="btn btn-primary mt-3"
@@ -258,20 +274,9 @@ const CustomerDetail = () => {
           <section className="checkout-pricing-summary p-3 bg-light border rounded sticky-top">
             <h4 className="text-primary mb-3">Price Summary</h4>
             <p>
-              Outbound:{" "}
-              <strong>
-                {flightDetails.departure?.basePrice
-                  ? (
-                    flightDetails.departure.basePrice *
-                    calculateMultiplier(flightDetails.departure.departureTime, pricingRules)
-                  ).toLocaleString() + " USD"
-                  : "N/A"}
-              </strong>
+              Outbound Price: <strong>{(flightDetails.basePrice * flightDetails.basePriceMultiplier * flightDetails.priceMultiplier).toLocaleString()} USD</strong>
             </p>
-            <p>
-              Baggage: <strong>{baggagePrice.toLocaleString()} USD</strong>
-            </p>
-            <p>Discount: <strong>5 USD</strong></p>
+            <p>Baggage: <strong>{baggagePrice.toLocaleString()} USD</strong></p>
             <hr />
             <p className="checkout-total-price text-success fs-5 fw-bold">
               Total: {totalPrice.toLocaleString()} USD
