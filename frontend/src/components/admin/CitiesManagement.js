@@ -3,29 +3,33 @@ import { getCities, addCity, updateCity, deleteCity } from "../../services/admin
 
 const CitiesManagement = () => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
-  const [form, setForm] = useState({ cityName: "", state: "", country: "" });
+  const [form, setForm] = useState({
+    cityName: "",
+    state: "",
+    country: "",
+  });
 
   useEffect(() => {
     fetchCities();
   }, []);
 
   const fetchCities = async () => {
-    setLoading(true);
     try {
       const response = await getCities();
-      setData(response.data);
+      setData(response.data || []);
     } catch (error) {
       alert("Failed to fetch cities");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleFormSubmit = async () => {
-    setLoading(true);
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
     try {
       if (editingRecord) {
         await updateCity(editingRecord.cityId, form);
@@ -38,28 +42,51 @@ const CitiesManagement = () => {
       fetchCities();
     } catch (error) {
       alert("Failed to save city");
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDelete = async (record) => {
-    setLoading(true);
+    if (!window.confirm(`Are you sure you want to delete the city ${record.cityName}?`)) return;
+
     try {
       await deleteCity(record.cityId);
       alert("City deleted successfully");
       fetchCities();
     } catch (error) {
       alert("Failed to delete city");
-    } finally {
-      setLoading(false);
     }
   };
 
+  const filteredData = data.filter(
+    (city) =>
+      city.cityName.toLowerCase().includes(searchText.toLowerCase()) ||
+      city.state.toLowerCase().includes(searchText.toLowerCase()) ||
+      city.country.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCities = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
   return (
-    <div className="cities-management">
+    <div className="cities-management__container mt-4">
+      <h2>Cities Management</h2>
+
+      {/* Search bar */}
+      <div className="cities-management__search mb-3">
+        <input
+          type="text"
+          placeholder="Search by name, state, country..."
+          className="form-control"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
+
+      {/* Add city button */}
       <button
-        className="add-button"
+        className="btn btn-primary cities-management__add-button mb-3"
         onClick={() => {
           setForm({ cityName: "", state: "", country: "" });
           setEditingRecord(null);
@@ -69,9 +96,11 @@ const CitiesManagement = () => {
         Add City
       </button>
 
-      <table className="data-table">
+      {/* Cities table */}
+      <table className="table table-striped cities-management__table">
         <thead>
-          <tr>            
+          <tr>
+            <th>#</th>
             <th>City Name</th>
             <th>State</th>
             <th>Country</th>
@@ -79,30 +108,27 @@ const CitiesManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {data.length > 0 ? (
-            data.map((record) => (
-              <tr key={record.cityId}>                
-                <td>{record.cityName}</td>
-                <td>{record.state}</td>
-                <td>{record.country}</td>
+          {currentCities.length > 0 ? (
+            currentCities.map((city, index) => (
+              <tr key={city.cityId}>
+                <td>{indexOfFirstItem + index + 1}</td>
+                <td>{city.cityName}</td>
+                <td>{city.state}</td>
+                <td>{city.country}</td>
                 <td>
                   <button
-                    className="edit-button"
+                    className="btn btn-warning btn-sm me-2"
                     onClick={() => {
-                      setForm({
-                        cityName: record.cityName,
-                        state: record.state,
-                        country: record.country,
-                      });
-                      setEditingRecord(record);
+                      setForm(city);
+                      setEditingRecord(city);
                       setModalVisible(true);
                     }}
                   >
                     Edit
                   </button>
                   <button
-                    className="delete-button"
-                    onClick={() => handleDelete(record)}
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleDelete(city)}
                   >
                     Delete
                   </button>
@@ -111,59 +137,106 @@ const CitiesManagement = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="5">No cities available</td>
+              <td colSpan="5" className="text-center">
+                No cities available
+              </td>
             </tr>
           )}
         </tbody>
       </table>
 
+      {/* Pagination */}
+      <div className="cities-management__pagination d-flex justify-content-between align-items-center">
+        <button
+          className="btn btn-outline-secondary"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(currentPage - 1)}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="btn btn-outline-secondary"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Add/Edit modal */}
       {modalVisible && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>{editingRecord ? "Edit City" : "Add City"}</h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleFormSubmit();
-              }}
-            >
-              <div className="form-group">
-                <label>City Name</label>
-                <input
-                  type="text"
-                  value={form.cityName}
-                  onChange={(e) => setForm({ ...form, cityName: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>State</label>
-                <input
-                  type="text"
-                  value={form.state}
-                  onChange={(e) => setForm({ ...form, state: e.target.value })}
-                />
-              </div>
-              <div className="form-group">
-                <label>Country</label>
-                <input
-                  type="text"
-                  value={form.country}
-                  onChange={(e) => setForm({ ...form, country: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="save-button">Save</button>
+        <div className="modal show d-block cities-management__modal" tabIndex="-1" role="dialog">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {editingRecord ? "Edit City" : "Add City"}
+                </h5>
                 <button
                   type="button"
-                  className="cancel-button"
+                  className="btn-close"
                   onClick={() => setModalVisible(false)}
-                >
-                  Cancel
-                </button>
+                ></button>
               </div>
-            </form>
+              <div className="modal-body">
+                <form onSubmit={handleFormSubmit}>
+                  {/* City Name */}
+                  <div className="form-floating mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="floatingCityName"
+                      placeholder="City Name"
+                      value={form.cityName}
+                      onChange={(e) => setForm({ ...form, cityName: e.target.value })}
+                      required
+                    />
+                    <label htmlFor="floatingCityName">City Name</label>
+                  </div>
+
+                  {/* State */}
+                  <div className="form-floating mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="floatingState"
+                      placeholder="State"
+                      value={form.state}
+                      onChange={(e) => setForm({ ...form, state: e.target.value })}
+                    />
+                    <label htmlFor="floatingState">State</label>
+                  </div>
+
+                  {/* Country */}
+                  <div className="form-floating mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="floatingCountry"
+                      placeholder="Country"
+                      value={form.country}
+                      onChange={(e) => setForm({ ...form, country: e.target.value })}
+                      required
+                    />
+                    <label htmlFor="floatingCountry">Country</label>
+                  </div>
+
+                  <button type="submit" className="btn btn-primary">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary ms-2"
+                    onClick={() => setModalVisible(false)}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       )}

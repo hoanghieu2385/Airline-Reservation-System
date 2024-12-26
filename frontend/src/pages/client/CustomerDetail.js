@@ -90,10 +90,17 @@ const CustomerDetail = () => {
   const calculateMultiplier = (departureDate, rules) => {
     const today = new Date();
     const departure = new Date(departureDate);
+
+    // Kiểm tra nếu departureDate hợp lệ
+    if (isNaN(departure)) {
+      console.error("Invalid departure date:", departureDate);
+      return 1.0; // Giá trị mặc định
+    }
+
     const daysBeforeDeparture = Math.ceil(
       (departure - today) / (1000 * 60 * 60 * 24)
     );
-    return rules.find((rule) => daysBeforeDeparture >= rule.daysBeforeDeparture)?.multiplier || 1.0;
+    return rules.find((rule) => daysBeforeDeparture <= rule.daysBeforeDeparture)?.multiplier || 1.0;
   };
 
   const calculateTotalPrice = (flights, rules, baggage) => {
@@ -101,10 +108,12 @@ const CustomerDetail = () => {
       flights.departure.departureTime,
       rules
     );
+
     const departurePrice =
       flights.departure?.basePrice && departureMultiplier
         ? flights.departure.basePrice * departureMultiplier
         : 0;
+
     return Math.round(departurePrice + baggage - 5);
   };
 
@@ -119,8 +128,6 @@ const CustomerDetail = () => {
       lastName,
       email,
       phone
-      // address,
-      // age,
     };
 
     const checkoutData = {
@@ -199,17 +206,6 @@ const CustomerDetail = () => {
                   required
                 />
               </div>
-              {/* <div className="mb-3">
-                <label htmlFor="age" className="form-label">Age</label>
-                <input
-                  type="number"
-                  id="age"
-                  className="form-control"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  required
-                />
-              </div> */}
               <div className="mb-3">
                 <label htmlFor="email" className="form-label">Email</label>
                 <input
@@ -232,17 +228,6 @@ const CustomerDetail = () => {
                   required
                 />
               </div>
-              {/* <div className="mb-3">
-                <label htmlFor="address" className="form-label">Address</label>
-                <textarea
-                  id="address"
-                  className="form-control"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  rows="3"
-                  required
-                />
-              </div> */}
               <button
                 type="button"
                 className="btn btn-primary mt-3"

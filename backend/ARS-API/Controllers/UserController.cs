@@ -502,6 +502,69 @@ namespace ARS_API.Controllers
             return Ok("User deleted successfully.");
         }
 
+// Reset Password
+[HttpPost("forgot-password")]
+public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+{
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    if (user == null)
+    {
+        return BadRequest("User not found.");
+    }
+
+    // Generate reset token
+    var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+    // Create reset link
+    var resetLink = Url.Action("ResetPassword", "User",
+        new { token = resetToken, email = user.Email },
+        protocol: HttpContext.Request.Scheme);
+
+    // Send reset email
+    var emailContent = $@"
+        <h2>Reset Your Password</h2>
+        <p>Click the link below to reset your password:</p>
+        <a href='{resetLink}'>Reset Password</a>";
+
+    try
+    {
+        await _emailService.SendEmailAsync(
+            user.Email,
+            "Reset Password",
+            emailContent
+        );
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error sending email: {ex.Message}");
+        return StatusCode(500, "Failed to send reset password email. Please try again.");
+    }
+
+    return Ok("Password reset email sent.");
+}
+
+[HttpPost("reset-password")]
+public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+{
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    if (user == null)
+    {
+        return BadRequest("Invalid email.");
+    }
+
+    var resetResult = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+    if (!resetResult.Succeeded)
+    {
+        return BadRequest(new
+        {
+            Message = "Failed to reset password.",
+            Errors = resetResult.Errors.Select(e => e.Description)
+        });
+    }
+
+    return Ok("Password has been reset successfully.");
+}
+
         private JwtSecurityToken CreateJwtToken(List<Claim> authClaims)
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
