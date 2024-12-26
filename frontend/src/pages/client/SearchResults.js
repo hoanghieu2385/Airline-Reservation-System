@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useQueryParams } from "../../hook/useQueryParams";
 import { searchFlights } from "../../services/clientApi";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,19 @@ const SearchResults = () => {
     const [error, setError] = useState(null);
     const [filterPrice, setFilterPrice] = useState(1000);
     const [sortOption, setSortOption] = useState("priceAsc");
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // Check login state
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+    const modalRef = useRef(null);
+
+    useEffect(() => {
+        // Check login status
+        const checkLoginStatus = () => {
+            const token = sessionStorage.getItem("token");
+            setIsLoggedIn(!!token); // Update login state
+        };
+        checkLoginStatus();
+    }, []);
 
     useEffect(() => {
         const fetchFlights = async () => {
@@ -38,9 +51,32 @@ const SearchResults = () => {
         fetchFlights();
     }, [from, to, date, passengers, seatClass]);
 
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (modalRef.current && !modalRef.current.contains(event.target)) {
+                setShowLoginPopup(false); // Close popup if clicked outside
+            }
+        };
+
+        if (showLoginPopup) {
+            document.addEventListener("mousedown", handleOutsideClick);
+        } else {
+            document.removeEventListener("mousedown", handleOutsideClick);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+        };
+    }, [showLoginPopup]);
+
     const handleFlightSelect = (flight) => {
-        // Lưu cả FlightId và seatClass
-        localStorage.setItem(
+        if (!isLoggedIn) {
+            setShowLoginPopup(true); // Show login popup if not logged in
+            return;
+        }
+
+        // Save selected flight details to sessionStorage
+        sessionStorage.setItem(
             "selectedFlight",
             JSON.stringify({
                 flightId: flight.flightId,
@@ -50,15 +86,15 @@ const SearchResults = () => {
         navigate("/customerdetail");
     };
 
-    // Lọc chuyến bay dựa trên giá
+    const closeLoginPopup = () => setShowLoginPopup(false);
+
     const filteredFlights = flights.filter((flight) => flight.dynamicPrice <= filterPrice);
 
-    // Sắp xếp chuyến bay
     const sortedFlights = [...filteredFlights].sort((a, b) => {
-        if (sortOption === "priceAsc") return a.dynamicPrice - b.dynamicPrice; // Giá tăng dần
-        if (sortOption === "priceDesc") return b.dynamicPrice - a.dynamicPrice; // Giá giảm dần
-        if (sortOption === "timeAsc") return new Date(a.departureTime) - new Date(b.departureTime); // Thời gian tăng dần
-        if (sortOption === "timeDesc") return new Date(b.departureTime) - new Date(a.departureTime); // Thời gian giảm dần
+        if (sortOption === "priceAsc") return a.dynamicPrice - b.dynamicPrice;
+        if (sortOption === "priceDesc") return b.dynamicPrice - a.dynamicPrice;
+        if (sortOption === "timeAsc") return new Date(a.departureTime) - new Date(b.departureTime);
+        if (sortOption === "timeDesc") return new Date(b.departureTime) - new Date(a.departureTime);
         return 0;
     });
 
@@ -69,7 +105,6 @@ const SearchResults = () => {
     return (
         <div className="container mt-4 search-results">
             <div className="row">
-                {/* Sidebar: Bộ lọc */}
                 <div className="col-md-4 sidebar">
                     <div className="filter-price mb-4">
                         <label htmlFor="filterPrice">Max Price: ${filterPrice}</label>
@@ -100,7 +135,6 @@ const SearchResults = () => {
                     </div>
                 </div>
 
-                {/* Main Content */}
                 <div className="col-md-8 main-content">
                     <h4>Choose flight: {sortedFlights.length} search results found</h4>
                     <div>
@@ -138,6 +172,38 @@ const SearchResults = () => {
                     </div>
                 </div>
             </div>
+
+            {showLoginPopup && (
+                <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+                    <div className="modal-dialog modal-dialog-centered" role="document">
+                        <div ref={modalRef} className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Login Required</h5>
+                                <button type="button" className="btn-close" onClick={closeLoginPopup}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>You need to log in to book a flight. Please log in to continue.</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={() => navigate("/login")}
+                                >
+                                    Log In
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={closeLoginPopup}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -119,6 +119,48 @@ namespace ARS_API.Controllers
             return Ok(eTicket);
         }
 
+        // GET: api/ETicket/customerinfo/{reservationCode}
+        [HttpGet("customerinfo/{reservationCode}")]
+        public async Task<IActionResult> GetCustomerInfoByReservationCode(string reservationCode)
+        {
+            var reservation = await _dbContext.Reservations
+                .Include(r => r.Flight)
+                    .ThenInclude(f => f.OriginAirport)
+                .Include(r => r.Flight)
+                    .ThenInclude(f => f.DestinationAirport)
+                .Include(r => r.Flight)
+                    .ThenInclude(f => f.Airline)
+                .Include(r => r.Passengers)
+                .FirstOrDefaultAsync(r => r.ReservationCode == reservationCode);
+
+            if (reservation == null)
+            {
+                return NotFound(new { Message = "No reservation found for the provided Reservation Code." });
+            }
+
+            var customerInfo = new
+            {
+                ReservationCode = reservation.ReservationCode,
+                FlightDetails = new
+                {
+                    FromTo = $"{reservation.Flight.OriginAirport.AirportName} -> {reservation.Flight.DestinationAirport.AirportName}",
+                    Airline = reservation.Flight.Airline.AirlineName,
+                    TravelDate = reservation.TravelDate.ToString("dddd, d MMMM yyyy"),
+                    TotalPrice = reservation.TotalPrice
+                },
+                Passengers = reservation.Passengers.Select(p => new
+                {
+                    FullName = $"{p.FirstName} {p.LastName}",
+                    Age = p.Age,
+                    Gender = p.Gender,
+                    TicketCode = p.TicketCode,
+                    TicketPrice = p.TicketPrice
+                })
+            };
+
+            return Ok(customerInfo);
+        }
+
         // PUT: api/ETicket/{passengerId}
         [HttpPut("{passengerId}")]
         public async Task<IActionResult> UpdateETicket(Guid passengerId, [FromBody] UpdatePassengerDTO updateDTO)

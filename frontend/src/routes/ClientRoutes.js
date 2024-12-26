@@ -10,7 +10,7 @@ import Register from "../components/common/Register";
 import ClientDashboard from "../pages/client/ClientDashboard";
 import SearchResults from "../pages/client/SearchResults";
 import Payment from "../pages/client/Payment";
-
+import ForgotPasswordPage from "../components/common/ForgotPasswordPage";
 function ClientRoutes() {
     return (
         <ClientLayout>
@@ -24,6 +24,7 @@ function ClientRoutes() {
                 <Route path="/customerdetail" element={<CustomerDetail/>}/>
                 <Route path="/user/dashboard" element={<ClientDashboard />} />
                 <Route path="/results" element={<SearchResults />} />
+                <Route path="/forgotPassword" element={<ForgotPasswordPage />} />
             </Routes>
         </ClientLayout>
     );

@@ -1,4 +1,5 @@
 ﻿using ARS_API.DTOs;
+using ARS_API.DTOs.User;
 using ARS_API.Models;
 using ARS_API.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -43,11 +44,21 @@ namespace ARS_API.Controllers
                 return NotFound("User not found");
 
             // Xác nhận email
-            var result = await _userManager.ConfirmEmailAsync(user, token);
-            if (!result.Succeeded)
-                return BadRequest("Email confirmation failed");
+            try
+            {
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(new { Message = "Invalid or expired email confirmation token." });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error confirming email: {ex.Message}");
+                return StatusCode(500, "An error occurred while confirming email.");
+            }
 
-            return Ok("Email confirmed successfully. You can now login to your account.");
+            return Redirect("http://localhost:3000/login");
         }
 
         [HttpPost("login")]
@@ -149,11 +160,19 @@ namespace ARS_API.Controllers
                 <a href='{confirmationLink}'>Xác nhận email</a>
             ";
 
-            await _emailService.SendEmailAsync(
-                user.Email,
-                "Xác nhận đăng ký tài khoản",
-                emailContent
-            );
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Xác nhận đăng ký tài khoản",
+                    emailContent
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
+                return StatusCode(500, "Failed to send confirmation email. Please try again.");
+            }
 
             return Ok(new
             {
@@ -162,8 +181,65 @@ namespace ARS_API.Controllers
             });
         }
 
+        [HttpPost("create-user")]
+        [Authorize(Roles = "ADMIN")] // Only ADMIN can create users
+        public async Task<IActionResult> CreateUser([FromBody] AdminCreateUserDTO model)
+        {
+            // Check if the provided role is valid
+            string[] validRoles = { "USER", "CLERK", "ADMIN" };
+            if (!string.IsNullOrEmpty(model.Role) && !validRoles.Contains(model.Role.ToUpper()))
+            {
+                return BadRequest("Role does not exist or input is incorrect.");
+            }
+
+            var role = string.IsNullOrEmpty(model.Role) ? "USER" : model.Role.ToUpper();
+
+            // Create the user instance
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                SkyMiles = model.SkyMiles,
+                EmailConfirmed = false // Admin-created accounts are confirmed by default
+            };
+
+            // Create the user with the specified password
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Message = "Failed to create user.",
+                    Errors = result.Errors.Select(e => e.Description)
+                });
+            }
+
+            // Assign the role to the user
+            var roleResult = await _userManager.AddToRoleAsync(user, role);
+            if (!roleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user); // Rollback user creation
+                return BadRequest(new
+                {
+                    Message = "Failed to assign role.",
+                    Errors = roleResult.Errors.Select(e => e.Description)
+                });
+            }
+
+            return Ok(new
+            {
+                Message = "User created successfully.",
+                UserId = user.Id
+            });
+        }
+
+
+        // Only ADMIN and CLERK can read the list of users
         [HttpGet("read")]
-        [Authorize(Roles = "Admin,Clerk")] // allow for admin, clerk
+        [Authorize(Roles = "ADMIN,CLERK")] // ADMIN and CLERK allowed
         public async Task<IActionResult> GetAllUsers()
         {
             var users = _userManager.Users.ToList();
@@ -175,10 +251,13 @@ namespace ARS_API.Controllers
                 userList.Add(new
                 {
                     user.Id,
-                    user.UserName,
-                    user.Email,
                     user.FirstName,
                     user.LastName,
+                    user.Email,
+                    user.EmailConfirmed,
+                    user.PhoneNumber,
+                    user.PhoneNumberConfirmed,
+                    user.SkyMiles,
                     Roles = roles
                 });
             }
@@ -318,8 +397,94 @@ namespace ARS_API.Controllers
             });
         }
 
+
+        [HttpPut("admin-update-user/{id}")]
+        [Authorize(Roles = "ADMIN")] // Only ADMIN can update user information
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Cập nhật các trường cơ bản (không bắt buộc phải có)
+            if (!string.IsNullOrEmpty(model.FirstName))
+                user.FirstName = model.FirstName;
+
+            if (!string.IsNullOrEmpty(model.LastName))
+                user.LastName = model.LastName;
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+                user.PhoneNumber = model.PhoneNumber;
+
+            // Cập nhật trạng thái EmailConfirmed (nếu có)
+            if (model.EmailConfirmed.HasValue)
+                user.EmailConfirmed = model.EmailConfirmed.Value;
+
+            // Cập nhật trạng thái PhoneNumberConfirmed (nếu có)
+            if (model.PhoneNumberConfirmed.HasValue)
+                user.PhoneNumberConfirmed = model.PhoneNumberConfirmed.Value;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Message = "Failed to update user details.",
+                    Errors = updateResult.Errors.Select(e => e.Description)
+                });
+            }
+
+            // Cập nhật Role (nếu có và hợp lệ)
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                string[] validRoles = { "USER", "CLERK", "ADMIN" };
+                if (!validRoles.Contains(model.Role.ToUpper()))
+                {
+                    return BadRequest("Role does not exist or input is incorrect.");
+                }
+
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                var roleUpdateResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!roleUpdateResult.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Failed to remove existing roles.",
+                        Errors = roleUpdateResult.Errors.Select(e => e.Description)
+                    });
+                }
+
+                var newRoleResult = await _userManager.AddToRoleAsync(user, model.Role.ToUpper());
+                if (!newRoleResult.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Failed to assign new role.",
+                        Errors = newRoleResult.Errors.Select(e => e.Description)
+                    });
+                }
+            }
+
+            return Ok(new
+            {
+                Message = "User updated successfully.",
+                UpdatedFields = new
+                {
+                    user.FirstName,
+                    user.LastName,
+                    user.PhoneNumber,
+                    user.EmailConfirmed,
+                    user.PhoneNumberConfirmed,
+                    Role = model.Role
+                }
+            });
+        }
+
+        // Only ADMIN can delete a user
         [HttpDelete("delete/{id}")]
-        [Authorize]
+        [Authorize(Roles = "ADMIN")] // Only ADMIN allowed
         public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -336,6 +501,70 @@ namespace ARS_API.Controllers
 
             return Ok("User deleted successfully.");
         }
+
+// Reset Password
+[HttpPost("forgot-password")]
+public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+{
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    if (user == null)
+    {
+        return BadRequest("User not found.");
+    }
+
+    // Generate reset token
+    var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+    // Create reset link
+    var resetLink = Url.Action("ResetPassword", "User",
+        new { token = resetToken, email = user.Email },
+        protocol: HttpContext.Request.Scheme);
+
+    // Send reset email
+    var emailContent = $@"
+        <h2>Reset Your Password</h2>
+        <p>Click the link below to reset your password:</p>
+        <a href='{resetLink}'>Reset Password</a>";
+
+    try
+    {
+        await _emailService.SendEmailAsync(
+            user.Email,
+            "Reset Password",
+            emailContent
+        );
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error sending email: {ex.Message}");
+        return StatusCode(500, "Failed to send reset password email. Please try again.");
+    }
+
+    return Ok("Password reset email sent.");
+}
+
+[HttpPost("reset-password")]
+public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+{
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    if (user == null)
+    {
+        return BadRequest("Invalid email.");
+    }
+
+    var resetResult = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+    if (!resetResult.Succeeded)
+    {
+        return BadRequest(new
+        {
+            Message = "Failed to reset password.",
+            Errors = resetResult.Errors.Select(e => e.Description)
+        });
+    }
+
+    return Ok("Password has been reset successfully.");
+}
+
         private JwtSecurityToken CreateJwtToken(List<Claim> authClaims)
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

@@ -124,6 +124,7 @@ const CustomerDetail = () => {
     fetchData();
   }, [baggagePrice]);
 
+
   const calculateTotalPrice = (
     basePrice,
     basePriceMultiplier,
@@ -158,7 +159,7 @@ const CustomerDetail = () => {
       firstName,
       lastName,
       email,
-      phone,
+      phone
     };
 
     const checkoutData = {

@@ -1,0 +1,65 @@
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  font-family: 'Arial', sans-serif;
+}
+
+.header {
+  background-color: #001529;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+.layout-container {
+  display: flex;
+  flex: 1;
+}
+
+.sider {
+  width: 250px;
+  background-color: #001529;
+  padding: 20px;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  margin-bottom: 10px;
+}
+
+.menu-item a,
+.menu-item button {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px;
+  display: block;
+  border-radius: 5px;
+  background: none; /* Xóa nền mặc định của button */
+  border: none;     /* Xóa viền mặc định của button */
+  text-align: left; /* Canh trái giống với link */
+  cursor: pointer;  /* Hiển thị con trỏ khi hover */
+  width: 100%;      /* Đảm bảo chiếm toàn bộ chiều rộng container */
+  box-sizing: border-box; /* Đảm bảo padding không ảnh hưởng đến kích thước */
+}
+
+.menu-item a.active,
+.menu-item button.active {
+  background-color: #1890ff;
+}
+
+.menu-item a:hover,
+.menu-item button:hover {
+  background-color: #1890ff;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}

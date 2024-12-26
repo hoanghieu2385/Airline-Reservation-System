@@ -9,8 +9,6 @@ export const login = async (credentials) => {
     return response.data;
 };
 
-
-// Thêm hàm để lấy thông tin user
 export const getUserProfile = async () => {
     const response = await api.get(`/User/profile`);
     return response.data;
@@ -18,5 +16,14 @@ export const getUserProfile = async () => {
 
 export const register = async (userDetails) => {
     const response = await api.post(`/User/register`, userDetails);
+    return response.data;
+};
+export const forgotPassword = async (email) => {
+    const response = await api.post(`/User/forgot-password`, { email });
+    return response.data;
+};
+
+export const resetPassword = async (data) => {
+    const response = await api.post(`/User/reset-password`, data);
     return response.data;
 };

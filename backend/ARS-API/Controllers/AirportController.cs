@@ -66,8 +66,8 @@ namespace ARS_API.Controllers
             return Ok(airport);
         }
 
-        // POST: api/Airport
-        [HttpPost]
+        // POST: api/Airport/CreateAirport
+        [HttpPost("CreateAirport")]
         public async Task<IActionResult> CreateAirport([FromBody] Airport airport)
         {
             if (!ModelState.IsValid)

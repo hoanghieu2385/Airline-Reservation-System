@@ -1,163 +1,155 @@
-import React, { useState, useEffect } from "react";
-import { getETicketByTicketCode } from "../../services/eticketApi";
+// src/pages/client/ETicket.js
+import React, { useState } from "react";
+import { eticketAPI } from "../../services/eticketApi";
 import "../../assets/css/Eticket.css";
 
-const Eticket = () => {
-  const [ticketData, setTicketData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const ETicket = () => {
+    const [ticketCode, setTicketCode] = useState('');
+    const [ticketData, setTicketData] = useState(null);
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-  const ticketCode = "TICKET123";
-
-  useEffect(() => {
-    const fetchTicketData = async () => {
-      try {
-        setLoading(true);
-        const response = await getETicketByTicketCode(ticketCode);
-        setTicketData(response);
-        setLoading(false);
-      } catch (err) {
-        setError("Không thể tải thông tin vé. Vui lòng thử lại sau.");
-        setLoading(false);
-      }
+    const formatTicketCode = (code) => {
+        return code.trim();
     };
 
-    fetchTicketData();
-  }, [ticketCode]);
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (!ticketCode) return;
 
-  if (loading) return <div>Đang tải...</div>;
-  if (error) return <div>{error}</div>;
-  if (!ticketData) return <div>Không tìm thấy thông tin vé</div>;
+        setLoading(true);
+        setError('');
+        setTicketData(null);
 
-  const [fromAirport, toAirport] = ticketData.fromTo.split(" -> ");
+        try {
+            const formattedCode = formatTicketCode(ticketCode);
+            const response = await eticketAPI.getETicketByCode(formattedCode);
+            
+            if (response.data) {
+                setTicketData(response.data);
+            } else {
+                setError('Không tìm thấy thông tin vé.');
+            }
+        } catch (err) {
+            console.error('Error fetching ticket:', err);
+            setError(
+                err.response?.data?.message || 
+                'Có lỗi xảy ra khi tìm vé. Vui lòng thử lại sau.'
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="eticket-container">
-      <header className="eticket-header">
-        <div className="eticket-logo">Logo</div>
-        <div className="eticket-title">
-          <h1>E-Ticket / Vé điện tử</h1>
-          <h2>Departure Flight / Chuyến bay đi</h2>
-        </div>
-        <div className="eticket-booking">
-          <p>Traveloka Booking ID</p>
-          <h3>{ticketData.reservationCode}</h3>
-        </div>
-      </header>
+    const renderTicketInfo = () => {
+        if (!ticketData) return null;
 
-      <section className="flight-info">
-        <div className="flight-details">
-          <p className="flight-date">
-            {ticketData.flightDate}
-          </p>
-          <div className="flight-route">
-            <div>
-              <p><strong>1011</strong></p>
-              <p>{fromAirport}</p>
+        const { passenger, fromTo, flightDate, airline, amenities, reservationCode } = ticketData;
+        
+        return (
+            <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden ticket-info">
+                <div className="bg-blue-500 text-white p-4 ticket-header">
+                    <h2 className="text-xl font-semibold">Thông tin vé điện tử</h2>
+                </div>
+                
+                <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <h3 className="font-semibold text-lg border-b pb-2">
+                                Thông tin hành khách
+                            </h3>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Họ tên:</span>
+                                <span className="font-medium">{passenger.fullName}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Tuổi:</span>
+                                <span>{passenger.age}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Giới tính:</span>
+                                <span>{passenger.gender}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Mã vé:</span>
+                                <span className="font-medium">{passenger.ticketCode}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Giá vé:</span>
+                                <span className="font-medium text-blue-600">
+                                    {passenger.ticketPrice.toLocaleString('vi-VN')} VNĐ
+                                </span>
+                            </p>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <h3 className="font-semibold text-lg border-b pb-2">
+                                Thông tin chuyến bay
+                            </h3>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Hành trình:</span>
+                                <span className="font-medium">{fromTo}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Ngày bay:</span>
+                                <span>{flightDate}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Hãng bay:</span>
+                                <span>{airline}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Hành lý:</span>
+                                <span>{amenities}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Mã đặt chỗ:</span>
+                                <span className="font-medium">{reservationCode}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="route-separator">&#8594;</div>
-            <div>
-              <p><strong>1221</strong></p>
-              <p>{toAirport}</p>
+        );
+    };
+
+    return (
+        <div className="eticket-container">
+            <div className="container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold text-center mb-8">Tra cứu vé máy bay</h1>
+                
+                <form onSubmit={handleSearch} className="max-w-md mx-auto mb-8">
+                    <div className="flex flex-col gap-4">
+                        <input
+                            type="text"
+                            value={ticketCode}
+                            onChange={(e) => setTicketCode(e.target.value)}
+                            placeholder="Nhập mã vé của bạn (VD: VN123TK001)"
+                            className="w-full p-3 border rounded-lg search-input"
+                            required
+                        />
+                        <button 
+                            type="submit"
+                            className="w-full bg-blue-500 text-white p-3 rounded-lg search-button hover:bg-blue-600"
+                            disabled={loading || !ticketCode}
+                        >
+                            {loading ? 'Đang tìm kiếm...' : 'Tìm vé'}
+                        </button>
+                    </div>
+                </form>
+
+                {error && (
+                    <div className="max-w-md mx-auto mb-8">
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <span className="block sm:inline">{error}</span>
+                        </div>
+                    </div>
+                )}
+
+                {ticketData && renderTicketInfo()}
             </div>
-          </div>
-          <p className="flight-airline">
-            {ticketData.airline}
-            <br />
-            VN - 1603
-            <br />
-            Subclass M (Economy)
-          </p>
         </div>
-        <div className="flight-status">
-          <p className="status-text">Được hoàn tiền</p>
-        </div>
-      </section>
-
-      <div className="instructions">
-        <div className="instruction-item">
-          <img src="/path/to/icon-passport.png" alt="passport icon" />
-          <p>Trình CMND/hộ chiếu và vé khi làm thủ tục bay</p>
-        </div>
-        <div className="instruction-item">
-          <img src="/path/to/icon-clock.png" alt="clock icon" />
-          <p>Làm thủ tục ít nhất <strong>90 phút</strong> trước giờ khởi hành</p>
-        </div>
-        <div className="instruction-item">
-          <img src="/path/to/icon-airport.png" alt="airport icon" />
-          <p>Giờ hiển thị trên vé là giờ sân bay địa phương</p>
-        </div>
-      </div>
-
-      <table className="flight-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Passenger(s)</th>
-            <th>Route</th>
-            <th>Flight Facilities</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>{ticketData.passenger.fullName}</td>
-            <td>{`${fromAirport.split(' ')[0]} - ${toAirport.split(' ')[0]}`}</td>
-            <td>{ticketData.amenities}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <section className="passenger-info">
-        <h3>Passenger Details / Thông tin khách hàng</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Passenger(s) / Tên hành khách</th>
-              <th>Route / Chặng</th>
-              <th>Ticket Number</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>{ticketData.passenger.fullName}</td>
-              <td>{ticketData.fromTo.replace(' -> ', ' - ')}</td>
-              <td>{ticketData.passenger.ticketCode}</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section className="reschedule-refund">
-        <div className="how-to">
-          <h3>How to Reschedule / Hướng dẫn thay đổi lịch bay</h3>
-          <ol>
-            {[...Array(9).keys()].map((step) => (
-              <li key={step + 1}>{step + 1}</li>
-            ))}
-          </ol>
-        </div>
-
-        <div className="how-to">
-          <h3>How to Refund / Hướng dẫn hoàn tiền</h3>
-          <ol>
-            {[...Array(9).keys()].map((step) => (
-              <li key={step + 1}>{step + 1}</li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <footer className="eticket-footer">
-        <p>
-          LƯU Ý: Hãng hàng không chỉ chấp thuận yêu cầu hoàn tiền được xử lý
-          thông qua _____
-        </p>
-      </footer>
-    </div>
-  );
+    );
 };
 
-export default Eticket;
+export default ETicket;
