@@ -1,7 +1,10 @@
 // src/services/adminApi.js
 import api from "./api";
 
-export const getUsers = () => api.get("/user/read");
+export const getUsers = (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/user/read${queryString ? `?${queryString}` : ""}`);
+};
 export const addUser = (data) => api.post("/user/create-user", data);
 export const updateUser = (userId, data) => api.put(`/user/admin-update-user/${userId}`, data);
 export const deleteUser = (userId) => api.delete(`/user/delete/${userId}`);
@@ -12,7 +15,7 @@ export const updateAirline = (airlineId, data) => api.put(`/Airline/${airlineId}
 export const deleteAirline = (airlineId) => api.delete(`/Airline/${airlineId}`);
 
 export const getAirports = () => api.get("/Airport");
-export const addAirport = (data) => api.post("Airport/CreateAirport", data);
+export const addAirport = (data) => api.post("/Airport/CreateAirport", data);
 export const updateAirport = (airportId, data) => api.put(`/Airport/${airportId}`, data);
 export const deleteAirport = (airportId) => api.delete(`/Airport/${airportId}`);
 

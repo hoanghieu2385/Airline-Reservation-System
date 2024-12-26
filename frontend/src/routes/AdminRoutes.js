@@ -5,7 +5,8 @@ import Dashboard from "../pages/admin/Dashboard";
 import AirlinesManagement from "../components/admin/AirlinesManagement";
 import AirportsManagement from "../components/admin/AirportsManagement";
 import CitiesManagement from "../components/admin/CitiesManagement";
-import UserManagement from "../components/admin/UserManagement";
+import ClientManagement from "../components/admin/ClientManagement";
+import ClerkManagement from "../components/admin/ClerkManagement";
 
 const AdminRoutes = () => {
   return (
@@ -15,8 +16,8 @@ const AdminRoutes = () => {
         <Route path="/airlines" element={<AirlinesManagement />} />
         <Route path="/airports" element={<AirportsManagement />} />
         <Route path="/cities" element={<CitiesManagement />} />
-        <Route path="/users" element={<UserManagement />} />
-
+        <Route path="clients" element={<ClientManagement />} />
+        <Route path="/clerks" element={<ClerkManagement />} />
       </Routes>
     </AdminLayout>
   );
