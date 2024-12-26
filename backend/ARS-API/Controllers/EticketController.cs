@@ -1,5 +1,6 @@
 using ARS_API.DTOs;
 using ARS_API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace ARS_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EticketController : ControllerBase
     {
         private readonly ApplicationDBContext _dbContext;
