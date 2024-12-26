@@ -18,11 +18,13 @@ namespace ARS_API.Controllers
     {
         private readonly ApplicationDBContext _context;
         private readonly PricingService _pricingService;
+        private readonly IEmailService _emailService;
 
-        public ReservationsController(ApplicationDBContext context, PricingService pricingService)
+        public ReservationsController(ApplicationDBContext context, PricingService pricingService, IEmailService emailService)
         {
             _context = context;
             _pricingService = pricingService;
+            _emailService = emailService;
         }
 
         // GET: api/Reservations
@@ -62,7 +64,10 @@ namespace ARS_API.Controllers
             }
 
             // Validate flight
-            var flight = await _context.Flights.FindAsync(createReservationDto.FlightId);
+            var flight = await _context.Flights
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .FirstOrDefaultAsync(f => f.FlightId == createReservationDto.FlightId);
             if (flight == null)
             {
                 return BadRequest("Invalid flight ID.");
@@ -149,6 +154,26 @@ namespace ARS_API.Controllers
             }).ToList();
 
             _context.Passengers.AddRange(passengers);
+
+            string emailBody = $@"
+                <div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;'>
+                    <h1 style='text-align: center; color: #4CAF50;'>Thông tin vé điện tử</h1>
+                    
+                    <h2 style='color: #4CAF50;'>Thông tin hành khách</h2>
+                    <p><strong>Họ tên:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
+                    <p><strong>Mã vé:</strong> {reservation.ReservationCode}</p>
+                    <p><strong>Giá vé:</strong> {totalPrice:C}</p>
+
+                    <h2 style='color: #4CAF50;'>Thông tin chuyến bay</h2>
+                    <p><strong>Hành trình:</strong> {reservation.Flight.OriginAirport.AirportName} -> {reservation.Flight.DestinationAirport.AirportName}</p>
+                    <p><strong>Ngày bay:</strong> {travelDate:dddd, dd MMMM yyyy}</p>
+                    <p><strong>Hãng bay:</strong> {flight.Airline}</p>
+                    <p><strong>Mã đặt chỗ:</strong> {reservation.ReservationCode}</p>
+
+                    <p style='text-align: center; margin-top: 20px;'>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Xác nhận đặt vé máy bay", emailBody);
 
             // Save changes
             await _context.SaveChangesAsync();
