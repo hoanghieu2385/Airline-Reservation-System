@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import {
     getFlights,
     getAirlines,
@@ -26,11 +24,7 @@ const FlightManagement = () => {
         totalSeats: 0,
         basePrice: 0,
         status: "ACTIVE",
-        seatAllocations: [
-            { className: "Economy", availableSeats: 0 },
-            { className: "Business", availableSeats: 0 },
-            { className: "First Class", availableSeats: 0 },
-        ],
+        seatAllocations: [],
     });
     const [modalVisible, setModalVisible] = useState(false);
     const [editingFlight, setEditingFlight] = useState(null);
@@ -44,10 +38,9 @@ const FlightManagement = () => {
     const fetchFlights = async () => {
         try {
             const response = await getFlights();
-            setFlights(response?.data || []);
+            setFlights(response.data || []);
         } catch (error) {
             console.error("Error fetching flights:", error);
-            setFlights([]);
         }
     };
 
@@ -69,40 +62,22 @@ const FlightManagement = () => {
         }
     };
 
-    const handleTimeChange = (field, value) => {
-        const updatedForm = { ...form, [field]: value };
-        if (field === "departureTime" || field === "arrivalTime") {
-            const departure = new Date(updatedForm.departureTime);
-            const arrival = new Date(updatedForm.arrivalTime);
-            if (departure && arrival) {
-                if (arrival > departure) {
-                    updatedForm.duration = Math.round((arrival - departure) / (1000 * 60)); // Duration in minutes
-                } else {
-                    alert("Arrival time must be after departure time.");
-                    updatedForm.duration = 0;
-                }
-            } else {
-                updatedForm.duration = 0;
-            }
-        }
-        setForm(updatedForm);
-    };
-
-    const handleSeatAllocationChange = (index, value) => {
-        const updatedAllocations = [...form.seatAllocations];
-        updatedAllocations[index].availableSeats = parseInt(value, 10) || 0;
-
-        const totalSeats = updatedAllocations.reduce((sum, allocation) => sum + allocation.availableSeats, 0);
-
-        setForm({ ...form, seatAllocations: updatedAllocations, totalSeats });
-    };
-
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Prepare the payload
             const payload = {
-                ...form,
-                seatAllocations: form.seatAllocations,
+                flightNumber: form.flightNumber,
+                airlineId: form.airlineId,
+                originAirportId: form.originAirportId,
+                destinationAirportId: form.destinationAirportId,
+                departureTime: form.departureTime,
+                arrivalTime: form.arrivalTime,
+                duration: form.duration,
+                totalSeats: form.totalSeats,
+                basePrice: form.basePrice,
+                status: form.status,
+                seatAllocations: form.seatAllocations, // Ensure this is an array of { className, availableSeats }
             };
 
             if (editingFlight) {
@@ -132,14 +107,13 @@ const FlightManagement = () => {
         }
     };
 
-    const filteredFlights = Array.isArray(flights)
-        ? flights.filter((flight) =>
-            ["flightNumber", "airlineName", "originAirportName", "destinationAirportName"]
-                .some((key) =>
-                    flight[key]?.toLowerCase()?.includes(searchText.toLowerCase())
-                )
-        )
-        : [];
+    const filteredFlights = flights.filter(
+        (flight) =>
+            flight.flightNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+            flight.airlineName.toLowerCase().includes(searchText.toLowerCase()) ||
+            flight.originAirportName.toLowerCase().includes(searchText.toLowerCase()) ||
+            flight.destinationAirportName.toLowerCase().includes(searchText.toLowerCase())
+    );
 
     return (
         <div className="flight-management__container mt-4">
@@ -233,7 +207,7 @@ const FlightManagement = () => {
             {/* Add/Edit Modal */}
             {modalVisible && (
                 <div className="modal show d-block">
-                    <div className="modal-dialog modal-lg">
+                    <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">
@@ -247,7 +221,7 @@ const FlightManagement = () => {
                             </div>
                             <div className="modal-body">
                                 <form onSubmit={handleFormSubmit}>
-                                    {/* Flight Number */}
+                                    {/* Flight Details */}
                                     <div className="form-floating mb-3">
                                         <input
                                             type="text"
@@ -261,7 +235,6 @@ const FlightManagement = () => {
                                         />
                                         <label>Flight Number</label>
                                     </div>
-                                    {/* Airline */}
                                     <div className="form-floating mb-3">
                                         <select
                                             className="form-control"
@@ -280,106 +253,78 @@ const FlightManagement = () => {
                                         </select>
                                         <label>Airline</label>
                                     </div>
-                                    {/* Airports */}
-                                    <div className="row g-3 mb-3">
-                                        <div className="col-md-6">
-                                            <div className="form-floating">
-                                                <select
-                                                    className="form-control"
-                                                    value={form.originAirportId}
-                                                    onChange={(e) =>
-                                                        setForm({ ...form, originAirportId: e.target.value })
-                                                    }
-                                                    required
-                                                >
-                                                    <option value="">Select Origin Airport</option>
-                                                    {airports.map((airport) => (
-                                                        <option key={airport.airportId} value={airport.airportId}>
-                                                            {airport.airportName}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <label>Origin Airport</label>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-6">
-                                            <div className="form-floating">
-                                                <select
-                                                    className="form-control"
-                                                    value={form.destinationAirportId}
-                                                    onChange={(e) =>
-                                                        setForm({ ...form, destinationAirportId: e.target.value })
-                                                    }
-                                                    required
-                                                >
-                                                    <option value="">Select Destination Airport</option>
-                                                    {airports
-                                                        .filter(
-                                                            (airport) =>
-                                                                airport.airportId !== form.originAirportId
-                                                        )
-                                                        .map((airport) => (
-                                                            <option
-                                                                key={airport.airportId}
-                                                                value={airport.airportId}
-                                                            >
-                                                                {airport.airportName}
-                                                            </option>
-                                                        ))}
-                                                </select>
-                                                <label>Destination Airport</label>
-                                            </div>
-                                        </div>
+                                    <div className="form-floating mb-3">
+                                        <select
+                                            className="form-control"
+                                            value={form.originAirportId}
+                                            onChange={(e) =>
+                                                setForm({ ...form, originAirportId: e.target.value })
+                                            }
+                                            required
+                                        >
+                                            <option value="">Select Origin Airport</option>
+                                            {airports.map((airport) => (
+                                                <option key={airport.airportId} value={airport.airportId}>
+                                                    {airport.airportName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <label>Origin Airport</label>
                                     </div>
-                                    {/* Date Picker */}
-                                    <div className="mb-3">
-                                        <label>Departure and Arrival Times</label>
-                                        <DatePicker
-                                            selected={
-                                                form.departureTime ? new Date(form.departureTime) : null
+                                    <div className="form-floating mb-3">
+                                        <select
+                                            className="form-control"
+                                            value={form.destinationAirportId}
+                                            onChange={(e) =>
+                                                setForm({ ...form, destinationAirportId: e.target.value })
                                             }
-                                            onChange={(dates) => {
-                                                const [start, end] = dates;
-                                                setForm({
-                                                    ...form,
-                                                    departureTime: start?.toISOString(),
-                                                    arrivalTime: end?.toISOString(),
-                                                    duration:
-                                                        start && end
-                                                            ? Math.round((end - start) / (1000 * 60))
-                                                            : 0,
-                                                });
-                                            }}
-                                            startDate={
-                                                form.departureTime ? new Date(form.departureTime) : null
+                                            required
+                                        >
+                                            <option value="">Select Destination Airport</option>
+                                            {airports.map((airport) => (
+                                                <option key={airport.airportId} value={airport.airportId}>
+                                                    {airport.airportName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <label>Destination Airport</label>
+                                    </div>
+                                    <div className="form-floating mb-3">
+                                        <input
+                                            type="datetime-local"
+                                            className="form-control"
+                                            value={form.departureTime}
+                                            onChange={(e) =>
+                                                setForm({ ...form, departureTime: e.target.value })
                                             }
-                                            endDate={
-                                                form.arrivalTime ? new Date(form.arrivalTime) : null
-                                            }
-                                            selectsRange
-                                            showTimeSelect
-                                            timeFormat="HH:mm"
-                                            timeIntervals={15}
-                                            dateFormat="MMMM d, yyyy h:mm aa"
-                                            placeholderText="Select Departure and Arrival Times"
+                                            required
                                         />
+                                        <label>Departure Time</label>
                                     </div>
-                                    {/* Base Price and Seats */}
+                                    <div className="form-floating mb-3">
+                                        <input
+                                            type="datetime-local"
+                                            className="form-control"
+                                            value={form.arrivalTime}
+                                            onChange={(e) =>
+                                                setForm({ ...form, arrivalTime: e.target.value })
+                                            }
+                                            required
+                                        />
+                                        <label>Arrival Time</label>
+                                    </div>
                                     <div className="form-floating mb-3">
                                         <input
                                             type="number"
                                             className="form-control"
-                                            placeholder="Base Price"
-                                            value={form.basePrice}
+                                            placeholder="Duration"
+                                            value={form.duration}
                                             onChange={(e) =>
-                                                setForm({
-                                                    ...form,
-                                                    basePrice: parseFloat(e.target.value),
-                                                })
+                                                setForm({ ...form, duration: parseInt(e.target.value, 10) })
                                             }
                                             required
                                         />
-                                        <label>Base Price</label>
+                                        <label>Duration (minutes)</label>
                                     </div>
                                     <div className="form-floating mb-3">
                                         <input
@@ -387,39 +332,26 @@ const FlightManagement = () => {
                                             className="form-control"
                                             placeholder="Total Seats"
                                             value={form.totalSeats}
-                                            disabled
+                                            onChange={(e) =>
+                                                setForm({ ...form, totalSeats: parseInt(e.target.value, 10) })
+                                            }
+                                            required
                                         />
                                         <label>Total Seats</label>
                                     </div>
-                                    {/* Seat Allocations */}
-                                    <div className="mb-3">
-                                        <h5>Seat Allocations</h5>
-                                        {form.seatAllocations.map((allocation, index) => (
-                                            <div key={index} className="row mb-2">
-                                                <div className="col-md-6">
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        value={allocation.className}
-                                                        disabled
-                                                    />
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <input
-                                                        type="number"
-                                                        className="form-control"
-                                                        value={allocation.availableSeats}
-                                                        onChange={(e) =>
-                                                            handleSeatAllocationChange(index, e.target.value)
-                                                        }
-                                                        placeholder="Available Seats"
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="form-floating mb-3">
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            placeholder="Base Price"
+                                            value={form.basePrice}
+                                            onChange={(e) =>
+                                                setForm({ ...form, basePrice: parseFloat(e.target.value) })
+                                            }
+                                            required
+                                        />
+                                        <label>Base Price</label>
                                     </div>
-                                    {/* Status */}
                                     <div className="form-floating mb-3">
                                         <select
                                             className="form-control"
@@ -433,19 +365,55 @@ const FlightManagement = () => {
                                         </select>
                                         <label>Status</label>
                                     </div>
-                                    {/* Form Actions */}
-                                    <div className="d-flex justify-content-end">
-                                        <button type="submit" className="btn btn-primary">
-                                            Save
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary ms-2"
-                                            onClick={() => setModalVisible(false)}
-                                        >
-                                            Cancel
-                                        </button>
+
+                                    {/* Seat Allocations Section */}
+                                    <div className="mb-3">
+                                        <h5>Seat Allocations</h5>
+                                        {(form.seatAllocations || []).map((allocation, index) => (
+                                            <div key={index} className="row mb-2">
+                                                <div className="col-md-6">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={allocation.className}
+                                                        onChange={(e) => {
+                                                            const updatedAllocations = [...form.seatAllocations];
+                                                            updatedAllocations[index].className = e.target.value;
+                                                            setForm({ ...form, seatAllocations: updatedAllocations });
+                                                        }}
+                                                        placeholder="Class Name"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className="col-md-6">
+                                                    <input
+                                                        type="number"
+                                                        className="form-control"
+                                                        value={allocation.availableSeats}
+                                                        onChange={(e) => {
+                                                            const updatedAllocations = [...form.seatAllocations];
+                                                            updatedAllocations[index].availableSeats = parseInt(e.target.value, 10);
+                                                            setForm({ ...form, seatAllocations: updatedAllocations });
+                                                        }}
+                                                        placeholder="Available Seats"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
+
+                                    {/* Form Actions */}
+                                    <button type="submit" className="btn btn-primary">
+                                        Save
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary ms-2"
+                                        onClick={() => setModalVisible(false)}
+                                    >
+                                        Cancel
+                                    </button>
                                 </form>
                             </div>
                         </div>
