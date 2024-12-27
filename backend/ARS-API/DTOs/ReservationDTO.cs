@@ -25,7 +25,7 @@ namespace ARS_API.DTOs
         public Guid AllocationId { get; set; }
         public int? NumberOfBlockedSeats { get; set; }
         public string? ReservationStatus { get; set; }
-        public List<PassengerDTO>? Passengers { get; set; } // Only required for "Confirmed"
+        public List<CreatePassengerDTO>? Passengers { get; set; } // Only required for "Confirmed"
     }
 
     public class ReservationUpdateDTO

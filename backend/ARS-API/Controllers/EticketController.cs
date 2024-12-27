@@ -216,7 +216,7 @@ namespace ARS_API.Controllers
 
         // POST: api/ETicket
         [HttpPost]
-        public async Task<IActionResult> CreateETicket([FromBody] CreatePassengerDTO createDTO)
+        public async Task<IActionResult> CreateETicket([FromBody] CreateETicketPassengerDTO createDTO)
         {
             // Ki?m tra reservation c� t?n t?i kh�ng
             var reservation = await _dbContext.Reservations

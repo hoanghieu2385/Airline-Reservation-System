@@ -49,12 +49,9 @@ namespace ARS_API.Controllers
             var passenger = new Passenger
             {
                 PassengerId = Guid.NewGuid(),
-                ReservationId = createPassengerDto.ReservationId,
                 FirstName = createPassengerDto.FirstName,
                 LastName = createPassengerDto.LastName,
-                Age = createPassengerDto.Age,
                 Gender = createPassengerDto.Gender,
-                TicketPrice = createPassengerDto.TicketPrice,
                 TicketCode = GenerateTicketCode(),
                 Email = createPassengerDto.Email,
                 PhoneNumber = createPassengerDto.PhoneNumber

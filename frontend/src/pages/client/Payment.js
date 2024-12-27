@@ -83,9 +83,9 @@ const Payment = () => {
       );
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to ${status.toLowerCase()} reservation. Please try again.`
-        );
+        const errorMessage = await response.text();
+        console.error(`Failed: ${errorMessage}`);
+        throw new Error(errorMessage);
       }
 
       // const result = await response.json();
