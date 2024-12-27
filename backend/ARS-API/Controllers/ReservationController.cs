@@ -155,25 +155,26 @@ namespace ARS_API.Controllers
 
             _context.Passengers.AddRange(passengers);
 
+            // TODO: line 165 nen thay bang TicketCode chu khong phai la ReservationCode
             string emailBody = $@"
                 <div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;'>
-                    <h1 style='text-align: center; color: #4CAF50;'>Thông tin vé điện tử</h1>
+                    <h1 style='text-align: center; color: #4CAF50;'>E-Ticket</h1>
                     
-                    <h2 style='color: #4CAF50;'>Thông tin hành khách</h2>
-                    <p><strong>Họ tên:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
-                    <p><strong>Mã vé:</strong> {reservation.ReservationCode}</p>
-                    <p><strong>Giá vé:</strong> {totalPrice:C}</p>
+                    <h2 style='color: #4CAF50;'>Passenger Information</h2>
+                    <p><strong>Passenger Name:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
+                    <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
+                    <p><strong>Ticket price:</strong> {totalPrice:C}</p>
 
-                    <h2 style='color: #4CAF50;'>Thông tin chuyến bay</h2>
-                    <p><strong>Hành trình:</strong> {reservation.Flight.OriginAirport.AirportName} -> {reservation.Flight.DestinationAirport.AirportName}</p>
-                    <p><strong>Ngày bay:</strong> {travelDate:dddd, dd MMMM yyyy}</p>
-                    <p><strong>Hãng bay:</strong> {flight.Airline}</p>
-                    <p><strong>Mã đặt chỗ:</strong> {reservation.ReservationCode}</p>
+                    <h2 style='color: #4CAF50;'>Flight Details</h2>
+                    <p><strong>Route:</strong> {reservation.Flight.OriginAirport.AirportName} -> {reservation.Flight.DestinationAirport.AirportName}</p>
+                    <p><strong>Departure Time:</strong> {travelDate:dddd, dd MMMM yyyy}</p>
+                    <p><strong>Airline:</strong> {flight.Airline}</p>
+                    <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
 
-                    <p style='text-align: center; margin-top: 20px;'>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+                    <p style='text-align: center; margin-top: 20px;'>We appreciate you trusting and using our Services!</p>
                 </div>";
 
-            await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Xác nhận đặt vé máy bay", emailBody);
+            await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Flight Reservation Confirmation", emailBody);
 
             // Save changes
             await _context.SaveChangesAsync();
@@ -186,9 +187,7 @@ namespace ARS_API.Controllers
         [HttpPost("FinalizeReservation")]
         public async Task<ActionResult<Reservation>> FinalizeReservation(CreateReservationDTO createReservationDto)
         {
-            Console.WriteLine($"Received ReservationStatus: {createReservationDto.ReservationStatus}");
-            Console.WriteLine($"FlightId: {createReservationDto.FlightId}, AllocationId: {createReservationDto.AllocationId}");
-            
+
             // Validate seat allocation
             var allocation = await _context.FlightSeatAllocation
                 .Include(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
@@ -200,7 +199,10 @@ namespace ARS_API.Controllers
             }
 
             // Validate flight
-            var flight = await _context.Flights.FindAsync(createReservationDto.FlightId);
+            var flight = await _context.Flights
+                .Include(f => f.Airline)
+                .FirstOrDefaultAsync(f => f.FlightId == createReservationDto.FlightId);
+
             if (flight == null)
             {
                 return BadRequest("Invalid flight ID.");
@@ -245,12 +247,12 @@ namespace ARS_API.Controllers
                 UserId = createReservationDto.UserId,
                 FlightId = createReservationDto.FlightId,
                 AllocationId = createReservationDto.AllocationId,
-                ReservationStatus = createReservationDto.ReservationStatus,
+                ReservationStatus = createReservationDto.ReservationStatus ?? "Blocked", // Default to "Blocked" if not provided
                 TotalPrice = totalPrice,
                 TravelDate = travelDate,
                 CreatedAt = DateTime.UtcNow,
                 NumberOfBlockedSeats = createReservationDto.ReservationStatus == "Blocked" ? createReservationDto.Passengers.Count : null,
-                BlockExpirationTime = blockExpirationTime // New column in the Reservations table
+                BlockExpirationTime = blockExpirationTime
             };
 
             _context.Reservations.Add(reservation);
@@ -280,8 +282,22 @@ namespace ARS_API.Controllers
             // Save changes
             await _context.SaveChangesAsync();
 
+            // Map to DTO
+            var reservationDto = new ReservationDTO
+            {
+                ReservationCode = reservation.ReservationCode,
+                UserId = reservation.UserId,
+                FlightId = reservation.FlightId,
+                AllocationId = reservation.AllocationId,
+                ReservationStatus = reservation.ReservationStatus,
+                TotalPrice = reservation.TotalPrice,
+                TravelDate = reservation.TravelDate,
+                CreatedAt = reservation.CreatedAt,
+                NumberOfBlockedSeats = reservation.NumberOfBlockedSeats
+            };
+
             // Return confirmation
-            return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
+            return CreatedAtAction(nameof(GetReservationByCode), new { code = reservationDto.ReservationCode }, reservationDto);
         }
 
         private string GenerateTicketCode()

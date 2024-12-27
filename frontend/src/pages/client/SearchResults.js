@@ -168,7 +168,7 @@ const SearchResults = () => {
                                     </div>
                                     <div className="text-end">
                                         <h5 className="mb-0"><strong>${flight.dynamicPrice}</strong></h5>
-                                        <p className="text-muted mb-0">Seats: {flight.availableSeats}</p>
+                                        {/* <p className="text-muted mb-0">Seats: {flight.availableSeats}</p> */}
                                     </div>
                                 </div>
                             </div>
