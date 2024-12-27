@@ -64,9 +64,9 @@ function RegisterPage() {
       setSuccess('Registration successful! Redirecting to login page...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
-      console.error('Registration failed', error);
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again!';
-      setError(errorMessage);
+      console.error('Registration failed', error); 
+      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again!'; 
+      setError(errorMessage); 
     }
   };  
 
