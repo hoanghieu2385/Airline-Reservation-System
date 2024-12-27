@@ -128,6 +128,8 @@ namespace ARS_API
                 });
             });
 
+            builder.Services.AddScoped<IVnPayService, VnPayService>();
+
             var app = builder.Build();
 
             // Seed data
