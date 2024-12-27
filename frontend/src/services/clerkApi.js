@@ -1,11 +1,21 @@
-// src/services/clerkApi.js
 import api from "./api";
 
-// Hàm lấy danh sách người dùng
-export const getUsers = () => api.get("/clerk/users");
+// User Management APIs
+export const getUsers = (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/user/read${queryString ? `?${queryString}` : ""}`);
+};
+export const addUser = (data) => api.post("/user/create-user", data);
+export const updateUser = (userId, data) => api.put(`/user/admin-update-user/${userId}`, data);
 
-// Hàm xóa người dùng
-export const deleteUser = (userId) => api.delete(`/clerk/users/${userId}`);
+// Airline Management APIs
+export const getAirlines = () => api.get("/Airline");
 
-// Hàm thêm chuyến bay
-export const addFlight = (data) => api.post("/clerk/flights", data);
+// Airport Management APIs
+export const getAirports = () => api.get("/Airport");
+
+// City Management APIs
+export const getCities = () => api.get("/City");
+
+// Flight Management APIs
+export const getFlights = () => api.get("/Flight");

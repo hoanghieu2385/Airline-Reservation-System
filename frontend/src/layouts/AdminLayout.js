@@ -43,6 +43,11 @@ const AdminLayout = ({ children }) => {
                 </Link>
               </li>
               <li className="menu-item">
+                <Link to="/admin/flights" className={`menu-link ${isActive("/admin/airlines")}`}>
+                  Manage Flight
+                </Link>
+              </li>
+              <li className="menu-item">
                 <Link to="/admin/airlines" className={`menu-link ${isActive("/admin/airlines")}`}>
                   Manage Airlines
                 </Link>
@@ -57,6 +62,11 @@ const AdminLayout = ({ children }) => {
                   Manage Cities
                 </Link>
               </li>
+              {/* <li className="menu-item">
+                <Link to="/admin/flightseatallocation" className={`menu-link ${isActive("/admin/flightseatallocation")}`}>
+                  Manage Flight Seat Allocation
+                </Link>
+              </li> */}
               <li className="menu-item">
                 <Link to="/admin/clients" className={`menu-link ${isActive("/admin/clients")}`}>
                   Manage Clients
