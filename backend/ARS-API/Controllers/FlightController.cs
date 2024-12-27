@@ -142,7 +142,8 @@ namespace ARS_API.Controllers
                     f.SeatAllocation.SeatClass.BasePriceMultiplier,
                     _pricingService.GetPriceMultiplierAsync(f.DaysBeforeDeparture).Result), // Simplified async handling
                 SeatClass = f.SeatAllocation.SeatClass.ClassName,
-                AvailableSeats = f.SeatAllocation.AvailableSeats
+                AvailableSeats = f.SeatAllocation.AvailableSeats,
+                AllocationId = f.SeatAllocation.AllocationId
             }).ToList();
 
             return Ok(result);

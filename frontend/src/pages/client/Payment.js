@@ -18,7 +18,7 @@ const Payment = () => {
 
   useEffect(() => {
     try {
-      const storedData = localStorage.getItem("checkoutData");
+      const storedData = sessionStorage.getItem("checkoutData");
       if (storedData) {
         const parsedData = JSON.parse(storedData);
         setTripDetails(parsedData.flightDetails);
@@ -43,31 +43,52 @@ const Payment = () => {
   // Function to handle reservation actions
   const handleReservation = async (status) => {
     try {
-      const passengers = JSON.parse(localStorage.getItem("passengers")) || [];
+      const passengers = JSON.parse(sessionStorage.getItem("passengers")) || [];
+      console.log("Fetched Passengers:", passengers);
+
+      const userId = sessionStorage.getItem("userId"); // Retrieve the UserId from sessionStorage
+      if (!userId) {
+        throw new Error("User is not logged in or UserId is missing.");
+      }
+
+      const token = sessionStorage.getItem("token");
+
       const reservationData = {
         ReservationStatus: status,
+        UserId: userId,
         FlightId: tripDetails.flightId,
-        AllocationId: tripDetails.allocationId, // Assuming allocationId exists
+        AllocationId: tripDetails.allocationId,
         Passengers: passengers.map((passenger) => ({
           FirstName: passenger.firstName,
           LastName: passenger.lastName,
           Gender: passenger.gender,
+          Email: passenger.email,
+          PhoneNumber: passenger.phoneNumber,
         })),
       };
 
-      const response = await fetch("/api/Reservations/FinalizeReservation", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(reservationData),
-      });
+      // Log reservation data before sending the request
+      console.log("Reservation Data:", reservationData);
+
+      const response = await fetch(
+        "https://localhost:7238/api/Reservations/FinalizeReservation",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(reservationData),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to ${status.toLowerCase()} reservation. Please try again.`);
+        throw new Error(
+          `Failed to ${status.toLowerCase()} reservation. Please try again.`
+        );
       }
 
-      const result = await response.json();
+      // const result = await response.json();
       alert(`Reservation ${status.toLowerCase()} successfully!`);
     } catch (error) {
       console.error(`Error during ${status.toLowerCase()} reservation:`, error);
@@ -77,7 +98,7 @@ const Payment = () => {
 
   return (
     <div className="payment-page-container">
-      <div className="payment-methods">
+      {/* <div className="payment-methods">
         <h3>Select your preferred payment method</h3>
         <div className="payment-methods-list">
           {paymentMethods.map((method) => (
@@ -92,7 +113,7 @@ const Payment = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
       <div className="payment-summary">
         <h3>Trip Details</h3>
         <p>

@@ -11,14 +11,7 @@ namespace ARS_API.DTOs
         public string LastName { get; set; }
         public string Gender { get; set; }
         public string Email { get; set; }
-    }
-
-    public class UpdatePassengerDTO
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public int Age { get; set; }
-        public string Gender { get; set; }
+        public string PhoneNumber { get; set; }
     }
 
     public class CreatePassengerDTO
@@ -29,5 +22,19 @@ namespace ARS_API.DTOs
         public int Age { get; set; }
         public string Gender { get; set; }
         public decimal TicketPrice { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
     }
+
+    public class UpdatePassengerDTO
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int Age { get; set; }
+        public string Gender { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+    }
+
+
 }

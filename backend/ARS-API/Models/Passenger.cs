@@ -17,6 +17,8 @@ namespace ARS_API.Models
         public string TicketCode { get; set; } // Unique 12-digit code
         [Column(TypeName = "decimal(10, 2)")]
         public decimal TicketPrice { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
 
         // Navigation properties
         public Reservation Reservation { get; set; }

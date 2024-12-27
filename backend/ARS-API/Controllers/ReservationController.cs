@@ -186,6 +186,9 @@ namespace ARS_API.Controllers
         [HttpPost("FinalizeReservation")]
         public async Task<ActionResult<Reservation>> FinalizeReservation(CreateReservationDTO createReservationDto)
         {
+            Console.WriteLine($"Received ReservationStatus: {createReservationDto.ReservationStatus}");
+            Console.WriteLine($"FlightId: {createReservationDto.FlightId}, AllocationId: {createReservationDto.AllocationId}");
+            
             // Validate seat allocation
             var allocation = await _context.FlightSeatAllocation
                 .Include(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
@@ -263,6 +266,8 @@ namespace ARS_API.Controllers
                 FirstName = p.FirstName,
                 LastName = p.LastName,
                 Gender = p.Gender,
+                Email = p.Email,
+                PhoneNumber = p.PhoneNumber,
                 TicketCode = GenerateTicketCode(),
                 TicketPrice = _pricingService.CalculateDynamicPrice(
                     flight.BasePrice,
@@ -278,7 +283,6 @@ namespace ARS_API.Controllers
             // Return confirmation
             return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
         }
-
 
         private string GenerateTicketCode()
         {

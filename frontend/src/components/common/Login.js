@@ -32,7 +32,15 @@ const LoginPage = () => {
 
     try {
       const response = await login({ email, password });
-      const { token, roles } = response; // Assuming roles are returned as an array
+
+      const { token, roles, user } = response;
+
+      // Log the extracted user object
+      console.log("Extracted User:", user);
+
+      // Save the userId in sessionStorage
+      sessionStorage.setItem("userId", user.id);
+
       sessionStorage.setItem("userEmail", email);
       sessionStorage.setItem("token", token);
 
@@ -50,7 +58,8 @@ const LoginPage = () => {
     } catch (error) {
       setSuccess(false);
       setError(
-        error.response?.data || "Login failed. Please check your email and password."
+        error.response?.data ||
+          "Login failed. Please check your email and password."
       );
     }
   };
@@ -72,7 +81,9 @@ const LoginPage = () => {
               type="email"
               placeholder="Email"
               className={`login-form__input ${
-                email && !validateEmail(email) ? "login-form__input--invalid" : ""
+                email && !validateEmail(email)
+                  ? "login-form__input--invalid"
+                  : ""
               }`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
