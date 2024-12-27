@@ -75,12 +75,16 @@ const SearchResults = () => {
             return;
         }
 
+        // Log the selected flight details for debugging
+        console.log("Retrieved Selected Flight in CustomerDetail (from sessionStorage):", flight);
+
         // Save selected flight details to sessionStorage
         sessionStorage.setItem(
             "selectedFlight",
             JSON.stringify({
                 flightId: flight.flightId,
                 seatClass: seatClass,
+                allocationId: flight.allocationId || null,
             })
         );
         navigate("/customerdetail");

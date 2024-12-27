@@ -14,7 +14,9 @@ const formatDate = (dateString) => {
 
 const fetchFlightById = async (flightId) => {
   try {
-    const response = await fetch(`https://localhost:7238/api/Flight/${flightId}`);
+    const response = await fetch(
+      `https://localhost:7238/api/Flight/${flightId}`
+    );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -27,13 +29,31 @@ const fetchFlightById = async (flightId) => {
   }
 };
 
+const fetchAllocationId = async (flightId, airlineId, seatClass) => {
+  try {
+    const response = await fetch(
+      `https://localhost:7238/api/SeatClass/GetAllocationId?flightId=${flightId}&airlineId=${airlineId}&className=${seatClass}`
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch allocation ID.");
+    }
+    const allocationId = await response.json();
+    return allocationId;
+  } catch (error) {
+    console.error("Error fetching allocation ID:", error);
+    return null;
+  }
+};
+
 const fetchPriceMultiplier = async (daysBeforeDeparture) => {
   const url = `https://localhost:7238/api/PricingRule/multiplier/${daysBeforeDeparture}`;
   console.log("Fetching Pricing Rule Multiplier from:", url); // Log the correct URL
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      console.error(`Error fetching price multiplier: ${response.status} ${response.statusText}`);
+      console.error(
+        `Error fetching price multiplier: ${response.status} ${response.statusText}`
+      );
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const multiplier = await response.json();
@@ -79,17 +99,40 @@ const CustomerDetail = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const selectedFlight = JSON.parse(localStorage.getItem("selectedFlight"));
-        if (!selectedFlight) {
-          throw new Error("No flight selected. Please select a flight first.");
+
+        const selectedFlight = JSON.parse(
+          sessionStorage.getItem("selectedFlight")
+        );
+        console.log("Retrieved Selected Flight:", selectedFlight); // Debugging log
+
+        if (
+          !selectedFlight ||
+          !selectedFlight.flightId ||
+          !selectedFlight.allocationId
+        ) {
+          throw new Error(
+            "No flight or seat allocation selected. Please select a flight."
+          );
         }
 
         const { flightId, seatClass } = selectedFlight;
+
         const flightData = await fetchFlightById(flightId);
-        const basePriceMultiplier = await fetchBasePriceMultiplier(flightData.airlineId, seatClass);
+
+        const allocationId = await fetchAllocationId(flightId, flightData.airlineId, seatClass);
+
+        const basePriceMultiplier = await fetchBasePriceMultiplier(
+          flightData.airlineId,
+          seatClass
+        );
+
+        if (!allocationId) {
+            throw new Error("Failed to fetch allocation ID.");
+        }
 
         console.log("Airline ID:", flightData.airlineId);
         console.log("Selected Seat Class:", seatClass);
+        console.log("Allocation ID:", allocationId);
 
         const departureDate = new Date(flightData.departureTime);
         const today = new Date();
@@ -111,7 +154,13 @@ const CustomerDetail = () => {
           baggagePrice
         );
 
-        setFlightDetails({ ...flightData, basePriceMultiplier, priceMultiplier, seatClass });
+        setFlightDetails({
+          ...flightData,
+          allocationId,
+          basePriceMultiplier,
+          priceMultiplier,
+          seatClass,
+        });
         setTotalPrice(calculatedPrice);
         setLoading(false);
       } catch (error) {
@@ -123,7 +172,6 @@ const CustomerDetail = () => {
 
     fetchData();
   }, [baggagePrice]);
-
 
   const calculateTotalPrice = (
     basePrice,
@@ -138,10 +186,16 @@ const CustomerDetail = () => {
       baggage,
     }); // Debugging log
 
-    if (isNaN(basePrice) || isNaN(basePriceMultiplier) || isNaN(priceMultiplier)) {
+    if (
+      isNaN(basePrice) ||
+      isNaN(basePriceMultiplier) ||
+      isNaN(priceMultiplier)
+    ) {
       return 0; // Fallback for invalid values
     }
-    return Math.round(basePrice * basePriceMultiplier * priceMultiplier + baggage);
+    return Math.round(
+      basePrice * basePriceMultiplier * priceMultiplier + baggage
+    );
   };
 
   const handleBaggageChange = (e) => {
@@ -150,7 +204,9 @@ const CustomerDetail = () => {
 
   const handleProceedToPayment = () => {
     if (!firstName || !lastName || !email || !phone) {
-      alert("Please fill in all customer information fields before proceeding.");
+      alert(
+        "Please fill in all customer information fields before proceeding."
+      );
       return;
     }
 
@@ -159,23 +215,44 @@ const CustomerDetail = () => {
       firstName,
       lastName,
       email,
-      phone
+      phone,
     };
 
     const checkoutData = {
-      flightDetails,
+      flightDetails: {
+        ...flightDetails,
+        allocationId: flightDetails.allocationId || null, // Add allocationId if available
+      },
       baggagePrice,
       totalPrice,
       contactInfo,
     };
 
-    localStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+    const passengers = [
+      {
+        firstName,
+        lastName,
+        gender,
+        email,
+        phoneNumber: phone,
+      },
+    ];
+
+    sessionStorage.setItem("passengers", JSON.stringify(passengers));
+    sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+
     window.location.href = "/payment";
   };
 
-  if (loading) return <div className="text-center p-5">Loading flight information...</div>;
+  if (loading)
+    return <div className="text-center p-5">Loading flight information...</div>;
   if (error) return <div className="alert alert-danger m-5">{error}</div>;
-  if (!flightDetails) return <div className="alert alert-warning m-5">No flight information available</div>;
+  if (!flightDetails)
+    return (
+      <div className="alert alert-warning m-5">
+        No flight information available
+      </div>
+    );
 
   return (
     <div className="container checkout-container my-5">
@@ -183,16 +260,29 @@ const CustomerDetail = () => {
         <div className="col-md-7">
           <section className="checkout-flight-info mb-4">
             <h4 className="text-primary">Flight Information</h4>
-            <p><strong>Airline:</strong> {flightDetails.airlineName}</p>
-            <p><strong>Flight Number:</strong> {flightDetails.flightNumber}</p>
-            <p><strong>Departure Time:</strong> {formatDate(flightDetails.departureTime)}</p>
-            <p><strong>Class: </strong> {flightDetails.seatClass}</p>
+            <p>
+              <strong>Airline:</strong> {flightDetails.airlineName}
+            </p>
+            <p>
+              <strong>Flight Number:</strong> {flightDetails.flightNumber}
+            </p>
+            <p>
+              <strong>Departure Time:</strong>{" "}
+              {formatDate(flightDetails.departureTime)}
+            </p>
+            <p>
+              <strong>Class: </strong> {flightDetails.seatClass}
+            </p>
             {/* <p><strong>Base Price:</strong> {flightDetails.basePrice.toLocaleString()} USD</p> */}
           </section>
 
           <section className="checkout-baggage-info mb-4">
             <h4 className="text-primary">Select Baggage</h4>
-            <select className="form-select" value={baggagePrice} onChange={handleBaggageChange}>
+            <select
+              className="form-select"
+              value={baggagePrice}
+              onChange={handleBaggageChange}
+            >
               <option value="0">No Baggage</option>
               <option value="10">Add 20kg - 10 USD</option>
               <option value="15">Add 30kg - 15 USD</option>
@@ -205,7 +295,9 @@ const CustomerDetail = () => {
             <h4 className="text-primary">Customer Information</h4>
             <form>
               <div className="mb-3">
-                <label htmlFor="gender" className="form-label">Title</label>
+                <label htmlFor="gender" className="form-label">
+                  Title
+                </label>
                 <select
                   id="gender"
                   className="form-select"
@@ -217,7 +309,9 @@ const CustomerDetail = () => {
                 </select>
               </div>
               <div className="mb-3">
-                <label htmlFor="firstName" className="form-label">First name/middle name according to passport</label>
+                <label htmlFor="firstName" className="form-label">
+                  First name/middle name according to passport
+                </label>
                 <input
                   type="text"
                   id="firstName"
@@ -228,7 +322,9 @@ const CustomerDetail = () => {
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="lastName" className="form-label">Last name according to passport</label>
+                <label htmlFor="lastName" className="form-label">
+                  Last name according to passport
+                </label>
                 <input
                   type="text"
                   id="lastName"
@@ -239,7 +335,9 @@ const CustomerDetail = () => {
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email</label>
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
                 <input
                   type="email"
                   id="email"
@@ -250,7 +348,9 @@ const CustomerDetail = () => {
                 />
               </div>
               <div className="mb-3">
-                <label htmlFor="phone" className="form-label">Phone Number</label>
+                <label htmlFor="phone" className="form-label">
+                  Phone Number
+                </label>
                 <input
                   type="tel"
                   id="phone"
@@ -275,9 +375,19 @@ const CustomerDetail = () => {
           <section className="checkout-pricing-summary p-3 bg-light border rounded sticky-top">
             <h4 className="text-primary mb-3">Price Summary</h4>
             <p>
-              Outbound Price: <strong>{(flightDetails.basePrice * flightDetails.basePriceMultiplier * flightDetails.priceMultiplier).toLocaleString()} USD</strong>
+              Outbound Price:{" "}
+              <strong>
+                {(
+                  flightDetails.basePrice *
+                  flightDetails.basePriceMultiplier *
+                  flightDetails.priceMultiplier
+                ).toLocaleString()}{" "}
+                USD
+              </strong>
             </p>
-            <p>Baggage: <strong>{baggagePrice.toLocaleString()} USD</strong></p>
+            <p>
+              Baggage: <strong>{baggagePrice.toLocaleString()} USD</strong>
+            </p>
             <hr />
             <p className="checkout-total-price text-success fs-5 fw-bold">
               Total: {totalPrice.toLocaleString()} USD

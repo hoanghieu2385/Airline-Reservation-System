@@ -285,7 +285,7 @@ const SearchForm = () => {
                         <div className="pcs-dropdown__class-section">
                             <span className="pcs-dropdown__label">Class:</span>
                             <div className="pcs-dropdown__class-options">
-                                {['Economy', 'Premium'].map((classOption) => (
+                                {['Economy', 'Business', 'First Class'].map((classOption) => (
                                     <label key={classOption} className="pcs-dropdown__radio-label">
                                         <input
                                             type="radio"

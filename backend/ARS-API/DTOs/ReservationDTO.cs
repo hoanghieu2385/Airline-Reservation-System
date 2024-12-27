@@ -28,7 +28,6 @@ namespace ARS_API.DTOs
         public List<PassengerDTO>? Passengers { get; set; } // Only required for "Confirmed"
     }
 
-
     public class ReservationUpdateDTO
     {
         public string? ReservationStatus { get; set; } // "Confirmed" or "Cancelled" only
