@@ -43,31 +43,32 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!validateEmail(email)) {
       setError('Invalid email address.');
       return;
     }
-
+  
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-
+  
     if (!passwordConditions.hasUppercase || !passwordConditions.hasSpecialChar || !passwordConditions.hasMinLength) {
       setError('Password does not meet the required conditions.');
       return;
     }
-
+  
     try {
       const response = await register({ email, password, role: 'USER' });
       setSuccess('Registration successful! Redirecting to login page...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
-      console.error('Registration failed', error);
-      setError(error.response?.data || 'Registration failed. Please try again!');
+      console.error('Registration failed', error); 
+      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again!'; 
+      setError(errorMessage); 
     }
-  };
+  };  
 
   const hasErrors = !!error;
 

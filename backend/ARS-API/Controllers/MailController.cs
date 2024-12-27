@@ -1,4 +1,5 @@
 ﻿using ARS_API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -6,6 +7,7 @@ namespace ARS_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class MailController : ControllerBase
     {
         private readonly IEmailService _emailService;

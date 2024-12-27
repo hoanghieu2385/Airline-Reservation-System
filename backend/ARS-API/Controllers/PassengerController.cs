@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ARS_API.DTOs;
 using ARS_API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,10 +44,18 @@ namespace ARS_API.Controllers
 
         // POST: api/Passenger
         [HttpPost]
-        public async Task<ActionResult<Passenger>> PostPassenger(Passenger passenger)
+        public async Task<ActionResult<Passenger>> PostPassenger(CreatePassengerDTO createPassengerDto)
         {
-            passenger.PassengerId = Guid.NewGuid();
-            passenger.TicketCode = GenerateTicketCode();
+            var passenger = new Passenger
+            {
+                PassengerId = Guid.NewGuid(),
+                FirstName = createPassengerDto.FirstName,
+                LastName = createPassengerDto.LastName,
+                Gender = createPassengerDto.Gender,
+                TicketCode = GenerateTicketCode(),
+                Email = createPassengerDto.Email,
+                PhoneNumber = createPassengerDto.PhoneNumber
+            };
 
             _context.Passengers.Add(passenger);
             await _context.SaveChangesAsync();
@@ -54,16 +63,25 @@ namespace ARS_API.Controllers
             return CreatedAtAction(nameof(GetPassenger), new { id = passenger.PassengerId }, passenger);
         }
 
+
         // PUT: api/Passenger/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPassenger(Guid id, Passenger updatedPassenger)
+        public async Task<IActionResult> PutPassenger(Guid id, UpdatePassengerDTO updatePassengerDto)
         {
-            if (id != updatedPassenger.PassengerId)
+            var passenger = await _context.Passengers.FindAsync(id);
+            if (passenger == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(updatedPassenger).State = EntityState.Modified;
+            passenger.FirstName = updatePassengerDto.FirstName;
+            passenger.LastName = updatePassengerDto.LastName;
+            passenger.Age = updatePassengerDto.Age;
+            passenger.Gender = updatePassengerDto.Gender;
+            passenger.Email = updatePassengerDto.Email; // New field
+            passenger.PhoneNumber = updatePassengerDto.PhoneNumber; // New field
+
+            _context.Entry(passenger).State = EntityState.Modified;
 
             try
             {
@@ -83,6 +101,7 @@ namespace ARS_API.Controllers
 
             return NoContent();
         }
+
 
         // DELETE: api/Passenger/{id}
         [HttpDelete("{id}")]
@@ -113,7 +132,7 @@ namespace ARS_API.Controllers
             do
             {
                 code = random.Next(1000000, 9999999).ToString() +
-                       random.Next(100000, 999999).ToString(); 
+                       random.Next(100000, 999999).ToString();
             }
             while (_context.Passengers.Any(p => p.TicketCode == code));
 

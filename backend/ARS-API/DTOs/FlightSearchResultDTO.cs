@@ -17,6 +17,7 @@ namespace ARS_API.DTOs
         public decimal DynamicPrice { get; set; }
         public string SeatClass { get; set; }
         public int AvailableSeats { get; set; }
+        public Guid AllocationId { get; set; }
     }
 
 }

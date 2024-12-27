@@ -57,6 +57,30 @@ namespace ARS_API.Controllers
             return Ok(seatClass.BasePriceMultiplier);
         }
 
+        // GET: api/SeatClass/GetAllocationId
+        [HttpGet("GetAllocationId")]
+        public async Task<ActionResult<Guid>> GetAllocationId(Guid flightId, Guid airlineId, string className)
+        {
+            var seatClass = await _context.SeatClasses
+                .FirstOrDefaultAsync(sc => sc.AirlineId == airlineId && sc.ClassName == className);
+
+            if (seatClass == null)
+            {
+                return BadRequest("Invalid seat class.");
+            }
+
+            var seatAllocation = await _context.FlightSeatAllocation
+                .FirstOrDefaultAsync(fsa => fsa.ClassId == seatClass.ClassId && fsa.FlightId == flightId);
+
+            if (seatAllocation == null)
+            {
+                return BadRequest("No seat allocation found for this class and flight.");
+            }
+
+            return Ok(seatAllocation.AllocationId);
+        }
+
+
         // POST: api/SeatClass
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
@@ -71,7 +95,7 @@ namespace ARS_API.Controllers
 
         // PUT: api/SeatClass/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "ADMIN")] 
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> PutSeatClass(Guid id, UpdateSeatClassDto updateDto)
         {
             // Retrieve the existing SeatClass from the database

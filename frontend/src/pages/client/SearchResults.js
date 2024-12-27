@@ -75,12 +75,16 @@ const SearchResults = () => {
             return;
         }
 
+        // Log the selected flight details for debugging
+        console.log("Retrieved Selected Flight in CustomerDetail (from sessionStorage):", flight);
+
         // Save selected flight details to sessionStorage
         sessionStorage.setItem(
             "selectedFlight",
             JSON.stringify({
                 flightId: flight.flightId,
                 seatClass: seatClass,
+                allocationId: flight.allocationId || null,
             })
         );
         navigate("/customerdetail");
@@ -164,7 +168,7 @@ const SearchResults = () => {
                                     </div>
                                     <div className="text-end">
                                         <h5 className="mb-0"><strong>${flight.dynamicPrice}</strong></h5>
-                                        <p className="text-muted mb-0">Seats: {flight.availableSeats}</p>
+                                        {/* <p className="text-muted mb-0">Seats: {flight.availableSeats}</p> */}
                                     </div>
                                 </div>
                             </div>
