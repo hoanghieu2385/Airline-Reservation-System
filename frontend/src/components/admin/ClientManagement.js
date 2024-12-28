@@ -41,16 +41,11 @@ const ClientManagement = () => {
   const fetchClients = async () => {
     try {
       const response = await getUsers({ role: "USER" });
-      console.log("API Response:", response.data); // Log dữ liệu trả về
-      if (Array.isArray(response.data)) {
-        setData(response.data); // Đặt data nếu là mảng
-      } else {
-        console.error("Data is not an array:", response.data);
-        setData([]); // Nếu không phải mảng, đặt thành mảng rỗng
-      }
+      console.log("API Response:", response.data); // Debugging: Ensure API returns correct data
+      setData(response.data || []); // Ensure data is set only if it's valid
     } catch (error) {
-      console.error("Failed to fetch users:", error); // Log lỗi
-      setData([]); // Nếu lỗi, đặt data thành mảng rỗng
+      console.error("Failed to fetch users:", error);
+      setData([]); // Set an empty array on failure
     }
   };
 

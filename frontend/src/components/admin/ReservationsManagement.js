@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
   getReservations,
-  getReservationByCode,
   createReservation,
   updateReservation,
   deleteReservation,
 } from "../../services/adminApi";
+import "../../assets/css/Admin/ReservationsManagement.css";
 
 const ReservationManagement = () => {
   const [data, setData] = useState([]);
@@ -74,9 +74,7 @@ const ReservationManagement = () => {
   };
 
   const filteredData = data.filter((reservation) =>
-    reservation.reservationCode
-      .toLowerCase()
-      .includes(searchText.toLowerCase())
+    reservation.reservationCode.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -152,15 +150,21 @@ const ReservationManagement = () => {
                   <td>{new Date(reservation.travelDate).toLocaleString()}</td>
                   <td>
                     <button
-                      className="btn btn-warning btn-sm me-2"
+                      className={`btn btn-sm me-2 ${
+                        reservation.reservationStatus === "Cancelled"
+                          ? "btn-secondary"
+                          : "btn-warning"
+                      }`}
                       onClick={() => {
                         setForm(reservation);
                         setEditingRecord(reservation);
                         setModalVisible(true);
                       }}
+                      disabled={reservation.reservationStatus === "Cancelled"}
                     >
                       Edit
                     </button>
+
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(reservation)}
@@ -223,46 +227,40 @@ const ReservationManagement = () => {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleFormSubmit}>
-                  {/* Reservation fields */}
+                  {/* Reservation Code - Read Only */}
                   <div className="form-floating mb-3">
                     <input
                       type="text"
                       className="form-control"
                       placeholder="Reservation Code"
                       value={form.reservationCode}
-                      onChange={(e) =>
-                        setForm({ ...form, reservationCode: e.target.value })
-                      }
-                      required
+                      disabled
                     />
                     <label>Reservation Code</label>
                   </div>
+                  {/* User ID - Read Only */}
                   <div className="form-floating mb-3">
                     <input
                       type="text"
                       className="form-control"
                       placeholder="User ID"
                       value={form.userId}
-                      onChange={(e) =>
-                        setForm({ ...form, userId: e.target.value })
-                      }
-                      required
+                      disabled
                     />
                     <label>User ID</label>
                   </div>
+                  {/* Flight ID - Read Only */}
                   <div className="form-floating mb-3">
                     <input
                       type="text"
                       className="form-control"
                       placeholder="Flight ID"
                       value={form.flightId}
-                      onChange={(e) =>
-                        setForm({ ...form, flightId: e.target.value })
-                      }
-                      required
+                      disabled
                     />
                     <label>Flight ID</label>
                   </div>
+                  {/* Status - Editable */}
                   <div className="form-floating mb-3">
                     <input
                       type="text"
@@ -276,29 +274,25 @@ const ReservationManagement = () => {
                     />
                     <label>Status</label>
                   </div>
+                  {/* Total Price - Read Only */}
                   <div className="form-floating mb-3">
                     <input
                       type="number"
                       className="form-control"
                       placeholder="Total Price"
                       value={form.totalPrice}
-                      onChange={(e) =>
-                        setForm({ ...form, totalPrice: e.target.value })
-                      }
-                      required
+                      disabled
                     />
                     <label>Total Price</label>
                   </div>
+                  {/* Travel Date - Read Only */}
                   <div className="form-floating mb-3">
                     <input
                       type="datetime-local"
                       className="form-control"
                       placeholder="Travel Date"
                       value={form.travelDate}
-                      onChange={(e) =>
-                        setForm({ ...form, travelDate: e.target.value })
-                      }
-                      required
+                      disabled
                     />
                     <label>Travel Date</label>
                   </div>
