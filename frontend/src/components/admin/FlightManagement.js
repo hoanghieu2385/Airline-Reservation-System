@@ -12,6 +12,8 @@ const FlightManagement = () => {
     const [flights, setFlights] = useState([]);
     const [airlines, setAirlines] = useState([]);
     const [airports, setAirports] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchText, setSearchText] = useState("");
     const [form, setForm] = useState({
         flightNumber: "",
@@ -20,52 +22,42 @@ const FlightManagement = () => {
         destinationAirportId: "",
         departureTime: "",
         arrivalTime: "",
-        duration: 0,
-        totalSeats: 0,
-        basePrice: 0,
+        duration: null,
+        totalSeats: null,
+        basePrice: null,
         status: "ACTIVE",
-        seatAllocations: [],
+        seatAllocations: [{ className: "", availableSeats: null }],
     });
     const [modalVisible, setModalVisible] = useState(false);
     const [editingFlight, setEditingFlight] = useState(null);
 
     useEffect(() => {
-        fetchFlights();
-        fetchAirlines();
-        fetchAirports();
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const [flightsRes, airlinesRes, airportsRes] = await Promise.all([
+                    getFlights(),
+                    getAirlines(),
+                    getAirports(),
+                ]);
+                setFlights(flightsRes.data || []);
+                setAirlines(airlinesRes.data || []);
+                setAirports(airportsRes.data || []);
+            } catch (err) {
+                setError(err.message || "Failed to fetch data");
+                console.error("Error fetching data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
-
-    const fetchFlights = async () => {
-        try {
-            const response = await getFlights();
-            setFlights(response.data || []);
-        } catch (error) {
-            console.error("Error fetching flights:", error);
-        }
-    };
-
-    const fetchAirlines = async () => {
-        try {
-            const response = await getAirlines();
-            setAirlines(response.data || []);
-        } catch (error) {
-            console.error("Error fetching airlines:", error);
-        }
-    };
-
-    const fetchAirports = async () => {
-        try {
-            const response = await getAirports();
-            setAirports(response.data || []);
-        } catch (error) {
-            console.error("Error fetching airports:", error);
-        }
-    };
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Prepare the payload
             const payload = {
                 flightNumber: form.flightNumber,
                 airlineId: form.airlineId,
@@ -77,7 +69,7 @@ const FlightManagement = () => {
                 totalSeats: form.totalSeats,
                 basePrice: form.basePrice,
                 status: form.status,
-                seatAllocations: form.seatAllocations, // Ensure this is an array of { className, availableSeats }
+                seatAllocations: form.seatAllocations,
             };
 
             if (editingFlight) {
@@ -89,7 +81,8 @@ const FlightManagement = () => {
             }
 
             setModalVisible(false);
-            fetchFlights();
+            const response = await getFlights();
+            setFlights(response.data || []);
         } catch (error) {
             console.error("Error saving flight:", error);
             alert(`Failed to save flight: ${error.response?.data || "Check console for details"}`);
@@ -101,11 +94,21 @@ const FlightManagement = () => {
         try {
             await deleteFlight(flightId);
             alert("Flight deleted successfully!");
-            fetchFlights();
+            const response = await getFlights();
+            setFlights(response.data || []);
         } catch (error) {
             console.error("Error deleting flight:", error);
+            alert("Failed to delete flight");
         }
     };
+
+    if (loading) {
+        return <div className="text-center mt-4">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="alert alert-danger mt-4">{error}</div>;
+    }
 
     const filteredFlights = flights.filter(
         (flight) =>
@@ -119,7 +122,6 @@ const FlightManagement = () => {
         <div className="flight-management__container mt-4">
             <h2>Flight Management</h2>
 
-            {/* Search Bar */}
             <div className="mb-3">
                 <input
                     type="text"
@@ -130,7 +132,6 @@ const FlightManagement = () => {
                 />
             </div>
 
-            {/* Add Flight Button */}
             <button
                 className="btn btn-primary mb-3"
                 onClick={() => {
@@ -144,7 +145,8 @@ const FlightManagement = () => {
                         duration: 0,
                         totalSeats: 0,
                         basePrice: 0,
-                        status: "Active",
+                        status: "ACTIVE",
+                        seatAllocations: [{ className: "", availableSeats: null }],
                     });
                     setEditingFlight(null);
                     setModalVisible(true);
@@ -153,7 +155,6 @@ const FlightManagement = () => {
                 Add Flight
             </button>
 
-            {/* Flights Table */}
             <div className="table-responsive">
                 <table className="table table-striped">
                     <thead>
@@ -170,41 +171,49 @@ const FlightManagement = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredFlights.map((flight, index) => (
-                            <tr key={flight.flightId}>
-                                <td>{index + 1}</td>
-                                <td>{flight.flightNumber}</td>
-                                <td>{flight.airlineName}</td>
-                                <td>{flight.originAirportName}</td>
-                                <td>{flight.destinationAirportName}</td>
-                                <td>{new Date(flight.departureTime).toLocaleString()}</td>
-                                <td>{new Date(flight.arrivalTime).toLocaleString()}</td>
-                                <td>{flight.status}</td>
-                                <td>
-                                    <button
-                                        className="btn btn-warning btn-sm me-2"
-                                        onClick={() => {
-                                            setForm(flight);
-                                            setEditingFlight(flight);
-                                            setModalVisible(true);
-                                        }}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => handleDelete(flight.flightId)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
+                        {filteredFlights.length === 0 ? (
+                            <tr>
+                                <td colSpan="9" className="text-center">No flights found</td>
                             </tr>
-                        ))}
+                        ) : (
+                            filteredFlights.map((flight, index) => (
+                                <tr key={flight.flightId}>
+                                    <td>{index + 1}</td>
+                                    <td>{flight.flightNumber}</td>
+                                    <td>{flight.airlineName}</td>
+                                    <td>{flight.originAirportName}</td>
+                                    <td>{flight.destinationAirportName}</td>
+                                    <td>{new Date(flight.departureTime).toLocaleString()}</td>
+                                    <td>{new Date(flight.arrivalTime).toLocaleString()}</td>
+                                    <td>{flight.status}</td>
+                                    <td>
+                                        <button
+                                            className="btn btn-warning btn-sm me-2"
+                                            onClick={() => {
+                                                setForm({
+                                                    ...flight,
+                                                    seatAllocations: flight.seatAllocations || [{ className: "", availableSeats: null }],
+                                                });
+                                                setEditingFlight(flight);
+                                                setModalVisible(true);
+                                            }}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="btn btn-danger btn-sm"
+                                            onClick={() => handleDelete(flight.flightId)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
 
-            {/* Add/Edit Modal */}
             {modalVisible && (
                 <div className="modal show d-block">
                     <div className="modal-dialog">
@@ -221,16 +230,13 @@ const FlightManagement = () => {
                             </div>
                             <div className="modal-body">
                                 <form onSubmit={handleFormSubmit}>
-                                    {/* Flight Details */}
                                     <div className="form-floating mb-3">
                                         <input
                                             type="text"
                                             className="form-control"
                                             placeholder="Flight Number"
                                             value={form.flightNumber}
-                                            onChange={(e) =>
-                                                setForm({ ...form, flightNumber: e.target.value })
-                                            }
+                                            onChange={(e) => setForm({ ...form, flightNumber: e.target.value })}
                                             required
                                         />
                                         <label>Flight Number</label>
@@ -239,9 +245,7 @@ const FlightManagement = () => {
                                         <select
                                             className="form-control"
                                             value={form.airlineId}
-                                            onChange={(e) =>
-                                                setForm({ ...form, airlineId: e.target.value })
-                                            }
+                                            onChange={(e) => setForm({ ...form, airlineId: e.target.value })}
                                             required
                                         >
                                             <option value="">Select Airline</option>
@@ -257,9 +261,7 @@ const FlightManagement = () => {
                                         <select
                                             className="form-control"
                                             value={form.originAirportId}
-                                            onChange={(e) =>
-                                                setForm({ ...form, originAirportId: e.target.value })
-                                            }
+                                            onChange={(e) => setForm({ ...form, originAirportId: e.target.value })}
                                             required
                                         >
                                             <option value="">Select Origin Airport</option>
@@ -275,9 +277,7 @@ const FlightManagement = () => {
                                         <select
                                             className="form-control"
                                             value={form.destinationAirportId}
-                                            onChange={(e) =>
-                                                setForm({ ...form, destinationAirportId: e.target.value })
-                                            }
+                                            onChange={(e) => setForm({ ...form, destinationAirportId: e.target.value })}
                                             required
                                         >
                                             <option value="">Select Destination Airport</option>
@@ -294,9 +294,7 @@ const FlightManagement = () => {
                                             type="datetime-local"
                                             className="form-control"
                                             value={form.departureTime}
-                                            onChange={(e) =>
-                                                setForm({ ...form, departureTime: e.target.value })
-                                            }
+                                            onChange={(e) => setForm({ ...form, departureTime: e.target.value })}
                                             required
                                         />
                                         <label>Departure Time</label>
@@ -306,9 +304,7 @@ const FlightManagement = () => {
                                             type="datetime-local"
                                             className="form-control"
                                             value={form.arrivalTime}
-                                            onChange={(e) =>
-                                                setForm({ ...form, arrivalTime: e.target.value })
-                                            }
+                                            onChange={(e) => setForm({ ...form, arrivalTime: e.target.value })}
                                             required
                                         />
                                         <label>Arrival Time</label>
@@ -318,9 +314,12 @@ const FlightManagement = () => {
                                             type="number"
                                             className="form-control"
                                             placeholder="Duration"
-                                            value={form.duration}
+                                            value={form.duration || ""}
                                             onChange={(e) =>
-                                                setForm({ ...form, duration: parseInt(e.target.value, 10) })
+                                                setForm({
+                                                    ...form,
+                                                    duration: e.target.value ? parseInt(e.target.value, 10) : null,
+                                                })
                                             }
                                             required
                                         />
@@ -331,7 +330,7 @@ const FlightManagement = () => {
                                             type="number"
                                             className="form-control"
                                             placeholder="Total Seats"
-                                            value={form.totalSeats}
+                                            value={form.totalSeats || ""}
                                             onChange={(e) =>
                                                 setForm({ ...form, totalSeats: parseInt(e.target.value, 10) })
                                             }
@@ -344,7 +343,7 @@ const FlightManagement = () => {
                                             type="number"
                                             className="form-control"
                                             placeholder="Base Price"
-                                            value={form.basePrice}
+                                            value={form.basePrice || ""}
                                             onChange={(e) =>
                                                 setForm({ ...form, basePrice: parseFloat(e.target.value) })
                                             }
@@ -366,12 +365,24 @@ const FlightManagement = () => {
                                         <label>Status</label>
                                     </div>
 
-                                    {/* Seat Allocations Section */}
                                     <div className="mb-3">
-                                        <h5>Seat Allocations</h5>
-                                        {(form.seatAllocations || []).map((allocation, index) => (
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                            <h5>Seat Allocations</h5>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-primary btn-sm"
+                                                onClick={() => setForm({
+                                                    ...form,
+                                                    seatAllocations: [...form.seatAllocations, { className: "", availableSeats: null }],
+                                                })}
+                                            >
+                                                Add Seat Class
+                                            </button>
+                                        </div>
+
+                                        {form.seatAllocations.map((allocation, index) => (
                                             <div key={index} className="row mb-2">
-                                                <div className="col-md-6">
+                                                <div className="col-md-5">
                                                     <input
                                                         type="text"
                                                         className="form-control"
@@ -385,11 +396,11 @@ const FlightManagement = () => {
                                                         required
                                                     />
                                                 </div>
-                                                <div className="col-md-6">
+                                                <div className="col-md-5">
                                                     <input
                                                         type="number"
                                                         className="form-control"
-                                                        value={allocation.availableSeats}
+                                                        value={allocation.availableSeats || ""}
                                                         onChange={(e) => {
                                                             const updatedAllocations = [...form.seatAllocations];
                                                             updatedAllocations[index].availableSeats = parseInt(e.target.value, 10);
@@ -399,20 +410,26 @@ const FlightManagement = () => {
                                                         required
                                                     />
                                                 </div>
+                                                <div className="col-md-2">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => {
+                                                            const updatedAllocations = form.seatAllocations.filter(
+                                                                (a, i) => i !== index
+                                                            );
+                                                            setForm({ ...form, seatAllocations: updatedAllocations });
+                                                        }}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
 
-                                    {/* Form Actions */}
-                                    <button type="submit" className="btn btn-primary">
-                                        Save
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary ms-2"
-                                        onClick={() => setModalVisible(false)}
-                                    >
-                                        Cancel
+                                    <button type="submit" className="btn btn-success w-100">
+                                        {editingFlight ? "Update Flight" : "Add Flight"}
                                     </button>
                                 </form>
                             </div>
