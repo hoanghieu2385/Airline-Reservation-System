@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ARS_API.Models
 {
@@ -51,6 +52,7 @@ namespace ARS_API.Models
         [StringLength(50)]
         public string Status { get; set; }
         
+        [JsonIgnore]
         public ICollection<FlightSeatAllocation> FlightSeatAllocations { get; set; }
 
 
