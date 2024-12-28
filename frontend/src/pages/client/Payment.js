@@ -1,23 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { createPayPalOrder } from "../../services/paymentApi";
 import "../../assets/css/Payment.css";
-
-// Mock payment processing function
-const mockProcessPayment = async (method, amount) => {
-  console.log(`Processing payment of ${amount} USD via ${method}...`);
-
-  // Simulate a delay for payment processing
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  // Simulate success (80%) or failure (20%)
-  const isSuccess = Math.random() > 0.2;
-  if (isSuccess) {
-    console.log("Payment successful!");
-    return { success: true, transactionId: "MOCK123456" };
-  } else {
-    console.log("Payment failed!");
-    return { success: false, error: "Transaction declined" };
-  }
-};
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -33,7 +16,7 @@ const Payment = () => {
   const [tripDetails, setTripDetails] = useState({});
   const [contactInfo, setContactInfo] = useState({});
   const [totalPrice, setTotalPrice] = useState(0);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null); // Added state for payment method
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null); // State for payment method
 
   useEffect(() => {
     try {
@@ -59,28 +42,36 @@ const Payment = () => {
     { id: "alipay", label: "Alipay" },
   ];
 
-  // Function to handle reservation actions
+  const handlePayPalPayment = async () => {
+    try {
+        const orderData = {
+            amount: totalPrice.toFixed(2),
+            currency: "USD",
+            description: "Flight Reservation",
+            returnUrl: "https://localhost:3000/success",
+            cancelUrl: "https://localhost:3000/payment",
+        };
+
+        const response = await createPayPalOrder(orderData);
+        if (response.approveUrl) {
+            window.location.href = response.approveUrl;
+        } else {
+            alert("Could not retrieve PayPal checkout URL.");
+        }
+      } catch (error) {
+          console.error("Error during PayPal payment:", error);
+          alert(`An error occurred: ${error.message}`);
+      }
+  };
+
   const handleReservation = async (status) => {
     try {
-      if (status === "Confirmed") {
-        if (!selectedPaymentMethod) {
-          alert("Please select a payment method.");
-          return;
-        }
-
-        const paymentResult = await mockProcessPayment(
-          selectedPaymentMethod,
-          totalPrice
-        );
-        if (!paymentResult.success) {
-          alert(`Payment failed: ${paymentResult.error}`);
-          return;
-        }
-        alert(
-          `Payment successful! Transaction ID: ${paymentResult.transactionId}`
-        );
+      if (status === "Confirmed" && selectedPaymentMethod === "paypal") {
+        await handlePayPalPayment();
+        return;
       }
 
+      // Các logic khác cho các phương thức thanh toán khác
       const passengers = JSON.parse(sessionStorage.getItem("passengers")) || [];
       const userId = sessionStorage.getItem("userId");
 
@@ -151,8 +142,7 @@ const Payment = () => {
           <strong>Flight Number:</strong> {tripDetails?.flightNumber}
         </p>
         <p>
-          <strong>Departure Time:</strong>{" "}
-          {formatDate(tripDetails?.departureTime)}
+          <strong>Departure Time:</strong> {formatDate(tripDetails?.departureTime)}
         </p>
         <p>
           <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
@@ -161,14 +151,12 @@ const Payment = () => {
         <p>
           <strong>Name:</strong> {contactInfo.firstName} {contactInfo.lastName}
         </p>
-        {/* <p><strong>Age:</strong> {contactInfo.age}</p> */}
         <p>
           <strong>Email:</strong> {contactInfo.email}
         </p>
         <p>
           <strong>Phone:</strong> {contactInfo.phone}
         </p>
-        {/* <p><strong>Address:</strong> {contactInfo.address}</p> */}
       </div>
       <div className="payment-proceed">
         <button

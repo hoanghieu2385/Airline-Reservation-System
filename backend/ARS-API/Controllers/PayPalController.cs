@@ -1,69 +1,100 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using PayPal.Api;
+﻿using ARS_API.DTOs;
+using ARS_API.Services;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace ARS_API.Controllers
+namespace YourNamespace.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class PayPalController : ControllerBase
     {
-        private readonly IConfiguration _config;
+        private readonly PayPalService _payPalService;
 
-        public PayPalController(IConfiguration config)
+        public PayPalController(PayPalService payPalService)
         {
-            _config = config;
+            _payPalService = payPalService;
         }
 
-        [HttpPost("create-payment")]
-        public IActionResult CreatePayment()
+        [HttpPost("create-paypal-order")]
+        public async Task<IActionResult> CreatePayPalOrder([FromBody] CreatePaymentRequestDTO orderRequest)
         {
-            // Lấy thông tin cấu hình PayPal từ appsettings.json
-            var clientId = _config["PayPal:ClientId"];
-            var secret = _config["PayPal:Secret"];
-            var mode = _config["PayPal:Mode"];
-
-            // Tạo context PayPal
-            var apiContext = new APIContext(new OAuthTokenCredential(clientId, secret).GetAccessToken())
+            if (orderRequest == null)
             {
-                Config = new Dictionary<string, string>
-            {
-                { "mode", mode } // "sandbox" hoặc "live"
+                return BadRequest("Invalid request data: Body cannot be null.");
             }
-            };
 
-            // Tạo payment object
-            var payment = new Payment
+            Console.WriteLine($"Received Order Request: {JsonConvert.SerializeObject(orderRequest)}");
+
+            try
             {
-                intent = "sale",
-                payer = new Payer { payment_method = "paypal" },
-                transactions = new List<Transaction>
+                var order = await _payPalService.CreateOrderAsync(
+                    orderRequest.Amount,
+                    orderRequest.Currency,
+                    orderRequest.Description,
+                    orderRequest.ReturnUrl,
+                    orderRequest.CancelUrl
+                );
+
+                var approveUrl = order.Links?.FirstOrDefault(link => link.Rel == "approve")?.Href;
+                if (approveUrl == null)
+                {
+                    return BadRequest("Unable to create PayPal order.");
+                }
+
+                return Ok(new { approveUrl });
+            }
+            catch (Exception ex)
             {
-                new Transaction
-                {
-                    description = "Thanh toán sản phẩm",
-                    invoice_number = Guid.NewGuid().ToString(),
-                    amount = new Amount
-                    {
-                        currency = "USD",
-                        total = "20.00" // Giá tiền
-                    }
-                }
-            },
-                redirect_urls = new RedirectUrls
-                {
-                    cancel_url = "http://localhost:3000/cancel", // URL khi người dùng hủy
-                    return_url = "http://localhost:3000/success" // URL khi thanh toán thành công
-                }
-            };
+                return BadRequest(new { error = ex.Message });
+            }
+        }
 
-            // Tạo Payment trên PayPal
-            var createdPayment = payment.Create(apiContext);
+        [HttpPost("create-order")]
+        public async Task<IActionResult> CreateOrder([FromBody] CreatePaymentRequestDTO request)
+        {
+            try
+            {
+                var order = await _payPalService.CreateOrderAsync(
+                    request.Amount, request.Currency, request.Description, request.ReturnUrl, request.CancelUrl);
 
-            // Lấy link redirect người dùng tới PayPal
-            var redirectUrl = createdPayment.links.FirstOrDefault(link => link.rel == "approval_url")?.href;
+                return Ok(order);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
 
-            return Ok(new { redirectUrl });
+        [HttpPost("capture-order/{orderId}")]
+        public async Task<IActionResult> CaptureOrder(string orderId)
+        {
+            try
+            {
+                var order = await _payPalService.CaptureOrderAsync(orderId);
+                return Ok(order);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("order-details/{orderId}")]
+        public async Task<IActionResult> GetOrderDetails(string orderId)
+        {
+            try
+            {
+                var order = await _payPalService.GetOrderDetailsAsync(orderId);
+                return Ok(order);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }
