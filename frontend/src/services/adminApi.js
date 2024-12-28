@@ -50,3 +50,5 @@ export const getSeatAllocationsByFlightId = (flightId) => api.get(`/FlightSeatAl
 export const addSeatAllocation = (data) => api.post("/FlightSeatAllocation", data);
 export const updateSeatAllocation = (id, data) => api.put(`/FlightSeatAllocation/${id}`, data);
 export const deleteSeatAllocation = (id) => api.delete(`/FlightSeatAllocation/${id}`);
+
+// Reservation Management APIs

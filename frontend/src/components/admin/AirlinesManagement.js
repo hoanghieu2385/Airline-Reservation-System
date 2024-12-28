@@ -63,7 +63,10 @@ const AirlinesManagement = () => {
       closeModal();
       fetchAirlines(); // Refresh the airline list
     } catch (error) {
-      console.error("Error saving airline:", error.response?.data || error.message);
+      console.error(
+        "Error saving airline:",
+        error.response?.data || error.message
+      );
       alert("Failed to save airline. Please try again.");
     } finally {
       setLoading(false);
@@ -71,7 +74,8 @@ const AirlinesManagement = () => {
   };
 
   const handleDelete = async (airline) => {
-    if (!window.confirm("Are you sure you want to delete this airline?")) return;
+    if (!window.confirm("Are you sure you want to delete this airline?"))
+      return;
 
     setLoading(true);
     try {
@@ -79,7 +83,10 @@ const AirlinesManagement = () => {
       alert("Airline deleted successfully.");
       fetchAirlines();
     } catch (error) {
-      console.error("Error deleting airline:", error.response?.data || error.message);
+      console.error(
+        "Error deleting airline:",
+        error.response?.data || error.message
+      );
       alert("Failed to delete airline. Please try again.");
     } finally {
       setLoading(false);
@@ -153,7 +160,6 @@ const AirlinesManagement = () => {
                       Edit
                     </button>
 
-
                     <button
                       className="delete-button"
                       onClick={() => handleDelete(airline)}
@@ -187,7 +193,10 @@ const AirlinesManagement = () => {
                   type="text"
                   value={form.airlineName}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, airlineName: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      airlineName: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -198,7 +207,10 @@ const AirlinesManagement = () => {
                   type="text"
                   value={form.airlineCode}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, airlineCode: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      airlineCode: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -209,7 +221,10 @@ const AirlinesManagement = () => {
                   type="text"
                   value={form.contactNumber}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, contactNumber: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      contactNumber: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -221,7 +236,11 @@ const AirlinesManagement = () => {
                     <select
                       value={seat.className}
                       onChange={(e) =>
-                        handleSeatClassChange(index, "className", e.target.value)
+                        handleSeatClassChange(
+                          index,
+                          "className",
+                          e.target.value
+                        )
                       }
                     >
                       <option value="">Select Class</option>
@@ -268,7 +287,11 @@ const AirlinesManagement = () => {
                       ...prev,
                       seatClasses: [
                         ...prev.seatClasses,
-                        { className: "", luggageAllowance: 0, baseMultiplier: 0 },
+                        {
+                          className: "",
+                          luggageAllowance: 0,
+                          baseMultiplier: 0,
+                        },
                       ],
                     }))
                   }
