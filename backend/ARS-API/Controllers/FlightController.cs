@@ -222,15 +222,26 @@ namespace ARS_API.Controllers
             await _context.SaveChangesAsync();
 
             // Return response
-            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, new
+            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, new FlightDTO
             {
-                Flight = flight,
-                SeatAllocations = seatAllocations.Select(sa => new
+                FlightId = flight.FlightId,
+                FlightNumber = flight.FlightNumber,
+                AirlineName = airline.AirlineName,
+                OriginAirportName = _context.Airports.FirstOrDefault(a => a.AirportId == flight.OriginAirportId)?.AirportName,
+                DestinationAirportName = _context.Airports.FirstOrDefault(a => a.AirportId == flight.DestinationAirportId)?.AirportName,
+                DepartureTime = flight.DepartureTime,
+                ArrivalTime = flight.ArrivalTime,
+                Duration = flight.Duration,
+                TotalSeats = flight.TotalSeats,
+                BasePrice = flight.BasePrice,
+                Status = flight.Status,
+                SeatAllocations = seatAllocations.Select(sa => new FlightSeatAllocationDTO
                 {
-                    sa.ClassId,
-                    sa.AvailableSeats
-                })
+                    ClassName = seatClasses.First(sc => sc.ClassId == sa.ClassId).ClassName,
+                    AvailableSeats = sa.AvailableSeats
+                }).ToList()
             });
+
         }
 
         // PUT: api/Flight/{id}
