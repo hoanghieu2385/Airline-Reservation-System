@@ -52,3 +52,9 @@ export const updateSeatAllocation = (id, data) => api.put(`/FlightSeatAllocation
 export const deleteSeatAllocation = (id) => api.delete(`/FlightSeatAllocation/${id}`);
 
 // Reservation Management APIs
+export const getReservations = () => api.get("/Reservations");
+export const getReservationByCode = (code) => api.get(`/Reservations/${code}`);
+export const createReservation = (data) => api.post("/Reservations", data);
+export const finalizeReservation = (data) => api.post("/Reservations/FinalizeReservation", data);
+export const updateReservation = (id, data) => api.put(`/Reservations/${id}`, data);
+export const deleteReservation = (id) => api.delete(`/Reservations/${id}`);
