@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getAirports, addAirport, updateAirport, deleteAirport, getCities } from "../../services/adminApi";
+import {
+  getAirports,
+  addAirport,
+  updateAirport,
+  deleteAirport,
+  getCities,
+} from "../../services/adminApi";
 
 const AirportsManagement = () => {
   const [data, setData] = useState([]);
@@ -47,32 +53,36 @@ const AirportsManagement = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-        const payload = {
-            AirportId: editingRecord?.airportId,
-            airportCode: form.airportCode,
-            airportName: form.airportName,
-            cityId: form.cityId,
-        };
+      const payload = {
+        AirportId: editingRecord?.airportId,
+        airportCode: form.airportCode,
+        airportName: form.airportName,
+        cityId: form.cityId,
+      };
 
-        if (editingRecord) {
-            await updateAirport(editingRecord.airportId, payload);
-            alert("Airport updated successfully!");
-        } else {
-            await addAirport(payload);
-            alert("Airport added successfully!");
-        }
+      if (editingRecord) {
+        await updateAirport(editingRecord.airportId, payload);
+        alert("Airport updated successfully!");
+      } else {
+        await addAirport(payload);
+        alert("Airport added successfully!");
+      }
 
-        setModalVisible(false);
-        fetchAirports();
+      setModalVisible(false);
+      fetchAirports();
     } catch (error) {
-        console.error("Error during save operation:", error);
-        alert("Failed to save the airport. Check the console for details.");
+      console.error("Error during save operation:", error);
+      alert("Failed to save the airport. Check the console for details.");
     }
-};
-
+  };
 
   const handleDelete = async (record) => {
-    if (!window.confirm(`Are you sure you want to delete the airport ${record.airportName}?`)) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the airport ${record.airportName}?`
+      )
+    )
+      return;
 
     try {
       await deleteAirport(record.airportId);
@@ -198,7 +208,11 @@ const AirportsManagement = () => {
 
       {/* Add/Edit modal */}
       {modalVisible && (
-        <div className="modal show d-block airports-management__modal" tabIndex="-1" role="dialog">
+        <div
+          className="modal show d-block airports-management__modal"
+          tabIndex="-1"
+          role="dialog"
+        >
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
@@ -218,7 +232,9 @@ const AirportsManagement = () => {
                     <select
                       className="form-control"
                       value={form.cityId}
-                      onChange={(e) => setForm({ ...form, cityId: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, cityId: e.target.value })
+                      }
                       required
                     >
                       <option value="" disabled>
@@ -240,7 +256,9 @@ const AirportsManagement = () => {
                       className="form-control"
                       placeholder="Airport Code"
                       value={form.airportCode}
-                      onChange={(e) => setForm({ ...form, airportCode: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, airportCode: e.target.value })
+                      }
                       required
                     />
                     <label>Airport Code</label>
@@ -253,7 +271,9 @@ const AirportsManagement = () => {
                       className="form-control"
                       placeholder="Airport Name"
                       value={form.airportName}
-                      onChange={(e) => setForm({ ...form, airportName: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, airportName: e.target.value })
+                      }
                       required
                     />
                     <label>Airport Name</label>

@@ -156,25 +156,25 @@ namespace ARS_API.Controllers
             _context.Passengers.AddRange(passengers);
 
             // TODO: line 165 nen thay bang TicketCode chu khong phai la ReservationCode
-            string emailBody = $@"
-                <div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;'>
-                    <h1 style='text-align: center; color: #4CAF50;'>E-Ticket</h1>
-                    
-                    <h2 style='color: #4CAF50;'>Passenger Information</h2>
-                    <p><strong>Passenger Name:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
-                    <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
-                    <p><strong>Ticket price:</strong> {totalPrice:C}</p>
+            // string emailBody = $@"
+            //     <div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;'>
+            //         <h1 style='text-align: center; color: #4CAF50;'>E-Ticket</h1>
 
-                    <h2 style='color: #4CAF50;'>Flight Details</h2>
-                    <p><strong>Route:</strong> {reservation.Flight.OriginAirport.AirportName} -> {reservation.Flight.DestinationAirport.AirportName}</p>
-                    <p><strong>Departure Time:</strong> {travelDate:dddd, dd MMMM yyyy}</p>
-                    <p><strong>Airline:</strong> {flight.Airline}</p>
-                    <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
+            //         <h2 style='color: #4CAF50;'>Passenger Information</h2>
+            //         <p><strong>Passenger Name:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
+            //         <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
+            //         <p><strong>Ticket price:</strong> {totalPrice:C}</p>
 
-                    <p style='text-align: center; margin-top: 20px;'>We appreciate you trusting and using our Services!</p>
-                </div>";
+            //         <h2 style='color: #4CAF50;'>Flight Details</h2>
+            //         <p><strong>Route:</strong> {reservation.Flight.OriginAirport.AirportName} -> {reservation.Flight.DestinationAirport.AirportName}</p>
+            //         <p><strong>Departure Time:</strong> {travelDate:dddd, dd MMMM yyyy}</p>
+            //         <p><strong>Airline:</strong> {flight.Airline}</p>
+            //         <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
 
-            await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Flight Reservation Confirmation", emailBody);
+            //         <p style='text-align: center; margin-top: 20px;'>We appreciate you trusting and using our Services!</p>
+            //     </div>";
+
+            // await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Flight Reservation Confirmation", emailBody);
 
             // Save changes
             await _context.SaveChangesAsync();
@@ -332,112 +332,65 @@ namespace ARS_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutReservation(Guid id, ReservationUpdateDTO updateDto)
         {
-            // Retrieve existing reservation
             var reservation = await _context.Reservations.FindAsync(id);
             if (reservation == null)
             {
-                return NotFound();
+                return NotFound("Reservation not found.");
             }
 
-            // Prevent updates if the reservation is already Cancelled
+            // Prevent updates if the reservation is already cancelled
             if (reservation.ReservationStatus == "Cancelled")
             {
-                return BadRequest("Cannot update a cancelled reservation. Please create a new one.");
+                return BadRequest("Cannot update a cancelled reservation.");
             }
 
-            // Retrieve seat allocation and flight details
             var allocation = await _context.FlightSeatAllocation.FindAsync(reservation.AllocationId);
-            var flight = await _context.Flights.FindAsync(reservation.FlightId);
-
-            if (allocation == null || flight == null)
+            if (allocation == null)
             {
-                return BadRequest("Invalid seat allocation or flight.");
+                return BadRequest("Invalid seat allocation.");
             }
 
-            // 1. Update ReservationStatus
+            // Validate and update ReservationStatus
             if (!string.IsNullOrEmpty(updateDto.ReservationStatus))
             {
-                if (reservation.ReservationStatus == "Blocked" &&
-                    (updateDto.ReservationStatus == "Confirmed" || updateDto.ReservationStatus == "Cancelled"))
+                if (reservation.ReservationStatus == "Blocked")
                 {
-                    // TODO: if Status is changed to "Confirmed", NumberOfSeatsBlocked should be nullified (back to 0), seats will then be accounted for via Passengers
-                    reservation.ReservationStatus = updateDto.ReservationStatus;
-
-                    if (updateDto.ReservationStatus == "Confirmed")
+                    if (updateDto.ReservationStatus == "Confirmed" || updateDto.ReservationStatus == "Cancelled")
                     {
-                        // Nullify NumberOfBlockedSeats as seats will be accounted for via Passengers
-                        allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
-                        reservation.NumberOfBlockedSeats = 0;
+                        reservation.ReservationStatus = updateDto.ReservationStatus;
 
-                        // Automatically add passengers
-                        if (updateDto.Passengers != null)
+                        if (updateDto.ReservationStatus == "Cancelled")
                         {
-                            foreach (var passengerDto in updateDto.Passengers)
-                            {
-                                var passenger = new Passenger
-                                {
-                                    PassengerId = Guid.NewGuid(),
-                                    ReservationId = reservation.ReservationId,
-                                    FirstName = passengerDto.FirstName,
-                                    LastName = passengerDto.LastName,
-                                    Gender = passengerDto.Gender,
-                                    TicketCode = GenerateTicketCode(),
-                                    // TODO: Adjust TicketPRice accordingly to line 245
-                                    TicketPrice = flight.BasePrice
-                                };
-
-                                _context.Passengers.Add(passenger);
-                            }
-                        }
-                        else
-                        {
-                            return BadRequest("Passengers must be provided when confirming a reservation.");
+                            allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
+                            var passengers = _context.Passengers.Where(p => p.ReservationId == reservation.ReservationId).ToList();
+                            _context.Passengers.RemoveRange(passengers);
                         }
                     }
-
+                    else
+                    {
+                        return BadRequest("Blocked reservations can only be Confirmed or Cancelled.");
+                    }
+                }
+                else if (reservation.ReservationStatus == "Confirmed")
+                {
                     if (updateDto.ReservationStatus == "Cancelled")
                     {
-                        // Nullify blocked seats and restore availability
+                        reservation.ReservationStatus = "Cancelled";
                         allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
-                        reservation.NumberOfBlockedSeats = 0;
+                        var passengers = _context.Passengers.Where(p => p.ReservationId == reservation.ReservationId).ToList();
+                        _context.Passengers.RemoveRange(passengers);
+                    }
+                    else
+                    {
+                        return BadRequest("Confirmed reservations can only be Cancelled.");
                     }
                 }
-                else if (reservation.ReservationStatus == "Confirmed" && updateDto.ReservationStatus == "Cancelled")
-                {
-                    reservation.ReservationStatus = "Cancelled";
-                    allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
-                    reservation.NumberOfBlockedSeats = 0;
-
-                    // Remove associated passengers
-                    var passengers = _context.Passengers.Where(p => p.ReservationId == reservation.ReservationId).ToList();
-                    _context.Passengers.RemoveRange(passengers);
-                }
                 else
                 {
-                    return BadRequest("Invalid ReservationStatus change.");
+                    return BadRequest("Invalid ReservationStatus transition.");
                 }
             }
 
-            // 2. Update NumberOfBlockedSeats (only allow lowering the number)
-            if (updateDto.NumberOfBlockedSeats.HasValue)
-            {
-                if (updateDto.NumberOfBlockedSeats.Value < reservation.NumberOfBlockedSeats)
-                {
-                    int seatDifference = reservation.NumberOfBlockedSeats.Value - updateDto.NumberOfBlockedSeats.Value;
-
-                    allocation.AvailableSeats += seatDifference; // Return seats
-                    reservation.NumberOfBlockedSeats = updateDto.NumberOfBlockedSeats;
-
-                    // TODO: TotalPrice will be calculated via BasePrice, Passengers, BasePriceMultiplier and PriceMultiplier
-                    reservation.TotalPrice = flight.BasePrice * reservation.NumberOfBlockedSeats.Value;
-                }
-                else
-                {
-                    return BadRequest("NumberOfBlockedSeats can only be reduced.");
-                }
-            }
-
-            // Save changes
             try
             {
                 await _context.SaveChangesAsync();
@@ -456,6 +409,7 @@ namespace ARS_API.Controllers
 
             return NoContent();
         }
+
 
         private bool ReservationExists(Guid id)
         {

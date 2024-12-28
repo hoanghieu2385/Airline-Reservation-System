@@ -222,20 +222,31 @@ namespace ARS_API.Controllers
             await _context.SaveChangesAsync();
 
             // Return response
-            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, new
+            return CreatedAtAction(nameof(GetFlightById), new { id = flight.FlightId }, new FlightDTO
             {
-                Flight = flight,
-                SeatAllocations = seatAllocations.Select(sa => new
+                FlightId = flight.FlightId,
+                FlightNumber = flight.FlightNumber,
+                AirlineName = airline.AirlineName,
+                OriginAirportName = _context.Airports.FirstOrDefault(a => a.AirportId == flight.OriginAirportId)?.AirportName,
+                DestinationAirportName = _context.Airports.FirstOrDefault(a => a.AirportId == flight.DestinationAirportId)?.AirportName,
+                DepartureTime = flight.DepartureTime,
+                ArrivalTime = flight.ArrivalTime,
+                Duration = flight.Duration,
+                TotalSeats = flight.TotalSeats,
+                BasePrice = flight.BasePrice,
+                Status = flight.Status,
+                SeatAllocations = seatAllocations.Select(sa => new FlightSeatAllocationDTO
                 {
-                    sa.ClassId,
-                    sa.AvailableSeats
-                })
+                    ClassName = seatClasses.First(sc => sc.ClassId == sa.ClassId).ClassName,
+                    AvailableSeats = sa.AvailableSeats
+                }).ToList()
             });
+
         }
 
         // PUT: api/Flight/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateFlight(Guid id, [FromBody] UpdateFlightDto updateFlightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -271,16 +282,29 @@ namespace ARS_API.Controllers
 
         // DELETE: api/Flight/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteFlight(Guid id)
         {
-            var flight = await _context.Flights.FindAsync(id);
-            if (flight == null) return NotFound();
+            var flight = await _context.Flights
+                .Include(f => f.FlightSeatAllocations) // Include related seat allocations
+                .FirstOrDefaultAsync(f => f.FlightId == id);
 
+            if (flight == null)
+            {
+                return NotFound();
+            }
+
+            // Remove the seat allocations associated with the flight
+            _context.FlightSeatAllocation.RemoveRange(flight.FlightSeatAllocations);
+
+            // Remove the flight
             _context.Flights.Remove(flight);
+
+            // Save changes to the database
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
     }
 }
