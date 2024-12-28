@@ -1,5 +1,4 @@
 import api from "./api";
-
 // User Management APIs
 export const getUsers = (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
@@ -43,7 +42,8 @@ export const searchFlights = (params) => {
 };
 export const createFlight = (data) => api.post("/Flight", data);
 export const updateFlight = (id, data) => api.put(`/Flight/${id}`, data);
-export const deleteFlight = (id) => api.delete(`/Flight/${id}`);
+export const deleteFlight = (flightId) =>
+    api.delete(`/Flight/${flightId}`);
 
 // Flight Seat Allocation APIs
 export const getSeatAllocationsByFlightId = (flightId) => api.get(`/FlightSeatAllocation/${flightId}`);

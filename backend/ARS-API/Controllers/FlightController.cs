@@ -246,7 +246,7 @@ namespace ARS_API.Controllers
 
         // PUT: api/Flight/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateFlight(Guid id, [FromBody] UpdateFlightDto updateFlightDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -280,15 +280,27 @@ namespace ARS_API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Flight/{id}
+     // DELETE: api/Flight/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteFlight(Guid id)
         {
-            var flight = await _context.Flights.FindAsync(id);
-            if (flight == null) return NotFound();
+            var flight = await _context.Flights
+                .Include(f => f.FlightSeatAllocations) // Include related seat allocations
+                .FirstOrDefaultAsync(f => f.FlightId == id);
 
+            if (flight == null)
+            {
+                return NotFound();
+            }
+
+            // Remove the seat allocations associated with the flight
+            _context.FlightSeatAllocation.RemoveRange(flight.FlightSeatAllocations);
+
+            // Remove the flight
             _context.Flights.Remove(flight);
+
+            // Save changes to the database
             await _context.SaveChangesAsync();
 
             return NoContent();
