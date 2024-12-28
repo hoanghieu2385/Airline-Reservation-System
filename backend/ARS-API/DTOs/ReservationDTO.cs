@@ -31,8 +31,6 @@ namespace ARS_API.DTOs
     public class ReservationUpdateDTO
     {
         public string? ReservationStatus { get; set; } // "Confirmed" or "Cancelled" only
-        public int? NumberOfBlockedSeats { get; set; } // Only allows reducing seats
-        public List<PassengerDTO>? Passengers { get; set; } // Only required for "Confirmed"
     }
 
 }
