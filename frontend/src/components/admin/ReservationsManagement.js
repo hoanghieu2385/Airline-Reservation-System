@@ -128,6 +128,7 @@ const ReservationManagement = () => {
           <thead>
             <tr>
               <th>#</th>
+              <th>Reservation ID</th>
               <th>Reservation Code</th>
               <th>User ID</th>
               <th>Flight ID</th>
@@ -142,6 +143,7 @@ const ReservationManagement = () => {
               currentReservations.map((reservation, index) => (
                 <tr key={reservation.reservationId}>
                   <td>{indexOfFirstItem + index + 1}</td>
+                  <td>{reservation.reservationId}</td>
                   <td>{reservation.reservationCode}</td>
                   <td>{reservation.userId}</td>
                   <td>{reservation.flightId}</td>
