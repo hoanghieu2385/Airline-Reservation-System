@@ -21,6 +21,9 @@ namespace ARS_API.DTOs
         public decimal BasePrice { get; set; }
         public string Status { get; set; }
         public List<FlightSeatAllocationDTO> SeatAllocations { get; internal set; }
+
+        public string FormattedDeparture => DepartureTime.ToString("dd-MM-yyyy, HH:mm");
+        public string FormattedArrival => ArrivalTime.ToString("dd-MM-yyyy, HH:mm");
     }
 
     public class CreateFlightDto
