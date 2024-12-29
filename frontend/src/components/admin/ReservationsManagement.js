@@ -147,7 +147,7 @@ const ReservationManagement = () => {
                   <td>{reservation.flightId}</td>
                   <td>{reservation.reservationStatus}</td>
                   <td>{reservation.totalPrice.toFixed(2)}</td>
-                  <td>{new Date(reservation.travelDate).toLocaleString()}</td>
+                  <td>{reservation.formattedTravelDate || new Date(reservation.travelDate).toLocaleString()}</td>
                   <td>
                     <button
                       className={`btn btn-sm me-2 ${

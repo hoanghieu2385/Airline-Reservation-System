@@ -14,6 +14,7 @@ namespace ARS_API.DTOs
         public string ReservationStatus { get; set; }
         public decimal TotalPrice { get; set; }
         public DateTime TravelDate { get; set; }
+        public string FormattedTravelDate => TravelDate.ToString("dd-MM-yyyy, HH:mm");
         public int? NumberOfBlockedSeats { get; set; }
         public DateTime CreatedAt { get; set; }
     }
