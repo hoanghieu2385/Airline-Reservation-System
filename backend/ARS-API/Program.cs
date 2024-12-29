@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -30,6 +30,10 @@ namespace ARS_API
             builder.Services.AddHostedService<ReservationCleanupService>();
 
             builder.Services.AddScoped<IEmailService, EmailService>();
+
+            builder.Services.Configure<PayPalSettings>(builder.Configuration.GetSection("PayPalSettings"));
+
+            builder.Services.AddSingleton<PayPalService>();
 
             // Configure Email Service
             builder.Services.Configure<EmailSettings>(
@@ -127,6 +131,8 @@ namespace ARS_API
                     }
                 });
             });
+
+            builder.Services.AddScoped<IVnPayService, VnPayService>();
 
             var app = builder.Build();
 

@@ -9,6 +9,7 @@ import ClientManagement from "../components/admin/ClientManagement";
 import ClerkManagement from "../components/admin/ClerkManagement";
 // import FlightSeatAllocationManagement from "../components/admin/FlightSeatAllocationManagement";
 import FlightManagement from "../components/admin/FlightManagement";
+import ReservationManagement from "../components/admin/ReservationsManagement";
 
 const AdminRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const AdminRoutes = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/flights" element={<FlightManagement />} />
+        <Route path="/reservations" element={<ReservationManagement/>} />
         <Route path="/airlines" element={<AirlinesManagement />} />
         <Route path="/airports" element={<AirportsManagement />} />
         <Route path="/cities" element={<CitiesManagement />} />
