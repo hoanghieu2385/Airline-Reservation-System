@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  getReservations,
+  searchReservations,
   createReservation,
   updateReservation,
   deleteReservation,
@@ -9,7 +9,12 @@ import "../../assets/css/Admin/ReservationsManagement.css";
 
 const ReservationManagement = () => {
   const [data, setData] = useState([]);
-  const [searchText, setSearchText] = useState("");
+  const [filters, setFilters] = useState({
+    reservationCode: "",
+    userId: "",
+    flightId: "",
+    includeCancelled: false,
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [modalVisible, setModalVisible] = useState(false);
@@ -26,15 +31,24 @@ const ReservationManagement = () => {
 
   useEffect(() => {
     fetchReservations();
-  }, []);
+  }, [filters]);
 
   const fetchReservations = async () => {
     try {
-      const response = await getReservations();
+      const response = await searchReservations(filters);
       setData(response.data || []);
     } catch (error) {
-      alert("Failed to fetch reservations");
+      console.error("Error fetching reservations:", error);
+      alert("Failed to fetch reservations.");
     }
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleFormSubmit = async (e) => {
@@ -73,31 +87,54 @@ const ReservationManagement = () => {
     }
   };
 
-  const filteredData = data.filter((reservation) =>
-    reservation.reservationCode.toLowerCase().includes(searchText.toLowerCase())
-  );
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentReservations = filteredData.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const currentReservations = data.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(data.length / itemsPerPage);
 
   return (
     <div className="reservation-management__container mt-4">
       <h2>Reservation Management</h2>
 
-      {/* Search bar */}
+      {/* Search Filters */}
       <div className="reservation-management__search mb-3">
         <input
           type="text"
+          name="reservationCode"
           placeholder="Search by reservation code..."
-          className="form-control"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          className="form-control mb-2"
+          value={filters.reservationCode}
+          onChange={handleFilterChange}
         />
+        <input
+          type="text"
+          name="userId"
+          placeholder="Search by user ID..."
+          className="form-control mb-2"
+          value={filters.userId}
+          onChange={handleFilterChange}
+        />
+        <input
+          type="text"
+          name="flightId"
+          placeholder="Search by flight ID..."
+          className="form-control mb-2"
+          value={filters.flightId}
+          onChange={handleFilterChange}
+        />
+        <div className="form-check">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="includeCancelled"
+            name="includeCancelled"
+            checked={filters.includeCancelled}
+            onChange={handleFilterChange}
+          />
+          <label className="form-check-label" htmlFor="includeCancelled">
+            Show Cancelled Reservations
+          </label>
+        </div>
       </div>
 
       {/* Add reservation button */}
@@ -119,6 +156,119 @@ const ReservationManagement = () => {
       >
         Add Reservation
       </button>
+
+      {/* Modal for Add/Edit */}
+      {modalVisible && (
+        <div
+          className="modal show d-block reservation-management__modal"
+          tabIndex="-1"
+          role="dialog"
+        >
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {editingRecord ? "Edit Reservation" : "Add Reservation"}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setModalVisible(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleFormSubmit}>
+                  {/* ReservationStatus - Editable */}
+                  <div className="form-floating mb-3">
+                    <select
+                      className="form-control"
+                      value={form.reservationStatus}
+                      onChange={(e) => {
+                        const newStatus = e.target.value;
+
+                        if (newStatus === "Cancelled") {
+                          const confirmCancellation = window.confirm(
+                            "Are you sure you want to cancel this reservation? This action cannot be undone."
+                          );
+                          if (!confirmCancellation) {
+                            return; // User canceled the action
+                          }
+                        }
+
+                        // Update the status in the form state
+                        setForm({ ...form, reservationStatus: newStatus });
+                      }}
+                      required
+                    >
+                      <option value="">Select Status</option>
+                      <option value="Blocked">Blocked</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <label>Status</label>
+                  </div>
+
+                  {/* Other fields are read-only */}
+                  <div className="form-floating mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Reservation Code"
+                      value={form.reservationCode}
+                      disabled
+                    />
+                    <label>Reservation Code</label>
+                  </div>
+                  <div className="form-floating mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="User ID"
+                      value={form.userId}
+                      disabled
+                    />
+                    <label>User ID</label>
+                  </div>
+                  <div className="form-floating mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Flight ID"
+                      value={form.flightId}
+                      disabled
+                    />
+                    <label>Flight ID</label>
+                  </div>
+                  <div className="form-floating mb-3">
+                    <input
+                      type="datetime-local"
+                      className="form-control"
+                      placeholder="Travel Date"
+                      value={new Date(form.travelDate)
+                        .toISOString()
+                        .slice(0, 16)} // Read-only
+                      disabled
+                    />
+                    <label>Travel Date</label>
+                  </div>
+
+                  {/* Form Actions */}
+                  <button type="submit" className="btn btn-primary">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary ms-2"
+                    onClick={() => setModalVisible(false)}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reservations table */}
       <div className="table-responsive">
@@ -147,7 +297,10 @@ const ReservationManagement = () => {
                   <td>{reservation.flightId}</td>
                   <td>{reservation.reservationStatus}</td>
                   <td>{reservation.totalPrice.toFixed(2)}</td>
-                  <td>{reservation.formattedTravelDate || new Date(reservation.travelDate).toLocaleString()}</td>
+                  <td>
+                    {reservation.formattedTravelDate ||
+                      new Date(reservation.travelDate).toLocaleString()}
+                  </td>
                   <td>
                     <button
                       className={`btn btn-sm me-2 ${
@@ -156,7 +309,15 @@ const ReservationManagement = () => {
                           : "btn-warning"
                       }`}
                       onClick={() => {
-                        setForm(reservation);
+                        setForm({
+                          reservationCode: reservation.reservationCode,
+                          userId: reservation.userId,
+                          flightId: reservation.flightId,
+                          allocationId: reservation.allocationId,
+                          reservationStatus: reservation.reservationStatus,
+                          totalPrice: reservation.totalPrice,
+                          travelDate: reservation.travelDate,
+                        });
                         setEditingRecord(reservation);
                         setModalVisible(true);
                       }}
@@ -164,19 +325,12 @@ const ReservationManagement = () => {
                     >
                       Edit
                     </button>
-
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(reservation)}
-                    >
-                      Delete
-                    </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="text-center">
+                <td colSpan="9" className="text-center">
                   No reservations available
                 </td>
               </tr>
@@ -205,115 +359,6 @@ const ReservationManagement = () => {
           Next
         </button>
       </div>
-
-      {/* Add/Edit modal */}
-      {modalVisible && (
-        <div
-          className="modal show d-block reservation-management__modal"
-          tabIndex="-1"
-          role="dialog"
-        >
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingRecord ? "Edit Reservation" : "Add Reservation"}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setModalVisible(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleFormSubmit}>
-                  {/* Reservation Code - Read Only */}
-                  <div className="form-floating mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Reservation Code"
-                      value={form.reservationCode}
-                      disabled
-                    />
-                    <label>Reservation Code</label>
-                  </div>
-                  {/* User ID - Read Only */}
-                  <div className="form-floating mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="User ID"
-                      value={form.userId}
-                      disabled
-                    />
-                    <label>User ID</label>
-                  </div>
-                  {/* Flight ID - Read Only */}
-                  <div className="form-floating mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Flight ID"
-                      value={form.flightId}
-                      disabled
-                    />
-                    <label>Flight ID</label>
-                  </div>
-                  {/* Status - Editable */}
-                  <div className="form-floating mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Status"
-                      value={form.reservationStatus}
-                      onChange={(e) =>
-                        setForm({ ...form, reservationStatus: e.target.value })
-                      }
-                      required
-                    />
-                    <label>Status</label>
-                  </div>
-                  {/* Total Price - Read Only */}
-                  <div className="form-floating mb-3">
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="Total Price"
-                      value={form.totalPrice}
-                      disabled
-                    />
-                    <label>Total Price</label>
-                  </div>
-                  {/* Travel Date - Read Only */}
-                  <div className="form-floating mb-3">
-                    <input
-                      type="datetime-local"
-                      className="form-control"
-                      placeholder="Travel Date"
-                      value={form.travelDate}
-                      disabled
-                    />
-                    <label>Travel Date</label>
-                  </div>
-
-                  {/* Form Actions */}
-                  <button type="submit" className="btn btn-primary">
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary ms-2"
-                    onClick={() => setModalVisible(false)}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

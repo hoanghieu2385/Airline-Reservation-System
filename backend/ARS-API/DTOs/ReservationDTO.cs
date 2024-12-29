@@ -7,6 +7,7 @@ namespace ARS_API.DTOs
 {
     public class ReservationDTO
     {
+        public Guid ReservationId { get; set; }
         public string ReservationCode { get; set; }
         public string UserId { get; set; }
         public Guid FlightId { get; set; }
