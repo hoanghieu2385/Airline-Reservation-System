@@ -1,10 +1,10 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../services/authApi";
 import "../../assets/css/Login.css";
 import Header from "./Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { login } from "../../services/authApi";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +15,15 @@ const LoginPage = () => {
   const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      // Redirect to dashboard or home if logged in
+      navigate("/");
+    }
+  }, [navigate]);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -40,6 +49,7 @@ const LoginPage = () => {
 
       // Save the userId in sessionStorage
       sessionStorage.setItem("userId", user.id);
+      sessionStorage.setItem("userRole", roles[0]);
 
       sessionStorage.setItem("userEmail", email);
       sessionStorage.setItem("token", token);
@@ -63,7 +73,6 @@ const LoginPage = () => {
       );
     }
   };
-
   return (
     <div>
       <Header />
