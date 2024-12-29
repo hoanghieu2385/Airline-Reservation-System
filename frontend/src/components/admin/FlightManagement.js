@@ -67,7 +67,7 @@ const FlightManagement = () => {
                     alert("Please fill in all required fields");
                     return;
                 }
-    
+
                 // Validate departure và arrival times
                 const departureTime = new Date(form.departureTime);
                 const arrivalTime = new Date(form.arrivalTime);
@@ -75,14 +75,14 @@ const FlightManagement = () => {
                     alert("Departure time must be before arrival time");
                     return;
                 }
-    
+
                 // Update existing flight
                 await updateFlight(editingFlight.flightId, {
                     departureTime: new Date(form.departureTime).toISOString(),
                     arrivalTime: new Date(form.arrivalTime).toISOString(),
                     status: form.status
                 });
-                
+
                 alert("Flight updated successfully!");
             } else {
                 // Validate tất cả các trường khi tạo mới
@@ -92,7 +92,7 @@ const FlightManagement = () => {
                     alert("Please fill in all required fields");
                     return;
                 }
-    
+
                 // Validate departure và arrival times
                 const departureTime = new Date(form.departureTime);
                 const arrivalTime = new Date(form.arrivalTime);
@@ -100,18 +100,18 @@ const FlightManagement = () => {
                     alert("Departure time must be before arrival time");
                     return;
                 }
-    
+
                 // Validate total seats allocation
                 const totalAllocatedSeats = form.seatAllocations.reduce(
                     (sum, allocation) => sum + (parseInt(allocation.availableSeats) || 0),
                     0
                 );
-    
+
                 if (totalAllocatedSeats !== parseInt(form.totalSeats)) {
                     alert(`Total allocated seats (${totalAllocatedSeats}) must match total seats (${form.totalSeats})`);
                     return;
                 }
-    
+
                 // Validate seat allocations
                 for (const allocation of form.seatAllocations) {
                     if (!allocation.className || !allocation.availableSeats) {
@@ -119,7 +119,7 @@ const FlightManagement = () => {
                         return;
                     }
                 }
-    
+
                 // Create new flight
                 const payload = {
                     flightNumber: form.flightNumber,
@@ -137,16 +137,16 @@ const FlightManagement = () => {
                         availableSeats: parseInt(allocation.availableSeats)
                     }))
                 };
-    
+
                 await createFlight(payload);
                 alert("Flight created successfully!");
             }
-    
+
             // Close modal and refresh list
             setModalVisible(false);
             const response = await getFlights();
             setFlights(response.data || []);
-    
+
             // Reset form
             setForm({
                 flightNumber: "",
@@ -162,7 +162,7 @@ const FlightManagement = () => {
                 seatAllocations: [{ className: "", availableSeats: null }]
             });
             setEditingFlight(null);
-    
+
         } catch (error) {
             console.error("Error saving flight:", error);
             const errorMessage = error.response?.data || "Check console for details";
@@ -410,10 +410,12 @@ const FlightManagement = () => {
                                                     type="text"
                                                     className="form-control"
                                                     placeholder="Flight Number"
-                                                    value={editingFlight ? form.flightNumber : form.flightNumber}
-                                                    disabled={editingFlight}
+                                                    value={form.flightNumber}
+                                                    onChange={(e) => setForm({ ...form, flightNumber: e.target.value })}
+                                                    disabled={!!editingFlight}
                                                     required
                                                 />
+
                                                 <label>Flight Number</label>
                                             </div>
 
