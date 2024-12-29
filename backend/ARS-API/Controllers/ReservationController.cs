@@ -29,24 +29,54 @@ namespace ARS_API.Controllers
 
         // GET: api/Reservations
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations()
+        public async Task<ActionResult<IEnumerable<ReservationDTO>>> GetReservations()
         {
-            return await _context.Reservations.ToListAsync();
+            var reservations = await _context.Reservations
+                .Include(r => r.Flight)
+                .Select(r => new ReservationDTO
+                {
+                    ReservationCode = r.ReservationCode,
+                    UserId = r.UserId,
+                    FlightId = r.FlightId,
+                    AllocationId = r.AllocationId,
+                    ReservationStatus = r.ReservationStatus,
+                    TotalPrice = r.TotalPrice,
+                    TravelDate = r.TravelDate,
+                    CreatedAt = r.CreatedAt,
+                    NumberOfBlockedSeats = r.NumberOfBlockedSeats
+                })
+                .ToListAsync();
+
+            return Ok(reservations);
         }
 
         // GET: api/Reservations/{code}
         [HttpGet("{code}")]
-        public async Task<ActionResult<Reservation>> GetReservationByCode(string code)
+        public async Task<ActionResult<ReservationDTO>> GetReservationByCode(string code)
         {
             var reservation = await _context.Reservations
-                                .FirstOrDefaultAsync(r => r.ReservationCode == code);
+                .Include(r => r.Flight) // Include Flight to access DepartureTime
+                .Where(r => r.ReservationCode == code)
+                .Select(r => new ReservationDTO
+                {
+                    ReservationCode = r.ReservationCode,
+                    UserId = r.UserId,
+                    FlightId = r.FlightId,
+                    AllocationId = r.AllocationId,
+                    ReservationStatus = r.ReservationStatus,
+                    TotalPrice = r.TotalPrice,
+                    TravelDate = r.TravelDate, // Include the raw TravelDate
+                    CreatedAt = r.CreatedAt,
+                    NumberOfBlockedSeats = r.NumberOfBlockedSeats
+                })
+                .FirstOrDefaultAsync();
 
             if (reservation == null)
             {
                 return NotFound();
             }
 
-            return reservation;
+            return Ok(reservation);
         }
 
         // POST: api/Reservations
