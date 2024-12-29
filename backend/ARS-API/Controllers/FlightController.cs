@@ -280,7 +280,7 @@ namespace ARS_API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Flight/{id}
+     // DELETE: api/Flight/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteFlight(Guid id)
