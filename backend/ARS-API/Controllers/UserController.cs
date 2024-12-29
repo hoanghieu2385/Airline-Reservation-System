@@ -403,7 +403,7 @@ namespace ARS_API.Controllers
 
 
         [HttpPut("admin-update-user/{id}")]
-        [Authorize(Roles = "ADMIN")] // Only ADMIN can update user information
+        [Authorize(Roles = "ADMIN, CLERK")] // Only ADMIN can update user information
         public async Task<IActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserDTO model)
         {
             var user = await _userManager.FindByIdAsync(id);
