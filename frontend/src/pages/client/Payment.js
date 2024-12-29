@@ -19,18 +19,33 @@ const Payment = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null); // State for payment method
 
   useEffect(() => {
-    try {
-      const storedData = sessionStorage.getItem("checkoutData");
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        setTripDetails(parsedData.flightDetails);
-        setContactInfo(parsedData.contactInfo);
-        setTotalPrice(parsedData.totalPrice);
+    const urlParams = new URLSearchParams(window.location.search);
+    const isCanceled = urlParams.get("cancel");
+  
+    // Thêm điều kiện để chỉ chạy alert một lần
+    if (isCanceled && !sessionStorage.getItem("alertShown")) {
+      alert("Payment was canceled. Please select another payment method or try again.");
+      sessionStorage.setItem("alertShown", "true"); // Đặt cờ để không lặp lại alert
+  
+      const storedTripDetails = sessionStorage.getItem("tripDetails");
+      const storedContactInfo = sessionStorage.getItem("contactInfo");
+      const storedTotalPrice = sessionStorage.getItem("totalPrice");
+  
+      if (storedTripDetails && storedContactInfo && storedTotalPrice) {
+        setTripDetails(JSON.parse(storedTripDetails));
+        setContactInfo(JSON.parse(storedContactInfo));
+        setTotalPrice(Number(storedTotalPrice));
+      } else {
+        console.error("No data to restore.");
       }
-    } catch (error) {
-      console.error("Error parsing checkout data:", error);
     }
+  
+    // Xóa cờ khi rời khỏi trang để cho phép alert hiển thị lại nếu cần
+    return () => {
+      sessionStorage.removeItem("alertShown");
+    };
   }, []);
+  
 
   const paymentMethods = [
     { id: "wechat", label: "WeChat Pay" },
@@ -44,25 +59,32 @@ const Payment = () => {
 
   const handlePayPalPayment = async () => {
     try {
-        const orderData = {
-            amount: totalPrice.toFixed(2),
-            currency: "USD",
-            description: "Flight Reservation",
-            returnUrl: "https://localhost:3000/success",
-            cancelUrl: "https://localhost:3000/payment",
-        };
+      const orderData = {
+        amount: totalPrice.toFixed(2),
+        currency: "USD",
+        description: "Flight Reservation",
+        returnUrl: "http://localhost:3000/success", // Sử dụng HTTP thay vì HTTPS
+        cancelUrl: "http://localhost:3000/payment?cancel=true", // Sử dụng HTTP
+      };
+      
 
-        const response = await createPayPalOrder(orderData);
-        if (response.approveUrl) {
-            window.location.href = response.approveUrl;
-        } else {
-            alert("Could not retrieve PayPal checkout URL.");
-        }
-      } catch (error) {
-          console.error("Error during PayPal payment:", error);
-          alert(`An error occurred: ${error.message}`);
+      // Lưu trạng thái hiện tại vào sessionStorage
+      sessionStorage.setItem("tripDetails", JSON.stringify(tripDetails));
+      sessionStorage.setItem("contactInfo", JSON.stringify(contactInfo));
+      sessionStorage.setItem("totalPrice", totalPrice);
+
+      const response = await createPayPalOrder(orderData);
+      if (response.approveUrl) {
+        window.location.href = response.approveUrl;
+      } else {
+        alert("Could not retrieve PayPal checkout URL.");
       }
+    } catch (error) {
+      console.error("Error during PayPal payment:", error);
+      alert(`An error occurred: ${error.message}`);
+    }
   };
+
 
   const handleReservation = async (status) => {
     try {
