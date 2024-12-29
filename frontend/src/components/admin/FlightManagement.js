@@ -61,77 +61,92 @@ const FlightManagement = () => {
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Validate form fields
-            if (!form.flightNumber || !form.airlineId || !form.originAirportId ||
-                !form.destinationAirportId || !form.departureTime || !form.arrivalTime ||
-                !form.duration || !form.totalSeats || !form.basePrice) {
-                alert("Please fill in all required fields");
-                return;
-            }
-
-            // Validate departure and arrival times
-            const departureTime = new Date(form.departureTime);
-            const arrivalTime = new Date(form.arrivalTime);
-            if (departureTime >= arrivalTime) {
-                alert("Departure time must be before arrival time");
-                return;
-            }
-
-            // Validate total seats allocation
-            const totalAllocatedSeats = form.seatAllocations.reduce(
-                (sum, allocation) => sum + (parseInt(allocation.availableSeats) || 0),
-                0
-            );
-
-            if (totalAllocatedSeats !== parseInt(form.totalSeats)) {
-                alert(`Total allocated seats (${totalAllocatedSeats}) must match total seats (${form.totalSeats})`);
-                return;
-            }
-
-            // Validate seat allocations
-            for (const allocation of form.seatAllocations) {
-                if (!allocation.className || !allocation.availableSeats) {
-                    alert("Please fill in all seat allocation details");
+            if (editingFlight) {
+                // Chỉ validate các trường có thể edit khi đang update
+                if (!form.departureTime || !form.arrivalTime || !form.status) {
+                    alert("Please fill in all required fields");
                     return;
                 }
-            }
-
-            const payload = {
-                flightNumber: form.flightNumber,
-                airlineId: form.airlineId,
-                originAirportId: form.originAirportId,
-                destinationAirportId: form.destinationAirportId,
-                departureTime: new Date(form.departureTime).toISOString(),
-                arrivalTime: new Date(form.arrivalTime).toISOString(),
-                duration: parseInt(form.duration),
-                totalSeats: parseInt(form.totalSeats),
-                basePrice: parseFloat(form.basePrice),
-                status: form.status,
-                seatAllocations: form.seatAllocations.map(allocation => ({
-                    className: allocation.className,
-                    availableSeats: parseInt(allocation.availableSeats)
-                }))
-            };
-
-            if (editingFlight) {
+    
+                // Validate departure và arrival times
+                const departureTime = new Date(form.departureTime);
+                const arrivalTime = new Date(form.arrivalTime);
+                if (departureTime >= arrivalTime) {
+                    alert("Departure time must be before arrival time");
+                    return;
+                }
+    
                 // Update existing flight
                 await updateFlight(editingFlight.flightId, {
-                    departureTime: payload.departureTime,
-                    arrivalTime: payload.arrivalTime,
-                    status: payload.status
+                    departureTime: new Date(form.departureTime).toISOString(),
+                    arrivalTime: new Date(form.arrivalTime).toISOString(),
+                    status: form.status
                 });
+                
                 alert("Flight updated successfully!");
             } else {
+                // Validate tất cả các trường khi tạo mới
+                if (!form.flightNumber || !form.airlineId || !form.originAirportId ||
+                    !form.destinationAirportId || !form.departureTime || !form.arrivalTime ||
+                    !form.duration || !form.totalSeats || !form.basePrice) {
+                    alert("Please fill in all required fields");
+                    return;
+                }
+    
+                // Validate departure và arrival times
+                const departureTime = new Date(form.departureTime);
+                const arrivalTime = new Date(form.arrivalTime);
+                if (departureTime >= arrivalTime) {
+                    alert("Departure time must be before arrival time");
+                    return;
+                }
+    
+                // Validate total seats allocation
+                const totalAllocatedSeats = form.seatAllocations.reduce(
+                    (sum, allocation) => sum + (parseInt(allocation.availableSeats) || 0),
+                    0
+                );
+    
+                if (totalAllocatedSeats !== parseInt(form.totalSeats)) {
+                    alert(`Total allocated seats (${totalAllocatedSeats}) must match total seats (${form.totalSeats})`);
+                    return;
+                }
+    
+                // Validate seat allocations
+                for (const allocation of form.seatAllocations) {
+                    if (!allocation.className || !allocation.availableSeats) {
+                        alert("Please fill in all seat allocation details");
+                        return;
+                    }
+                }
+    
                 // Create new flight
+                const payload = {
+                    flightNumber: form.flightNumber,
+                    airlineId: form.airlineId,
+                    originAirportId: form.originAirportId,
+                    destinationAirportId: form.destinationAirportId,
+                    departureTime: new Date(form.departureTime).toISOString(),
+                    arrivalTime: new Date(form.arrivalTime).toISOString(),
+                    duration: parseInt(form.duration),
+                    totalSeats: parseInt(form.totalSeats),
+                    basePrice: parseFloat(form.basePrice),
+                    status: form.status,
+                    seatAllocations: form.seatAllocations.map(allocation => ({
+                        className: allocation.className,
+                        availableSeats: parseInt(allocation.availableSeats)
+                    }))
+                };
+    
                 await createFlight(payload);
                 alert("Flight created successfully!");
             }
-
+    
             // Close modal and refresh list
             setModalVisible(false);
             const response = await getFlights();
             setFlights(response.data || []);
-
+    
             // Reset form
             setForm({
                 flightNumber: "",
@@ -147,7 +162,7 @@ const FlightManagement = () => {
                 seatAllocations: [{ className: "", availableSeats: null }]
             });
             setEditingFlight(null);
-
+    
         } catch (error) {
             console.error("Error saving flight:", error);
             const errorMessage = error.response?.data || "Check console for details";
@@ -160,22 +175,22 @@ const FlightManagement = () => {
             setActionError("Invalid flight ID. Cannot delete flight.");
             return;
         }
-    
+
         if (!window.confirm("Are you sure you want to delete this flight? This action cannot be undone.")) {
             return;
         }
-    
+
         setActionError(null);
         setSuccessMessage(null);
-    
+
         try {
             const response = await deleteFlight(flightId);
-    
+
             if (response.status === 403) {
                 setActionError("You don't have permission to delete flights. Please contact your administrator.");
                 return;
             }
-    
+
             const flightsResponse = await getFlights();
             setFlights(flightsResponse.data || []);
             setSuccessMessage("Flight deleted successfully!");
@@ -204,7 +219,7 @@ const FlightManagement = () => {
             }
         }
     };
-    
+
 
     useEffect(() => {
         if (actionError || successMessage) {
@@ -328,8 +343,18 @@ const FlightManagement = () => {
                                                 onClick={() => {
                                                     setActionError(null);
                                                     setSuccessMessage(null);
+
+                                                    // Tìm airline và airports tương ứng
+                                                    const airline = airlines.find(a => a.airlineId === flight.airlineId);
+                                                    const originAirport = airports.find(a => a.airportId === flight.originAirportId);
+                                                    const destAirport = airports.find(a => a.airportId === flight.destinationAirportId);
+
                                                     setForm({
                                                         ...flight,
+                                                        // Giữ lại các giá trị từ flight hiện tại
+                                                        airlineName: airline?.airlineName || flight.airlineName,
+                                                        originAirportName: originAirport?.airportName || flight.originAirportName,
+                                                        destinationAirportName: destAirport?.airportName || flight.destinationAirportName,
                                                         departureTime: new Date(flight.departureTime)
                                                             .toISOString()
                                                             .slice(0, 16),
@@ -379,96 +404,115 @@ const FlightManagement = () => {
                                 <form onSubmit={handleFormSubmit}>
                                     <div className="row">
                                         <div className="col-md-6">
+                                            {/* Flight Number field */}
                                             <div className="form-floating mb-3">
                                                 <input
                                                     type="text"
                                                     className="form-control"
                                                     placeholder="Flight Number"
-                                                    value={form.flightNumber}
-                                                    onChange={(e) =>
-                                                        setForm({ ...form, flightNumber: e.target.value })
-                                                    }
+                                                    value={editingFlight ? form.flightNumber : form.flightNumber}
                                                     disabled={editingFlight}
                                                     required
                                                 />
                                                 <label>Flight Number</label>
                                             </div>
-                                        </div>
-                                        <div className="col-md-6">
+
+                                            {/* Airline field */}
                                             <div className="form-floating mb-3">
-                                                <select
-                                                    className="form-control"
-                                                    value={form.airlineId}
-                                                    onChange={(e) =>
-                                                        setForm({ ...form, airlineId: e.target.value })
-                                                    }
-                                                    disabled={editingFlight}
-                                                    required
-                                                >
-                                                    <option value="">Select Airline</option>
-                                                    {airlines.map((airline) => (
-                                                        <option
-                                                            key={airline.airlineId}
-                                                            value={airline.airlineId}
-                                                        >
-                                                            {airline.airlineName}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                {editingFlight ? (
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={form.airlineName}
+                                                        disabled
+                                                    />
+                                                ) : (
+                                                    <select
+                                                        className="form-control"
+                                                        value={form.airlineId}
+                                                        onChange={(e) =>
+                                                            setForm({ ...form, airlineId: e.target.value })
+                                                        }
+                                                        required
+                                                    >
+                                                        <option value="">Select Airline</option>
+                                                        {airlines.map((airline) => (
+                                                            <option
+                                                                key={airline.airlineId}
+                                                                value={airline.airlineId}
+                                                            >
+                                                                {airline.airlineName}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                )}
                                                 <label>Airline</label>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <div className="row">
-                                        <div className="col-md-6">
+                                            {/* Origin Airport field */}
                                             <div className="form-floating mb-3">
-                                                <select
-                                                    className="form-control"
-                                                    value={form.originAirportId}
-													onChange={(e) =>
-                                                        setForm({ ...form, originAirportId: e.target.value })
-                                                    }
-                                                    disabled={editingFlight}
-                                                    required
-                                                >
-                                                    <option value="">Select Origin Airport</option>
-                                                    {airports.map((airport) => (
-                                                        <option
-                                                            key={airport.airportId}
-                                                            value={airport.airportId}
-                                                        >
-                                                            {airport.airportName}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                {editingFlight ? (
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={form.originAirportName}
+                                                        disabled
+                                                    />
+                                                ) : (
+                                                    <select
+                                                        className="form-control"
+                                                        value={form.originAirportId}
+                                                        onChange={(e) =>
+                                                            setForm({ ...form, originAirportId: e.target.value })
+                                                        }
+                                                        required
+                                                    >
+                                                        <option value="">Select Origin Airport</option>
+                                                        {airports.map((airport) => (
+                                                            <option
+                                                                key={airport.airportId}
+                                                                value={airport.airportId}
+                                                            >
+                                                                {airport.airportName}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                )}
                                                 <label>Origin Airport</label>
                                             </div>
-                                        </div>
-                                        <div className="col-md-6">
+
+                                            {/* Destination Airport field */}
                                             <div className="form-floating mb-3">
-                                                <select
-                                                    className="form-control"
-                                                    value={form.destinationAirportId}
-                                                    onChange={(e) =>
-                                                        setForm({
-                                                            ...form,
-                                                            destinationAirportId: e.target.value,
-                                                        })
-                                                    }
-                                                    disabled={editingFlight}
-                                                    required
-                                                >
-                                                    <option value="">Select Destination Airport</option>
-                                                    {airports.map((airport) => (
-                                                        <option
-                                                            key={airport.airportId}
-                                                            value={airport.airportId}
-                                                        >
-                                                            {airport.airportName}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                {editingFlight ? (
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={form.destinationAirportName}
+                                                        disabled
+                                                    />
+                                                ) : (
+                                                    <select
+                                                        className="form-control"
+                                                        value={form.destinationAirportId}
+                                                        onChange={(e) =>
+                                                            setForm({
+                                                                ...form,
+                                                                destinationAirportId: e.target.value,
+                                                            })
+                                                        }
+                                                        required
+                                                    >
+                                                        <option value="">Select Destination Airport</option>
+                                                        {airports.map((airport) => (
+                                                            <option
+                                                                key={airport.airportId}
+                                                                value={airport.airportId}
+                                                            >
+                                                                {airport.airportName}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                )}
                                                 <label>Destination Airport</label>
                                             </div>
                                         </div>
