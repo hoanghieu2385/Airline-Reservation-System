@@ -71,14 +71,11 @@ const SearchResults = () => {
 
     const handleFlightSelect = (flight) => {
         if (!isLoggedIn) {
+            sessionStorage.setItem("redirectAfterLogin", window.location.pathname + window.location.search);
             setShowLoginPopup(true); // Show login popup if not logged in
             return;
         }
-
-        // Log the selected flight details for debugging
-        console.log("Retrieved Selected Flight in CustomerDetail (from sessionStorage):", flight);
-
-        // Save selected flight details to sessionStorage
+    
         sessionStorage.setItem(
             "selectedFlight",
             JSON.stringify({

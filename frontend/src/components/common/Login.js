@@ -34,45 +34,65 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Validate email format
     if (!validateEmail(email)) {
-      setError("Invalid email address.");
-      return;
+        setError("Invalid email address.");
+        return;
     }
 
     try {
-      const response = await login({ email, password });
+        // Attempt to log in using the provided email and password
+        const response = await login({ email, password });
 
-      const { token, roles, user } = response;
+        // Extract necessary data from the API response
+        const { token, roles, user } = response;
 
-      // Log the extracted user object
-      console.log("Extracted User:", user);
+        // Save login details to sessionStorage
+        sessionStorage.setItem("userId", user.id);       // Save user ID
+        sessionStorage.setItem("userRole", roles[0]);    // Save the first role
+        sessionStorage.setItem("userEmail", email);      // Save the user email
+        sessionStorage.setItem("token", token);          // Save the JWT token
 
-      // Save the userId in sessionStorage
-      sessionStorage.setItem("userId", user.id);
-      sessionStorage.setItem("userRole", roles[0]);
+        setError("");        // Clear any existing errors
+        setSuccess(true);    // Indicate successful login
 
-      sessionStorage.setItem("userEmail", email);
-      sessionStorage.setItem("token", token);
+        // Retrieve the redirect path if available
+        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
 
-      setError("");
-      setSuccess(true);
+        // Define default paths for each role
+        const defaultPaths = {
+            ADMIN: "/admin",
+            CLERK: "/clerk",
+            USER: "/",
+        };
 
-      // Redirect based on role
-      if (roles.includes("ADMIN")) {
-        setTimeout(() => navigate("/admin"), 2000);
-      } else if (roles.includes("CLERK")) {
-        setTimeout(() => navigate("/clerk"), 2000);
-      } else {
-        setTimeout(() => navigate("/"), 2000);
-      }
+        // Determine the appropriate redirection path
+        let navigatePath;
+        if (redirectPath) {
+            navigatePath = redirectPath; // Use the saved redirect path if available
+        } else {
+            // Use the role-based default path if no redirect is saved
+            const primaryRole = roles.find(role => defaultPaths[role]);
+            navigatePath = defaultPaths[primaryRole] || "/";
+        }
+
+        // Remove the redirect path from sessionStorage (to avoid accidental reuse)
+        sessionStorage.removeItem("redirectAfterLogin");
+
+        // Redirect the user after a short delay
+        setTimeout(() => {
+            navigate(navigatePath);
+        }, 2000);
+
     } catch (error) {
-      setSuccess(false);
-      setError(
-        error.response?.data ||
-          "Login failed. Please check your email and password."
-      );
+        // Handle login errors
+        setSuccess(false);
+        setError(
+            error.response?.data || "Login failed. Please check your email and password."
+        );
     }
-  };
+};
+
   return (
     <div>
       <Header />
@@ -89,11 +109,10 @@ const LoginPage = () => {
             <input
               type="email"
               placeholder="Email"
-              className={`login-form__input ${
-                email && !validateEmail(email)
+              className={`login-form__input ${email && !validateEmail(email)
                   ? "login-form__input--invalid"
                   : ""
-              }`}
+                }`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
