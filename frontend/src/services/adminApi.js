@@ -57,7 +57,6 @@ export const searchReservations = (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return api.get(`/Reservations/Search${queryString ? `?${queryString}` : ""}`);
 };
-export const createReservation = (data) => api.post("/Reservations", data);
 export const finalizeReservation = (data) => api.post("/Reservations/FinalizeReservation", data);
 export const updateReservation = (id, data) => api.put(`/Reservations/${id}`, data);
 export const deleteReservation = (id) => api.delete(`/Reservations/${id}`);
