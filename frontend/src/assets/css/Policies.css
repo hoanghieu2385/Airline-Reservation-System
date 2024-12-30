@@ -1,70 +1,61 @@
-/* Container chính */
+/* Scoped to .policies-container to avoid CSS conflicts */
 .policies-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100vh;
-    background-color: #f5f5f5;
+    max-width: 900px;
+    margin: 0 auto;
     padding: 20px;
-    box-sizing: border-box;
-}
-
-/* Dropdown menu */
-.custom-dropdown {
-    margin-bottom: 20px;
-}
-
-.custom-dropdown-button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.custom-dropdown-button:hover {
-    background-color: #0056b3;
-}
-
-.custom-dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    padding: 10px;
-    z-index: 10;
-    width: 200px;
-}
-
-.custom-dropdown:hover .custom-dropdown-content {
-    display: block;
-}
-
-.custom-dropdown-content a {
-    display: block;
-    padding: 8px 10px;
-    color: #007bff;
-    text-decoration: none;
-    font-size: 14px;
-    border-radius: 3px;
-}
-
-.custom-dropdown-content a:hover {
-    background-color: #f0f0f0;
-}
-
-/* Card */
-.card {
-    background: #ffffff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    width: 800px; /* Card rộng hơn */
-    padding: 20px;
-    text-align: left;
-    font-size: 16px;
+    font-family: Arial, sans-serif;
+    color: #333;
     line-height: 1.6;
+}
+
+.policies-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    background-color: #fff;
+}
+
+/* Section Styling */
+.policies-section {
+    margin-bottom: 30px;
+}
+
+/* Title and Subtitle Styling */
+.policies-title {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+}
+
+.policies-subtitle {
+    font-size: 1.5rem;
+    color: #444;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+/* Paragraphs */
+.policies-paragraph {
+    margin: 10px 0;
+    font-size: 1rem;
+    color: #555;
+    text-align: justify;
+}
+
+/* Lists */
+.policies-list {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.policies-list li {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #555;
 }
