@@ -9,7 +9,7 @@ const UserProfile = ({ profile }) => {
         email: profile.email,
         phone: profile.phone || "",
         address: profile.address || "",
-        preferredCreditCard: profile.preferredCreditCard || "",
+        skyMiles: profile.skyMiles || 0,
     });
 
     const [editMode, setEditMode] = useState(false);
@@ -35,7 +35,7 @@ const UserProfile = ({ profile }) => {
             console.error("Failed to update profile:", error);
             alert("Failed to update profile.");
         }
-    }; 
+    };
 
     return (
         <div className="flight-profile">
@@ -112,16 +112,9 @@ const UserProfile = ({ profile }) => {
                     />
                 </div>
                 <div className="profile__field">
-                    <label htmlFor="preferredCreditCard">Preferred Credit Card</label>
-                    <input
-                        type="text"
-                        id="preferredCreditCard"
-                        name="preferredCreditCard"
-                        placeholder="Preferred Credit Card"
-                        value={formData.preferredCreditCard}
-                        onChange={handleInputChange}
-                        disabled={!editMode}
-                    />
+                    <label htmlFor="skyMiles">Sky Miles: 
+                        <span id="skyMiles" className="profile__value">{formData.skyMiles}</span>
+                    </label>
                 </div>
             </div>
             <div className="profile__actions">
