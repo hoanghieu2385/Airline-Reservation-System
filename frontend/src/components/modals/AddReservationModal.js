@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../../assets/css/Admin/AddReservationModal.css";
 
 const AddReservationModal = ({ visible, onClose, onSubmit, initialForm }) => {
   const [form, setForm] = useState(initialForm);
@@ -94,7 +95,9 @@ const AddReservationModal = ({ visible, onClose, onSubmit, initialForm }) => {
               {/* Passengers */}
               <label>Passengers</label>
               {(form.passengers || []).map((passenger, index) => (
-                <div key={index} className="mb-3">
+                <div key={index} className="mb-3 border p-3 rounded">
+                  {/* Passenger Form Header */}
+                  <h6 className="mb-3">Passenger {index + 1}</h6>
                   <input
                     type="text"
                     className="form-control mb-1"
@@ -160,41 +163,57 @@ const AddReservationModal = ({ visible, onClose, onSubmit, initialForm }) => {
                 </div>
               ))}
 
-              {/* Add Passenger Button */}
-              <button
-                type="button"
-                className="btn btn-secondary mb-3"
-                onClick={() => {
-                  console.log("Current passengers:", form.passengers);
-                  setForm({
-                    ...form,
-                    passengers: [
-                      ...(form.passengers || []),
-                      {
-                        firstName: "",
-                        lastName: "",
-                        gender: "",
-                        email: "",
-                        phoneNumber: "",
-                      },
-                    ],
-                  });
-                }}
-              >
-                Add Passenger
-              </button>
+              {/* Passenger Actions */}
+              <div className="passenger-buttons">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setForm({
+                      ...form,
+                      passengers: [
+                        ...(form.passengers || []),
+                        {
+                          firstName: "",
+                          lastName: "",
+                          gender: "",
+                          email: "",
+                          phoneNumber: "",
+                        },
+                      ],
+                    });
+                  }}
+                >
+                  Add Passenger
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={() => {
+                    if (form.passengers?.length > 0) {
+                      const updatedPassengers = [...form.passengers];
+                      updatedPassengers.pop(); // Remove the last passenger
+                      setForm({ ...form, passengers: updatedPassengers });
+                    }
+                  }}
+                >
+                  Remove Passenger
+                </button>
+              </div>
 
               {/* Form Actions */}
-              <button type="submit" className="btn btn-primary">
-                Add
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary ms-2"
-                onClick={onClose}
-              >
-                Cancel
-              </button>
+              <div className="form-actions">
+                <button type="submit" className="btn btn-primary">
+                  Add
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={onClose}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>

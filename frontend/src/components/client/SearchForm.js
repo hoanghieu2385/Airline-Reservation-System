@@ -212,7 +212,7 @@ const SearchForm = () => {
 
 
             {/* Return Date */}
-            <div className="form-group">
+            {/* <div className="form-group">
                 <label htmlFor="returnDate">Return Date</label>
                 <div className="input-wrapper">
                     <ReactDatePicker
@@ -235,12 +235,11 @@ const SearchForm = () => {
                         </button>
                     )}
                 </div>
-            </div>
+            </div> */}
 
             {/* Passengers and Class */}
-            {/* Passengers and Class */}
             <div className="form-group" ref={passengersDropdownRef}>
-                <label className="pcs-label">Passengers / Class</label>
+                <label className="pcs-label">Passengers and Cabin Class</label>
                 <div 
                     className="pcs-input-wrapper" 
                     onClick={() => setIsPassengerDropdownOpen(!isPassengerDropdownOpen)}
@@ -282,11 +281,11 @@ const SearchForm = () => {
                             </div>
                         </div>
 
-                        <div className="pcs-dropdown__class-section">
+                        <div className="pcs-dropdown__row">
                             <span className="pcs-dropdown__label">Class:</span>
-                            <div className="pcs-dropdown__class-options">
+                            <div class="form-check">
                                 {['Economy', 'Business', 'First Class'].map((classOption) => (
-                                    <label key={classOption} className="pcs-dropdown__radio-label">
+                                    <label key={classOption} class="form-check-label">
                                         <input
                                             type="radio"
                                             name="seatClass"
@@ -294,7 +293,8 @@ const SearchForm = () => {
                                             checked={seatClass === classOption}
                                             onChange={() => setSeatClass(classOption)}
                                             onClick={(e) => e.stopPropagation()}
-                                            className="pcs-dropdown__radio"
+                                            // className="pcs-dropdown__radio"
+                                            class="form-check-input"
                                         />
                                         {classOption}
                                     </label>
