@@ -8,13 +8,14 @@ frontend/
 │   │   ├── js/
 │   ├── components/          # Các thành phần giao diện (reusable components)
 │   │   ├── common/          # Component dùng chung: Header, Footer, etc.
-│   │   ├── client/          # Component chỉ dành cho Client (guest)
-│   │   ├── admin/           # Component dành cho Admin
-│   │   ├── clerk/           # Component dành cho Clerk
+│   │   ├── client/
+│   │   ├── admin/
+│   │   ├── clerk/
+│   │   ├── ui/
 │   ├── layouts/             # Tổ chức Layout UI
-│   │   ├── ClientLayout.js  # Layout dành riêng cho Client
-│   │   ├── AdminLayout.js   # Layout dành riêng cho Admin
-│   │   ├── ClerkLayout.js   # Layout dành riêng cho Clerk
+│   │   ├── ClientLayout.js
+│   │   ├── AdminLayout.js
+│   │   ├── ClerkLayout.js
 │   ├── pages/               # Các trang ứng dụng
 │   │   ├── client/
 │   │   │   ├── HomePage.js
@@ -29,9 +30,9 @@ frontend/
 │   │       ├── CreateReservation.js
 │   │       ├── CheckIn.js
 │   ├── routes/              # File route để điều hướng
-│   │   ├── ClientRoutes.js  # Route dành riêng cho Client
-│   │   ├── AdminRoutes.js   # Route dành riêng cho Admin
-│   │   ├── ClerkRoutes.js   # Route dành riêng cho Clerk
+│   │   ├── ClientRoutes.js
+│   │   ├── AdminRoutes.js
+│   │   ├── ClerkRoutes.js
 │   ├── services/            # File quản lý API
 │   │   ├── api.js           # File quản lý các endpoint API
 │   │   ├── clientApi.js     # API dành riêng cho Client

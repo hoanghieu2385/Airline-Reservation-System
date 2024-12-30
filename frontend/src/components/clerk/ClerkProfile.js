@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { getClerkProfile, updateClerk } from "../../services/clerkApi";
 import "../../assets/css/Clerk/ClerkProfile.css";
+import { notifyError, notifySuccess } from "../../utils/notification";
+
 
 const ClerkProfile = () => {
     const [formData, setFormData] = useState(null);
@@ -33,7 +35,7 @@ const ClerkProfile = () => {
                 });
             } catch (error) {
                 console.error("Failed to fetch clerk profile:", error);
-                alert("Failed to load profile.");
+                notifyError("Failed to load profile.");
             }
         };
         fetchProfile();
@@ -52,12 +54,12 @@ const ClerkProfile = () => {
         try {
             console.log("Updating Clerk ID:", clerkId);
             await updateClerk(clerkId, formData);
-            alert("Profile updated successfully.");
+            notifySuccess("Profile updated successfully.");
             setEditMode(false);
             setIsChanged(false);
         } catch (error) {
             console.error("Failed to update profile:", error);
-            alert("Failed to update profile.");
+            notifyError("Failed to update profile.");
         }
     };
 

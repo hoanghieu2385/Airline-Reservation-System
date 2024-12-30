@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { notifyWarning, notifyInfo } from "../utils/notification";
 import "../assets/css/Admin/AdminLayout.css";
 
 const ClerkLayout = ({ children }) => {
@@ -14,7 +15,7 @@ const ClerkLayout = ({ children }) => {
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if (!token) {
-
+            notifyWarning("Session expired. Please log in again.");
             navigate("/login");
         }
     }, [navigate]);
@@ -25,6 +26,7 @@ const ClerkLayout = ({ children }) => {
         sessionStorage.removeItem("userEmail");
         sessionStorage.clear();
 
+        notifyInfo("Logged out successfully!");
         navigate("/login");
     };
 

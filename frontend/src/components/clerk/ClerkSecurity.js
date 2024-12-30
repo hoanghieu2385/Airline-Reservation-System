@@ -3,6 +3,8 @@ import { changePassword } from "../../services/clerkApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/css/ClientDashboard/Security.css";
+import {notifySuccess, notifyError } from "../../utils/notification";
+
 
 const ClerkSecurity = () => {
     const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ const ClerkSecurity = () => {
         if (storedClerkId) {
             setClerkId(storedClerkId);
         } else {
-            alert("Clerk ID not found. Please log in again.");
+            notifyError("Clerk ID not found. Please log in again.");
         }
     }, []);
 
@@ -56,23 +58,23 @@ const ClerkSecurity = () => {
         e.preventDefault();
 
         if (!clerkId) {
-            alert("Clerk ID is missing. Please log in again.");
+            notifyError("Clerk ID is missing. Please log in again.");
             return;
         }
 
         if (formData.newPassword !== formData.confirmPassword) {
-            alert("Passwords do not match!");
+            notifyError("Passwords do not match!");
             return;
         }
 
         if (!passwordConditions.hasUppercase || !passwordConditions.hasSpecialChar || !passwordConditions.hasMinLength) {
-            alert("Password does not meet the required conditions.");
+            notifyError("Password does not meet the required conditions.");
             return;
         }
 
         try {
             await changePassword(clerkId, formData);
-            alert("Password changed successfully.");
+            notifySuccess("Password changed successfully.");
             setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
             setPasswordConditions({
                 hasUppercase: false,
@@ -81,7 +83,7 @@ const ClerkSecurity = () => {
             });
         } catch (error) {
             console.error("Failed to change password:", error);
-            alert("Failed to change password.");
+            notifyError("Failed to change password.");
         }
     };
 

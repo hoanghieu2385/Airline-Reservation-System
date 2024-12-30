@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSortDown, faSortUp } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/css/Admin/UserManagement.css";
 import { getUsers, updateUser } from "../../services/adminApi";
+import {notifySuccess, notifyError } from "../../utils/notification";
 
 const ClerkGetClient = () => {
   const [data, setData] = useState([]);
@@ -39,7 +40,7 @@ const ClerkGetClient = () => {
 
     // Check phone number validity
     if (form.phoneNumber && !validatePhoneNumber(form.phoneNumber)) {
-      alert("Invalid phone number format. Please enter 10-15 digits.");
+      notifyError("Invalid phone number format. Please enter 10-15 digits.");
       return;
     }
 
@@ -50,12 +51,12 @@ const ClerkGetClient = () => {
           lastName: form.lastName,
           phoneNumber: form.phoneNumber,
         });
-        alert("User updated successfully");
+        notifySuccess("User updated successfully");
         setEditingRecord(null);
         fetchClients();
       }
     } catch (error) {
-      alert("Failed to update user");
+      notifyError("Failed to update user");
     }
   };
 
