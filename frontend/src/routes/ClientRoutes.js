@@ -10,6 +10,7 @@ import Register from "../components/common/Register";
 import ClientDashboard from "../pages/client/ClientDashboard";
 import SearchResults from "../pages/client/SearchResults";
 import Payment from "../pages/client/Payment";
+import Success from "../pages/client/Success";
 import ForgotPasswordPage from "../components/common/ForgotPasswordPage";
 function ClientRoutes() {
     return (
@@ -19,6 +20,7 @@ function ClientRoutes() {
                 <Route path="/policies" element={<Policies />} />
                 <Route path="/customerdetail" element={<CustomerDetail />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/success" element={<Success />} />
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>
                 <Route path="/customerdetail" element={<CustomerDetail/>}/>
