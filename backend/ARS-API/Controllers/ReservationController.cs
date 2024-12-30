@@ -19,12 +19,14 @@ namespace ARS_API.Controllers
         private readonly ApplicationDBContext _context;
         private readonly PricingService _pricingService;
         private readonly IEmailService _emailService;
+        private readonly ILogger<ReservationsController> _logger;
 
-        public ReservationsController(ApplicationDBContext context, PricingService pricingService, IEmailService emailService)
+        public ReservationsController(ApplicationDBContext context, PricingService pricingService, IEmailService emailService, ILogger<ReservationsController> logger)
         {
             _context = context;
             _pricingService = pricingService;
             _emailService = emailService;
+            _logger = logger;
         }
 
         // GET: api/Reservations
@@ -328,6 +330,10 @@ namespace ARS_API.Controllers
                 }
             }
 
+            Console.WriteLine($"ReservationStatus: {createReservationDto.ReservationStatus}");
+            Console.WriteLine($"DaysBeforeDeparture: {daysBeforeDeparture}");
+            Console.WriteLine($"BlockExpirationTime: {blockExpirationTime}");
+
             // Create a new reservation
             var reservation = new Reservation
             {
@@ -336,7 +342,9 @@ namespace ARS_API.Controllers
                 UserId = createReservationDto.UserId,
                 FlightId = createReservationDto.FlightId,
                 AllocationId = createReservationDto.AllocationId,
-                ReservationStatus = createReservationDto.ReservationStatus ?? "Blocked", // Default to "Blocked" if not provided
+                ReservationStatus = string.IsNullOrWhiteSpace(createReservationDto.ReservationStatus)
+                ? "Blocked"
+                : createReservationDto.ReservationStatus,
                 TotalPrice = totalPrice,
                 TravelDate = travelDate,
                 CreatedAt = DateTime.UtcNow,
@@ -509,37 +517,39 @@ namespace ARS_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(Guid id)
         {
-            // Retrieve the reservation
-            var reservation = await _context.Reservations.FindAsync(id);
-            if (reservation == null)
-            {
-                return NotFound("The reservation was not found.");
-            }
+            // // Retrieve the reservation
+            // var reservation = await _context.Reservations.FindAsync(id);
+            // if (reservation == null)
+            // {
+            //     return NotFound("The reservation was not found.");
+            // }
 
-            // Prevent deletion of already Cancelled reservations
-            if (reservation.ReservationStatus == "Cancelled")
-            {
-                return BadRequest("Cancelled reservations cannot be deleted. Please create a new reservation if needed.");
-            }
+            // // Prevent deletion of already Cancelled reservations
+            // if (reservation.ReservationStatus == "Cancelled")
+            // {
+            //     return BadRequest("Cancelled reservations cannot be deleted. Please create a new reservation if needed.");
+            // }
 
-            // Restore seats in FlightSeatAllocation
-            var allocation = await _context.FlightSeatAllocation.FindAsync(reservation.AllocationId);
-            if (allocation != null && reservation.NumberOfBlockedSeats.HasValue)
-            {
-                allocation.AvailableSeats += reservation.NumberOfBlockedSeats.Value;
-            }
+            // // Restore seats in FlightSeatAllocation
+            // var allocation = await _context.FlightSeatAllocation.FindAsync(reservation.AllocationId);
+            // if (allocation != null && reservation.NumberOfBlockedSeats.HasValue)
+            // {
+            //     allocation.AvailableSeats += reservation.NumberOfBlockedSeats.Value;
+            // }
 
-            // Remove the reservation
-            _context.Reservations.Remove(reservation);
-            await _context.SaveChangesAsync();
+            // // Remove the reservation
+            // _context.Reservations.Remove(reservation);
+            // await _context.SaveChangesAsync();
 
-            // Return success message with details
-            return Ok(new
-            {
-                Message = "Reservation successfully deleted.",
-                ReservationId = reservation.ReservationId,
-                SeatsRestored = reservation.NumberOfBlockedSeats ?? 0
-            });
+            // // Return success message with details
+            // return Ok(new
+            // {
+            //     Message = "Reservation successfully deleted.",
+            //     ReservationId = reservation.ReservationId,
+            //     SeatsRestored = reservation.NumberOfBlockedSeats ?? 0
+            // });
+
+            return BadRequest("Deleting reservations is not allowed.");
         }
 
     }
