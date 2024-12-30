@@ -4,8 +4,11 @@ import {
   createReservation,
   updateReservation,
   deleteReservation,
+  finalizeReservation,
 } from "../../services/adminApi";
 import "../../assets/css/Admin/ReservationsManagement.css";
+import AddReservationModal from "../modals/AddReservationModal";
+import EditReservationModal from "../modals/EditReservationModal";
 
 const ReservationManagement = () => {
   const [data, setData] = useState([]);
@@ -29,6 +32,9 @@ const ReservationManagement = () => {
     travelDate: "",
   });
 
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
   useEffect(() => {
     fetchReservations();
   }, [filters]);
@@ -51,41 +57,22 @@ const ReservationManagement = () => {
     }));
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingRecord) {
-        await updateReservation(editingRecord.reservationId, form);
-        alert("Reservation updated successfully!");
-      } else {
-        await createReservation(form);
-        alert("Reservation added successfully!");
-      }
+  // const handleDelete = async (record) => {
+  //   if (
+  //     !window.confirm(
+  //       `Are you sure you want to delete the reservation with code ${record.reservationCode}?`
+  //     )
+  //   )
+  //     return;
 
-      setModalVisible(false);
-      fetchReservations();
-    } catch (error) {
-      console.error("Error during save operation:", error);
-      alert("Failed to save the reservation. Check the console for details.");
-    }
-  };
-
-  const handleDelete = async (record) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete the reservation with code ${record.reservationCode}?`
-      )
-    )
-      return;
-
-    try {
-      await deleteReservation(record.reservationId);
-      alert("Reservation deleted successfully");
-      fetchReservations();
-    } catch (error) {
-      alert("Failed to delete reservation");
-    }
-  };
+  //   try {
+  //     await deleteReservation(record.reservationId);
+  //     alert("Reservation deleted successfully");
+  //     fetchReservations();
+  //   } catch (error) {
+  //     alert("Failed to delete reservation");
+  //   }
+  // };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -142,133 +129,17 @@ const ReservationManagement = () => {
         className="btn btn-primary reservation-management__add-button mb-3"
         onClick={() => {
           setForm({
-            reservationCode: "",
             userId: "",
             flightId: "",
             allocationId: "",
-            reservationStatus: "",
-            totalPrice: 0,
-            travelDate: "",
+            passengers: [],
+            reservationStatus: "Blocked", // Default to "Blocked"
           });
-          setEditingRecord(null);
-          setModalVisible(true);
+          setAddModalVisible(true);
         }}
       >
         Add Reservation
       </button>
-
-      {/* Modal for Add/Edit */}
-      {modalVisible && (
-        <div
-          className="modal show d-block reservation-management__modal"
-          tabIndex="-1"
-          role="dialog"
-        >
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingRecord ? "Edit Reservation" : "Add Reservation"}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setModalVisible(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleFormSubmit}>
-                  {/* ReservationStatus - Editable */}
-                  <div className="form-floating mb-3">
-                    <select
-                      className="form-control"
-                      value={form.reservationStatus}
-                      onChange={(e) => {
-                        const newStatus = e.target.value;
-
-                        if (newStatus === "Cancelled") {
-                          const confirmCancellation = window.confirm(
-                            "Are you sure you want to cancel this reservation? This action cannot be undone."
-                          );
-                          if (!confirmCancellation) {
-                            return; // User canceled the action
-                          }
-                        }
-
-                        // Update the status in the form state
-                        setForm({ ...form, reservationStatus: newStatus });
-                      }}
-                      required
-                    >
-                      <option value="">Select Status</option>
-                      <option value="Blocked">Blocked</option>
-                      <option value="Confirmed">Confirmed</option>
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
-                    <label>Status</label>
-                  </div>
-
-                  {/* Other fields are read-only */}
-                  <div className="form-floating mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Reservation Code"
-                      value={form.reservationCode}
-                      disabled
-                    />
-                    <label>Reservation Code</label>
-                  </div>
-                  <div className="form-floating mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="User ID"
-                      value={form.userId}
-                      disabled
-                    />
-                    <label>User ID</label>
-                  </div>
-                  <div className="form-floating mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Flight ID"
-                      value={form.flightId}
-                      disabled
-                    />
-                    <label>Flight ID</label>
-                  </div>
-                  <div className="form-floating mb-3">
-                    <input
-                      type="datetime-local"
-                      className="form-control"
-                      placeholder="Travel Date"
-                      value={new Date(form.travelDate)
-                        .toISOString()
-                        .slice(0, 16)} // Read-only
-                      disabled
-                    />
-                    <label>Travel Date</label>
-                  </div>
-
-                  {/* Form Actions */}
-                  <button type="submit" className="btn btn-primary">
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary ms-2"
-                    onClick={() => setModalVisible(false)}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Reservations table */}
       <div className="table-responsive">
@@ -319,12 +190,19 @@ const ReservationManagement = () => {
                           travelDate: reservation.travelDate,
                         });
                         setEditingRecord(reservation);
-                        setModalVisible(true);
+                        setEditModalVisible(true);
                       }}
                       disabled={reservation.reservationStatus === "Cancelled"}
                     >
                       Edit
                     </button>
+
+                    {/* <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(reservation)}
+                    >
+                      Delete
+                    </button> */}
                   </td>
                 </tr>
               ))
@@ -359,6 +237,43 @@ const ReservationManagement = () => {
           Next
         </button>
       </div>
+
+      {/* AddReservationModal */}
+      <AddReservationModal
+        visible={addModalVisible}
+        onClose={() => setAddModalVisible(false)}
+        onSubmit={async (formData) => {
+          try {
+            await finalizeReservation(formData);
+            alert("Reservation added successfully!");
+            setAddModalVisible(false);
+            fetchReservations();
+          } catch (error) {
+            console.error("Error adding reservation:", error);
+            alert("Failed to add reservation.");
+          }
+        }}
+        initialForm={form}
+      />
+
+      {/* EditReservationModal */}
+      <EditReservationModal
+        visible={editModalVisible}
+        form={form}
+        onFormChange={(updatedForm) => setForm(updatedForm)}
+        onSave={async () => {
+          try {
+            await updateReservation(editingRecord.reservationId, form);
+            alert("Reservation updated successfully!");
+            setEditModalVisible(false);
+            fetchReservations();
+          } catch (error) {
+            console.error("Error updating reservation:", error);
+            alert("Failed to update reservation.");
+          }
+        }}
+        onClose={() => setEditModalVisible(false)}
+      />
     </div>
   );
 };

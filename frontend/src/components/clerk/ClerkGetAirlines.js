@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../../assets/css/Admin/AirlinesManagement.css";
 import { getAirlines } from "../../services/clerkApi";
+import { notifyError } from "../../utils/notification";
 
 const ClerkGetAirlines = () => {
   const [airlines, setAirlines] = useState([]);
@@ -17,7 +18,7 @@ const ClerkGetAirlines = () => {
       setAirlines(response.data || []);
     } catch (error) {
       console.error("Error fetching airlines:", error.message);
-      alert("Failed to fetch airlines. Please try again.");
+      notifyError("Failed to fetch airlines. Please try again.");
     } finally {
       setLoading(false);
     }

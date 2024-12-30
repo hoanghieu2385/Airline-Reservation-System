@@ -21,7 +21,7 @@ namespace ARS_API.Models
         public DateTime TravelDate { get; set; }
         public int? NumberOfBlockedSeats { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? BlockExpirationTime { get; set; } // New property for block expiration
+        public DateTime? BlockExpirationTime { get; set; }
         public ICollection<Passenger> Passengers { get; set; }
     }
 }

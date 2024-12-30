@@ -35,16 +35,16 @@ const Payment = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isCanceled = urlParams.get("cancel");
-
+  
     // Thêm điều kiện để chỉ chạy alert một lần
     if (isCanceled && !sessionStorage.getItem("alertShown")) {
       alert("Payment was canceled. Please select another payment method or try again.");
       sessionStorage.setItem("alertShown", "true"); // Đặt cờ để không lặp lại alert
-
+  
       const storedTripDetails = sessionStorage.getItem("tripDetails");
       const storedContactInfo = sessionStorage.getItem("contactInfo");
       const storedTotalPrice = sessionStorage.getItem("totalPrice");
-
+  
       if (storedTripDetails && storedContactInfo && storedTotalPrice) {
         setTripDetails(JSON.parse(storedTripDetails));
         setContactInfo(JSON.parse(storedContactInfo));
@@ -59,16 +59,16 @@ const Payment = () => {
       sessionStorage.removeItem("alertShown");
     };
   }, []);
-
+  
 
   const paymentMethods = [
-    { id: "wechat", label: "WeChat Pay" },
-    { id: "credit", label: "International credit or debit card" },
-    { id: "clicktopay", label: "Click to Pay" },
+    // { id: "wechat", label: "WeChat Pay" },
+    // { id: "credit", label: "International credit or debit card" },
+    // { id: "clicktopay", label: "Click to Pay" },
     { id: "paypal", label: "PayPal" },
     { id: "googlepay", label: "Google Pay" },
-    { id: "unionpay", label: "UnionPay" },
-    { id: "alipay", label: "Alipay" },
+    // { id: "unionpay", label: "UnionPay" },
+    // { id: "alipay", label: "Alipay" },
   ];
 
   const handlePayPalPayment = async () => {
@@ -77,19 +77,13 @@ const Payment = () => {
         amount: totalPrice.toFixed(2),
         currency: "USD",
         description: "Flight Reservation",
-        returnUrl: "http://localhost:3000/success", // Sử dụng HTTP thay vì HTTPS
-        cancelUrl: "http://localhost:3000/payment?cancel=true", // Sử dụng HTTP
+        returnUrl: "http://localhost:3000/success",
+        cancelUrl: "http://localhost:3000/payment?cancel=true",
       };
-
+      
 
       // Lưu trạng thái hiện tại vào sessionStorage
-      sessionStorage.setItem(
-        "tripDetails",
-        JSON.stringify({
-          ...tripDetails,
-          departureTime: tripDetails.FormattedDeparture,
-        })
-      );
+      sessionStorage.setItem("tripDetails", JSON.stringify(tripDetails));
       sessionStorage.setItem("contactInfo", JSON.stringify(contactInfo));
       sessionStorage.setItem("totalPrice", totalPrice);
 
@@ -105,8 +99,17 @@ const Payment = () => {
     }
   };
 
+  let isProcessingReservation = false;
 
   const handleReservation = async (status) => {
+    if (isProcessingReservation) {
+      console.warn(
+        "Reservation is already being processed. Skipping duplicate call."
+      );
+      return;
+    }
+    isProcessingReservation = true;
+
     try {
       if (status === "Confirmed" && selectedPaymentMethod === "paypal") {
         await handlePayPalPayment();
@@ -152,6 +155,8 @@ const Payment = () => {
     } catch (error) {
       console.error(`Error during ${status.toLowerCase()} reservation:`, error);
       alert(`An error occurred: ${error.message}`);
+    } finally {
+      isProcessingReservation = false;
     }
   };
 
@@ -184,10 +189,7 @@ const Payment = () => {
           <strong>Flight Number:</strong> {tripDetails?.flightNumber}
         </p>
         <p>
-          <p>
-            <strong>Departure Time:</strong> {formatDate(tripDetails?.departureTime)}
-          </p>
-
+          <strong>Departure Time:</strong> {formatDate(tripDetails?.departureTime)}
         </p>
         <p>
           <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD

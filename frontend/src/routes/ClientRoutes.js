@@ -10,7 +10,11 @@ import Register from "../components/common/Register";
 import ClientDashboard from "../pages/client/ClientDashboard";
 import SearchResults from "../pages/client/SearchResults";
 import Payment from "../pages/client/Payment";
+import Success from "../pages/client/Success";
 import ForgotPasswordPage from "../components/common/ForgotPasswordPage";
+import ResetPasswordPage from "../components/common/ResetPasswordPage";
+import Eticket from '../pages/client/Eticket';
+
 function ClientRoutes() {
     return (
         <ClientLayout>
@@ -19,12 +23,15 @@ function ClientRoutes() {
                 <Route path="/policies" element={<Policies />} />
                 <Route path="/customerdetail" element={<CustomerDetail />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/success" element={<Success />} />
                 <Route path="/login" element={<Login/>} />
                 <Route path="/register" element={<Register/>}/>
                 <Route path="/customerdetail" element={<CustomerDetail/>}/>
                 <Route path="/user/dashboard" element={<ClientDashboard />} />
                 <Route path="/results" element={<SearchResults />} />
                 <Route path="/forgotPassword" element={<ForgotPasswordPage />} />
+                <Route path="/reset-Password" element={<ResetPasswordPage />} />
+                <Route path="/eticket" element={<Eticket />} />
             </Routes>
         </ClientLayout>
     );
