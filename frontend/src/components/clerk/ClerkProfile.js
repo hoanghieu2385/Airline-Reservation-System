@@ -11,11 +11,11 @@ const ClerkProfile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                let storedClerkId = sessionStorage.getItem("clerkId");
-                console.log("Clerk ID from session:", storedClerkId);
+                    let storedClerkId = sessionStorage.getItem("clerkId");
+                    console.log("Clerk ID from session:", storedClerkId);
 
-                const data = await getClerkProfile(storedClerkId);
-                console.log("Fetched Clerk Profile Data:", data);
+                    const data = await getClerkProfile(storedClerkId);
+                    console.log("Fetched Clerk Profile Data:", data);
 
                 // If clerkId is missing from session, use the API response id
                 if (!storedClerkId && data?.id) {
