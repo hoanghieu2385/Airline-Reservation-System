@@ -1,60 +1,67 @@
 import React, { useEffect, useState } from "react";
 import { createPayPalOrder } from "../../services/paymentApi";
 import "../../assets/css/Payment.css";
-import { parse } from "date-fns";
-
-import { parse as dateFnsParse } from "date-fns";
-
 
 const formatDate = (dateString) => {
-  if (!dateString) {
-    console.warn("Invalid dateString passed to formatDate:", dateString);
-    return "Invalid Date";
-  }
-
-  try {
-    const parsedDate = parse(dateString, "dd-MM-yyyy, HH:mm", new Date());
-    const year = parsedDate.getFullYear();
-    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-    const day = String(parsedDate.getDate()).padStart(2, "0");
-    const hours = String(parsedDate.getHours()).padStart(2, "0");
-    const minutes = String(parsedDate.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  } catch (error) {
-    console.error("Error parsing dateString in formatDate:", error);
-    return "Invalid Date";
-  }
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
 const Payment = () => {
   const [tripDetails, setTripDetails] = useState({});
   const [contactInfo, setContactInfo] = useState({});
   const [totalPrice, setTotalPrice] = useState(0);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null); // State for payment method
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [isProcessingReservation, setIsProcessingReservation] = useState(false);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const isCanceled = urlParams.get("cancel");
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isCanceled = urlParams.get("cancel");
+      const isSuccess = urlParams.get("success");
+      const savedReservationData = sessionStorage.getItem("reservationData");
   
-    // Thêm điều kiện để chỉ chạy alert một lần
-    if (isCanceled && !sessionStorage.getItem("alertShown")) {
-      alert("Payment was canceled. Please select another payment method or try again.");
-      sessionStorage.setItem("alertShown", "true"); // Đặt cờ để không lặp lại alert
+      // Check if reservation has already been processed
+      const reservationProcessed = sessionStorage.getItem("reservationProcessed");
   
-      const storedTripDetails = sessionStorage.getItem("tripDetails");
-      const storedContactInfo = sessionStorage.getItem("contactInfo");
-      const storedTotalPrice = sessionStorage.getItem("totalPrice");
+      if (isSuccess && savedReservationData && !reservationProcessed) {
+        const parsedData = JSON.parse(savedReservationData);
   
-      if (storedTripDetails && storedContactInfo && storedTotalPrice) {
-        setTripDetails(JSON.parse(storedTripDetails));
-        setContactInfo(JSON.parse(storedContactInfo));
-        setTotalPrice(Number(storedTotalPrice));
-      } else {
-        console.error("No data to restore.");
+        // Mark reservation as processed
+        sessionStorage.setItem("reservationProcessed", "true");
+  
+        handleFinalizeReservation("Confirmed", parsedData);
+        return;
       }
+  
+      if (isCanceled && !sessionStorage.getItem("alertShown")) {
+        alert("Payment was canceled. Please select another payment method or try again.");
+        sessionStorage.setItem("alertShown", "true");
+  
+        if (savedReservationData) {
+          const parsedData = JSON.parse(savedReservationData);
+          setTripDetails(parsedData.tripDetails);
+          setContactInfo(parsedData.contactInfo);
+          setTotalPrice(parsedData.totalPrice);
+        }
+      } else {
+        const storedData = sessionStorage.getItem("checkoutData");
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          setTripDetails(parsedData.flightDetails);
+          setContactInfo(parsedData.contactInfo);
+          setTotalPrice(parsedData.totalPrice);
+        }
+      }
+    } catch (error) {
+      console.error("Error processing payment data:", error);
     }
-
-    // Xóa cờ khi rời khỏi trang để cho phép alert hiển thị lại nếu cần
+  
     return () => {
       sessionStorage.removeItem("alertShown");
     };
@@ -62,13 +69,8 @@ const Payment = () => {
   
 
   const paymentMethods = [
-    // { id: "wechat", label: "WeChat Pay" },
-    // { id: "credit", label: "International credit or debit card" },
-    // { id: "clicktopay", label: "Click to Pay" },
     { id: "paypal", label: "PayPal" },
     { id: "googlepay", label: "Google Pay" },
-    // { id: "unionpay", label: "UnionPay" },
-    // { id: "alipay", label: "Alipay" },
   ];
 
   const handlePayPalPayment = async () => {
@@ -77,21 +79,27 @@ const Payment = () => {
         amount: totalPrice.toFixed(2),
         currency: "USD",
         description: "Flight Reservation",
-        returnUrl: "http://localhost:3000/success",
+        returnUrl: "http://localhost:3000/payment?success=true",
         cancelUrl: "http://localhost:3000/payment?cancel=true",
       };
-      
 
-      // Lưu trạng thái hiện tại vào sessionStorage
-      sessionStorage.setItem("tripDetails", JSON.stringify(tripDetails));
-      sessionStorage.setItem("contactInfo", JSON.stringify(contactInfo));
-      sessionStorage.setItem("totalPrice", totalPrice);
+      // Lưu dữ liệu reservation trước khi redirect
+      sessionStorage.setItem(
+        "reservationData",
+        JSON.stringify({
+          tripDetails,
+          contactInfo,
+          passengers: sessionStorage.getItem("passengers"),
+          userId: sessionStorage.getItem("userId"),
+          totalPrice,
+        })
+      );
 
       const response = await createPayPalOrder(orderData);
       if (response.approveUrl) {
         window.location.href = response.approveUrl;
       } else {
-        alert("Could not retrieve PayPal checkout URL.");
+        throw new Error("Could not retrieve PayPal checkout URL.");
       }
     } catch (error) {
       console.error("Error during PayPal payment:", error);
@@ -99,35 +107,20 @@ const Payment = () => {
     }
   };
 
-  let isProcessingReservation = false;
-
-  const handleReservation = async (status) => {
-    if (isProcessingReservation) {
-      console.warn(
-        "Reservation is already being processed. Skipping duplicate call."
-      );
-      return;
-    }
-    isProcessingReservation = true;
-
+  const handleFinalizeReservation = async (status, reservationData) => {
     try {
-      if (status === "Confirmed" && selectedPaymentMethod === "paypal") {
-        await handlePayPalPayment();
-        return;
+      const passengers = JSON.parse(reservationData.passengers) || [];
+      const userId = reservationData.userId;
+
+      if (!userId) {
+        throw new Error("User is not logged in or UserId is missing.");
       }
 
-      // Các logic khác cho các phương thức thanh toán khác
-      const passengers = JSON.parse(sessionStorage.getItem("passengers")) || [];
-      const userId = sessionStorage.getItem("userId");
-
-      if (!userId)
-        throw new Error("User is not logged in or UserId is missing.");
-
-      const reservationData = {
+      const finalReservationData = {
         ReservationStatus: status,
         UserId: userId,
-        FlightId: tripDetails.flightId,
-        AllocationId: tripDetails.allocationId,
+        FlightId: reservationData.tripDetails.flightId,
+        AllocationId: reservationData.tripDetails.allocationId,
         Passengers: passengers.map((passenger) => ({
           FirstName: passenger.firstName,
           LastName: passenger.lastName,
@@ -145,18 +138,54 @@ const Payment = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
-          body: JSON.stringify(reservationData),
+          body: JSON.stringify(finalReservationData),
         }
       );
 
       if (!response.ok) throw new Error(await response.text());
 
       alert(`Reservation ${status.toLowerCase()} successfully!`);
+      
+      // Xóa dữ liệu đã lưu sau khi hoàn tất
+      sessionStorage.removeItem("reservationData");
+      sessionStorage.removeItem("checkoutData");
+      
+      // Redirect to success page or dashboard
+      window.location.href = "/success";
+      
     } catch (error) {
       console.error(`Error during ${status.toLowerCase()} reservation:`, error);
       alert(`An error occurred: ${error.message}`);
+    }
+  };
+
+  const handleReservation = async (status) => {
+    if (isProcessingReservation) {
+      return;
+    }
+    setIsProcessingReservation(true);
+
+    try {
+      if (status === "Confirmed" && selectedPaymentMethod === "paypal") {
+        await handlePayPalPayment();
+        return;
+      }
+
+      // Xử lý các phương thức thanh toán khác
+      const reservationData = {
+        tripDetails,
+        contactInfo,
+        passengers: sessionStorage.getItem("passengers"),
+        userId: sessionStorage.getItem("userId"),
+        totalPrice,
+      };
+
+      await handleFinalizeReservation(status, reservationData);
+    } catch (error) {
+      console.error(`Error during reservation:`, error);
+      alert(`An error occurred: ${error.message}`);
     } finally {
-      isProcessingReservation = false;
+      setIsProcessingReservation(false);
     }
   };
 
@@ -189,7 +218,7 @@ const Payment = () => {
           <strong>Flight Number:</strong> {tripDetails?.flightNumber}
         </p>
         <p>
-          <strong>Departure Time:</strong> {formatDate(tripDetails?.departureTime)}
+          <strong>Departure Time:</strong> {tripDetails?.formattedDeparture}
         </p>
         <p>
           <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
@@ -209,12 +238,14 @@ const Payment = () => {
         <button
           onClick={() => handleReservation("Confirmed")}
           className="confirm-button"
+          disabled={isProcessingReservation}
         >
           Confirm Reservation
         </button>
         <button
           onClick={() => handleReservation("Blocked")}
           className="block-button"
+          disabled={isProcessingReservation}
         >
           Block Reservation
         </button>
