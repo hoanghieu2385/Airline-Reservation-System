@@ -13,7 +13,7 @@ const Success = () => {
 
   return (
     <div className="success-page" style={styles.container}>
-      <h1 style={styles.text}>Payment Success!</h1>
+      <h1 style={styles.text}>Reservation has been Created!</h1>
       <p style={styles.subtext}>Redirecting to Dashboard...</p>
     </div>
   );

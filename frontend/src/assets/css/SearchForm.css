@@ -246,7 +246,7 @@ select:focus,
 
 /* Search Button */
 .search-button {
-    padding: 12px 25px;
+    padding: 8px 25px;
     background-color: #d29787;
     color: white;
     border: none;
@@ -255,6 +255,7 @@ select:focus,
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-top: 15px;
 }
 
 .search-button:hover {

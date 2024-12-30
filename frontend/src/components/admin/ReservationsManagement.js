@@ -132,8 +132,8 @@ const ReservationManagement = () => {
             userId: "",
             flightId: "",
             allocationId: "",
-            passengers: [],
             reservationStatus: "Blocked", // Default to "Blocked"
+            passengers: [],
           });
           setAddModalVisible(true);
         }}
@@ -241,7 +241,16 @@ const ReservationManagement = () => {
       {/* AddReservationModal */}
       <AddReservationModal
         visible={addModalVisible}
-        onClose={() => setAddModalVisible(false)}
+        onClose={() => {
+          setAddModalVisible(false);
+          setForm({
+            userId: "",
+            flightId: "",
+            allocationId: "",
+            reservationStatus: "Blocked",
+            passengers: [],
+          });
+        }}
         onSubmit={async (formData) => {
           try {
             await finalizeReservation(formData);
