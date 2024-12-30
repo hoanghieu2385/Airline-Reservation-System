@@ -32,7 +32,6 @@ export const updateClerk = async (userId, data) => {
             address: data.address || undefined,
             phoneNumber: data.phone || undefined,  // Changed from phoneNumber to match frontend
             dateOfBirth: data.dateOfBirth || undefined,
-            preferredCreditCard: data.preferredCreditCard || undefined,
             newPassword: data.newPassword || undefined,
             confirmPassword: data.confirmPassword || undefined
         };
@@ -56,6 +55,32 @@ export const updateClerk = async (userId, data) => {
         
         // Rethrow with more specific error message
         throw new Error(error.response?.data?.message || 'Failed to update Clerk profile');
+    }
+};
+// Change clerk password
+export const changePassword = async (userId, data) => {
+    try {
+        // Map the formData to match the backend's UpdateUserDto
+        const payload = {
+            currentPassword: data.currentPassword,
+            newPassword: data.newPassword,
+            confirmPassword: data.confirmPassword,
+        };
+
+        console.log("Change Password Payload:", payload);
+
+        // Send request to the existing update endpoint
+        const response = await api.put(`/user/update/${userId}`, payload);
+
+        return response.data;
+    } catch (error) {
+        console.error("Change Password Error Details:", {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message,
+        });
+
+        throw new Error(error.response?.data?.message || "Failed to change password");
     }
 };
 
