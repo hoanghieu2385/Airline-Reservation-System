@@ -1,2 +1,0 @@
-Thư mục utils/ thường chứa các hàm tái sử dụng được trong nhiều nơi của ứng dụng, 
-như xử lý dữ liệu, định dạng ngày giờ, hoặc các tính toán phức tạp.

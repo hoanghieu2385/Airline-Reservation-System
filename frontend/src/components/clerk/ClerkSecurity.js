@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { changePassword } from "../../services/clerkApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/css/ClientDashboard/Security.css";
+import {notifySuccess, notifyError } from "../../utils/notification";
 
-const ClerkSecurity = ({ userId }) => {
+
+const ClerkSecurity = () => {
     const [formData, setFormData] = useState({
         currentPassword: "",
         newPassword: "",
@@ -22,6 +24,18 @@ const ClerkSecurity = ({ userId }) => {
         hasSpecialChar: false,
         hasMinLength: false,
     });
+
+    const [clerkId, setClerkId] = useState(null);
+
+    // Lấy clerkId từ sessionStorage khi component được mount
+    useEffect(() => {
+        const storedClerkId = sessionStorage.getItem("clerkId");
+        if (storedClerkId) {
+            setClerkId(storedClerkId);
+        } else {
+            notifyError("Clerk ID not found. Please log in again.");
+        }
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -43,19 +57,24 @@ const ClerkSecurity = ({ userId }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!clerkId) {
+            notifyError("Clerk ID is missing. Please log in again.");
+            return;
+        }
+
         if (formData.newPassword !== formData.confirmPassword) {
-            alert("Passwords do not match!");
+            notifyError("Passwords do not match!");
             return;
         }
 
         if (!passwordConditions.hasUppercase || !passwordConditions.hasSpecialChar || !passwordConditions.hasMinLength) {
-            alert("Password does not meet the required conditions.");
+            notifyError("Password does not meet the required conditions.");
             return;
         }
 
         try {
-            await changePassword(userId, formData);
-            alert("Password changed successfully.");
+            await changePassword(clerkId, formData);
+            notifySuccess("Password changed successfully.");
             setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
             setPasswordConditions({
                 hasUppercase: false,
@@ -64,7 +83,7 @@ const ClerkSecurity = ({ userId }) => {
             });
         } catch (error) {
             console.error("Failed to change password:", error);
-            alert("Failed to change password.");
+            notifyError("Failed to change password.");
         }
     };
 

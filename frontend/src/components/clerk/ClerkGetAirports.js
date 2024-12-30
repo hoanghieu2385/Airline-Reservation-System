@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getAirports } from "../../services/adminApi";
+import { notifyError } from "../../utils/notification";
 
 const ClerkGetAirports = () => {
   const [data, setData] = useState([]);
@@ -22,7 +23,7 @@ const ClerkGetAirports = () => {
         }))
       );
     } catch (error) {
-      alert("Failed to fetch airports");
+      notifyError("Failed to fetch airports");
     }
   };
 
