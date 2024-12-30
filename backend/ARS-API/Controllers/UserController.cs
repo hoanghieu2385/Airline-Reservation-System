@@ -236,11 +236,10 @@ namespace ARS_API.Controllers
             });
         }
 
-
         // Only ADMIN and CLERK can read the list of users
         [HttpGet("read")]
-        [Authorize(Roles = "ADMIN,CLERK")] // ADMIN and CLERK allowed
-        public async Task<IActionResult> GetAllUsers()
+        [Authorize(Roles = "ADMIN,CLERK")] // Both ADMIN and CLERK can access
+        public async Task<IActionResult> GetAllUsers([FromQuery] string role = null)
         {
             var users = _userManager.Users.ToList();
             var userList = new List<object>();
@@ -248,18 +247,23 @@ namespace ARS_API.Controllers
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
-                userList.Add(new
+
+                // Filter users by role if the role is provided
+                if (string.IsNullOrEmpty(role) || roles.Contains(role.ToUpper()))
                 {
-                    user.Id,
-                    user.FirstName,
-                    user.LastName,
-                    user.Email,
-                    user.EmailConfirmed,
-                    user.PhoneNumber,
-                    user.PhoneNumberConfirmed,
-                    user.SkyMiles,
-                    Roles = roles
-                });
+                    userList.Add(new
+                    {
+                        user.Id,
+                        user.FirstName,
+                        user.LastName,
+                        user.Email,
+                        user.EmailConfirmed,
+                        user.PhoneNumber,
+                        user.PhoneNumberConfirmed,
+                        user.SkyMiles,
+                        Role = roles
+                    });
+                }
             }
 
             return Ok(userList);
@@ -399,7 +403,7 @@ namespace ARS_API.Controllers
 
 
         [HttpPut("admin-update-user/{id}")]
-        [Authorize(Roles = "ADMIN")] // Only ADMIN can update user information
+        [Authorize(Roles = "ADMIN, CLERK")] // Only ADMIN can update user information
         public async Task<IActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserDTO model)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -502,68 +506,68 @@ namespace ARS_API.Controllers
             return Ok("User deleted successfully.");
         }
 
-// Reset Password
-[HttpPost("forgot-password")]
-public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
-{
-    var user = await _userManager.FindByEmailAsync(model.Email);
-    if (user == null)
-    {
-        return BadRequest("User not found.");
-    }
+        // Reset Password
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest("User not found.");
+            }
 
-    // Generate reset token
-    var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            // Generate reset token
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-    // Create reset link
-    var resetLink = Url.Action("ResetPassword", "User",
-        new { token = resetToken, email = user.Email },
-        protocol: HttpContext.Request.Scheme);
+            // Create reset link
+            var resetLink = Url.Action("ResetPassword", "User",
+                new { token = resetToken, email = user.Email },
+                protocol: HttpContext.Request.Scheme);
 
-    // Send reset email
-    var emailContent = $@"
+            // Send reset email
+            var emailContent = $@"
         <h2>Reset Your Password</h2>
         <p>Click the link below to reset your password:</p>
         <a href='{resetLink}'>Reset Password</a>";
 
-    try
-    {
-        await _emailService.SendEmailAsync(
-            user.Email,
-            "Reset Password",
-            emailContent
-        );
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error sending email: {ex.Message}");
-        return StatusCode(500, "Failed to send reset password email. Please try again.");
-    }
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Reset Password",
+                    emailContent
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
+                return StatusCode(500, "Failed to send reset password email. Please try again.");
+            }
 
-    return Ok("Password reset email sent.");
-}
+            return Ok("Password reset email sent.");
+        }
 
-[HttpPost("reset-password")]
-public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
-{
-    var user = await _userManager.FindByEmailAsync(model.Email);
-    if (user == null)
-    {
-        return BadRequest("Invalid email.");
-    }
-
-    var resetResult = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
-    if (!resetResult.Succeeded)
-    {
-        return BadRequest(new
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
         {
-            Message = "Failed to reset password.",
-            Errors = resetResult.Errors.Select(e => e.Description)
-        });
-    }
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest("Invalid email.");
+            }
 
-    return Ok("Password has been reset successfully.");
-}
+            var resetResult = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (!resetResult.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    Message = "Failed to reset password.",
+                    Errors = resetResult.Errors.Select(e => e.Description)
+                });
+            }
+
+            return Ok("Password has been reset successfully.");
+        }
 
         private JwtSecurityToken CreateJwtToken(List<Claim> authClaims)
         {

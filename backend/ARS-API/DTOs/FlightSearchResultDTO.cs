@@ -18,6 +18,9 @@ namespace ARS_API.DTOs
         public string SeatClass { get; set; }
         public int AvailableSeats { get; set; }
         public Guid AllocationId { get; set; }
+
+        public string FormattedDeparture => DepartureTime.ToString("dd-MM-yyyy, HH:mm");
+        public string FormattedArrival => ArrivalTime.ToString("dd-MM-yyyy, HH:mm");
     }
 
 }

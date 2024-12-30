@@ -1,0 +1,6 @@
+.btn-secondary:disabled {
+    background-color: #6c757d;
+    color: #ffffff;
+    cursor: not-allowed;
+  }
+  

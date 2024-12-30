@@ -1,5 +1,5 @@
 import api from './api';
-
+import axios from 'axios';
 export const login = async (credentials) => {
     const response = await api.post(`/User/login`, credentials);
     if (response.data.token) {
@@ -18,11 +18,16 @@ export const register = async (userDetails) => {
     const response = await api.post(`/User/register`, userDetails);
     return response.data;
 };
-export const forgotPassword = async (email) => {
-    const response = await api.post(`/User/forgot-password`, { email });
-    return response.data;
+export const forgotPassword = async (data) => {
+    try {
+        const response = await api.post(`/User/forgot-password`, data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
 };
 
+  
 export const resetPassword = async (data) => {
     const response = await api.post(`/User/reset-password`, data);
     return response.data;
