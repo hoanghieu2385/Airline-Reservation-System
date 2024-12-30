@@ -1,141 +1,155 @@
-// src/pages/client/Eticket.js
-import React from "react";
-import "../../assets/css/Eticket.css"; // CSS file for styling
+// src/pages/client/ETicket.js
+import React, { useState } from "react";
+import { eticketAPI } from "../../services/eticketApi";
+import "../../assets/css/Eticket.css";
 
-const Eticket = () => {
-  return (
-    <div className="eticket-container">
-      <header className="eticket-header">
-        <div className="eticket-logo">Logo</div>
-        <div className="eticket-title">
-          <h1>E-Ticket / Vé điện tử</h1>
-          <h2>Departure Flight / Chuyến bay đi</h2>
-        </div>
-        <div className="eticket-booking">
-          <p>Traveloka Booking ID</p>
-          <h3>123456789</h3>
-        </div>
-      </header>
+const ETicket = () => {
+    const [ticketCode, setTicketCode] = useState('');
+    const [ticketData, setTicketData] = useState(null);
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-      <section className="flight-info">
-        <div className="flight-details">
-          <p className="flight-date">
-            Wednesday, 9 October 2024 / Thứ Tư, 9 tháng 10 2024
-          </p>
-          <div className="flight-route">
-            <div>
-              <p>
-                <strong>1011</strong>
-              </p>
-              <p>Hanoi (HAN)</p>
-              <p>Noi Bai International Airport</p>
+    const formatTicketCode = (code) => {
+        return code.trim();
+    };
+
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (!ticketCode) return;
+
+        setLoading(true);
+        setError('');
+        setTicketData(null);
+
+        try {
+            const formattedCode = formatTicketCode(ticketCode);
+            const response = await eticketAPI.getETicketByCode(formattedCode);
+            
+            if (response.data) {
+                setTicketData(response.data);
+            } else {
+                setError('Ticket information not found.');
+            }
+        } catch (err) {
+            console.error('Error fetching ticket:', err);
+            setError(
+                err.response?.data?.message || 
+                'An error occurred while fetching the ticket. Please try again later.'
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const renderTicketInfo = () => {
+        if (!ticketData) return null;
+
+        const { passenger, fromTo, flightDate, airline, amenities, reservationCode } = ticketData;
+        
+        return (
+            <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden ticket-info">
+                <div className="bg-blue-500 text-white p-4 ticket-header">
+                    <h2 className="text-xl font-semibold">E-Ticket Information</h2>
+                </div>
+                
+                <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <h3 className="font-semibold text-lg border-b pb-2">
+                                Passenger Information
+                            </h3>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Full Name:</span>
+                                <span className="font-medium">{passenger.fullName}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Age:</span>
+                                <span>{passenger.age}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Gender:</span>
+                                <span>{passenger.gender}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Ticket Code:</span>
+                                <span className="font-medium">{passenger.ticketCode}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Ticket Price:</span>
+                                <span className="font-medium text-blue-600">
+                                    {passenger.ticketPrice.toLocaleString('en-US')} VND
+                                </span>
+                            </p>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <h3 className="font-semibold text-lg border-b pb-2">
+                                Flight Information
+                            </h3>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Route:</span>
+                                <span className="font-medium">{fromTo}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Flight Date:</span>
+                                <span>{flightDate}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Airline:</span>
+                                <span>{airline}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Luggage:</span>
+                                <span>{amenities}</span>
+                            </p>
+                            <p className="flex justify-between">
+                                <span className="text-gray-600">Reservation Code:</span>
+                                <span className="font-medium">{reservationCode}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="route-separator">&#8594;</div>
-            <div>
-              <p>
-                <strong>1221</strong>
-              </p>
-              <p>Buon Ma Thuot (BMV)</p>
-              <p>Buon Ma Thuot</p>
+        );
+    };
+
+    return (
+        <div className="eticket-container">
+            <div className="container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold text-center mb-8">Flight Ticket Lookup</h1>
+                
+                <form onSubmit={handleSearch} className="max-w-md mx-auto mb-8">
+                    <div className="flex flex-col gap-4">
+                        <input
+                            type="text"
+                            value={ticketCode}
+                            onChange={(e) => setTicketCode(e.target.value)}
+                            placeholder="Enter your ticket code (e.g., VN123TK001)"
+                            className="w-full p-3 border rounded-lg search-input"
+                            required
+                        />
+                        <button 
+                            type="submit"
+                            className="w-full bg-blue-500 text-white p-3 rounded-lg search-button hover:bg-blue-600"
+                            disabled={loading || !ticketCode}
+                        >
+                            {loading ? 'Searching...' : 'Search Ticket'}
+                        </button>
+                    </div>
+                </form>
+
+                {error && (
+                    <div className="max-w-md mx-auto mb-8">
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <span className="block sm:inline">{error}</span>
+                        </div>
+                    </div>
+                )}
+
+                {ticketData && renderTicketInfo()}
             </div>
-          </div>
-          <p className="flight-airline">
-            Vietnam Airline
-            <br />
-            VN - 1603
-            <br />
-            Subclass M (Economy)
-          </p>
         </div>
-        <div className="flight-status">
-          <p className="status-text">Được hoàn tiền</p>
-        </div>
-      </section>
-
-      <div className="instructions">
-        <div className="instruction-item">
-          <img src="/path/to/icon-passport.png" alt="passport icon" />
-          <p>Trình CMND/hộ chiếu và vé khi làm thủ tục bay</p>
-        </div>
-        <div className="instruction-item">
-          <img src="/path/to/icon-clock.png" alt="clock icon" />
-          <p>Làm thủ tục ít nhất <strong>90 phút</strong> trước giờ khởi hành</p>
-        </div>
-        <div className="instruction-item">
-          <img src="/path/to/icon-airport.png" alt="airport icon" />
-          <p>Giờ hiển thị trên vé là giờ sân bay địa phương</p>
-        </div>
-      </div>
-
-      <table className="flight-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Passenger(s)</th>
-            <th>Route</th>
-            <th>Flight Facilities</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>Name (Người lớn)</td>
-            <td>HAN - BMV</td>
-            <td>1 x 23 kg</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <section className="passenger-info">
-        <h3>Passenger Details / Thông tin khách hàng</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Passenger(s) / Tên hành khách</th>
-              <th>Route / Chặng</th>
-              <th>Ticket Number</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Name (Người tên)</td>
-              <td>Hà Nội - Buôn Ma Thuột</td>
-              <td>7382446862279</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section className="reschedule-refund">
-        <div className="how-to">
-          <h3>How to Reschedule / Hướng dẫn thay đổi lịch bay</h3>
-          <ol>
-            {[...Array(9).keys()].map((step) => (
-              <li key={step + 1}>{step + 1}</li>
-            ))}
-          </ol>
-        </div>
-
-        <div className="how-to">
-          <h3>How to Refund / Hướng dẫn hoàn tiền</h3>
-          <ol>
-            {[...Array(9).keys()].map((step) => (
-              <li key={step + 1}>{step + 1}</li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <footer className="eticket-footer">
-        <p>
-          LƯU Ý: Hãng hàng không chỉ chấp thuận yêu cầu hoàn tiền được xử lý
-          thông qua _____
-        </p>
-      </footer>
-    </div>
-  );
+    );
 };
 
-export default Eticket;
+export default ETicket;

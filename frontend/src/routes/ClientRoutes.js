@@ -11,6 +11,9 @@ import ClientDashboard from "../pages/client/ClientDashboard";
 import SearchResults from "../pages/client/SearchResults";
 import Payment from "../pages/client/Payment";
 import ForgotPasswordPage from "../components/common/ForgotPasswordPage";
+import ResetPasswordPage from "../components/common/ResetPasswordPage";
+import Eticket from '../pages/client/Eticket';
+
 function ClientRoutes() {
     return (
         <ClientLayout>
@@ -25,6 +28,8 @@ function ClientRoutes() {
                 <Route path="/user/dashboard" element={<ClientDashboard />} />
                 <Route path="/results" element={<SearchResults />} />
                 <Route path="/forgotPassword" element={<ForgotPasswordPage />} />
+                <Route path="/reset-Password" element={<ResetPasswordPage />} />
+                <Route path="/eticket" element={<Eticket />} />
             </Routes>
         </ClientLayout>
     );
