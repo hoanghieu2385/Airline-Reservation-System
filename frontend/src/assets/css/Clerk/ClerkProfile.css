@@ -1,0 +1,70 @@
+.clerk-profile__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.clerk-profile__content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile__field {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile__name-container,
+.profile__contact-container {
+    display: flex;
+    gap: 20px;
+}
+
+.profile__name-container>div,
+.profile__contact-container>div {
+    flex: 1;
+}
+
+.profile__field label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.profile__field input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.profile__field input:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.profile__actions {
+    display: flex;
+    margin-top: 20px;
+}
+
+.profile__edit-btn,
+.profile__save-btn,
+.profile__cancel-btn {
+    background-color: #0d6efd;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.profile__edit-btn:hover,
+.profile__save-btn:hover,
+.profile__cancel-btn:hover {
+    background-color: #084298;
+}
