@@ -102,6 +102,16 @@ const Header = () => {
                                     Blog
                                 </a>
                             </li>
+                            <li className="nav-item">
+                                <a
+                                    className="nav-link"
+                                    href="/policies"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Policies
+                                </a>
+                            </li>
                         </ul>
                         <ul className="navbar-nav ms-auto header-nav">
                             {!userEmail ? (
