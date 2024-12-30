@@ -68,6 +68,11 @@ const ClerkLayout = ({ children }) => {
                                 </Link>
                             </li>
                             <li className="menu-item">
+                                <Link to="/clerk/clerk_security" className={`menu-link ${isActive("/clerk/clerk_security")}`}>
+                                Change Password
+                                </Link>
+                            </li>
+                            <li className="menu-item">
                                 <button className="menu-link" onClick={handleLogout}>
                                     Logout
                                 </button>
