@@ -155,16 +155,16 @@ namespace ARS_API.Controllers
 
             // Gửi email xác nhận
             var emailContent = $@"
-                <h2>Xác nhận đăng ký tài khoản</h2>
-                <p>Vui lòng click vào link bên dưới để xác nhận email của bạn:</p>
-                <a href='{confirmationLink}'>Xác nhận email</a>
+                <h2>Confirm account registration</h2>
+                <p>Please click on the link below to confirm your email:</p>
+                <a href='{confirmationLink}'>Confirm email</a>
             ";
 
             try
             {
                 await _emailService.SendEmailAsync(
                     user.Email,
-                    "Xác nhận đăng ký tài khoản",
+                    "Confirm account registration",
                     emailContent
                 );
             }
@@ -176,7 +176,7 @@ namespace ARS_API.Controllers
 
             return Ok(new
             {
-                Message = "Đăng ký thành công. Vui lòng kiểm tra email để xác nhận tài khoản.",
+                Message = "Registered successfully. Please check your email to confirm your account.",
                 UserId = user.Id
             });
         }
@@ -513,22 +513,23 @@ namespace ARS_API.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                return BadRequest("User not found.");
+                // Để bảo mật, luôn trả về OK để không tiết lộ sự tồn tại của email
+                return Ok("If the email exists in the system, we will send a password reset link to your email.");
             }
 
             // Generate reset token
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(resetToken);
 
-            // Create reset link
-            var resetLink = Url.Action("ResetPassword", "User",
-                new { token = resetToken, email = user.Email },
-                protocol: HttpContext.Request.Scheme);
+            // Lấy URL frontend từ cấu hình
+            var frontendUrl = _configuration["FrontendUrl"]; // Đảm bảo đã thêm vào appsettings.json
+            var resetLink = $"{frontendUrl}/reset-password?token={encodedToken}&email={user.Email}";
 
-            // Send reset email
+            // Tạo nội dung email
             var emailContent = $@"
-        <h2>Reset Your Password</h2>
-        <p>Click the link below to reset your password:</p>
-        <a href='{resetLink}'>Reset Password</a>";
+                <h2>Reset Your Password</h2>
+                <p>Click the link below to reset your password:</p>
+                <a href='{resetLink}'>Reset Password</a>";
 
             try
             {
@@ -544,7 +545,7 @@ namespace ARS_API.Controllers
                 return StatusCode(500, "Failed to send reset password email. Please try again.");
             }
 
-            return Ok("Password reset email sent.");
+            return Ok("If the email exists in the system, we will send a password reset link to your email.");
         }
 
         [HttpPost("reset-password")]
@@ -556,18 +557,24 @@ namespace ARS_API.Controllers
                 return BadRequest("Invalid email.");
             }
 
-            var resetResult = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            var decodedToken = Uri.UnescapeDataString(model.Token);
+            Console.WriteLine($"Received Token: {model.Token}");
+            Console.WriteLine($"Decoded Token: {decodedToken}");
+
+            var resetResult = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
             if (!resetResult.Succeeded)
             {
+                Console.WriteLine($"Reset Password Failed: {string.Join(", ", resetResult.Errors.Select(e => e.Description))}");
                 return BadRequest(new
                 {
-                    Message = "Failed to reset password.",
-                    Errors = resetResult.Errors.Select(e => e.Description)
+                    message = "Failed to reset password.",
+                    errors = resetResult.Errors.Select(e => e.Description).ToArray()
                 });
             }
 
             return Ok("Password has been reset successfully.");
         }
+
 
         private JwtSecurityToken CreateJwtToken(List<Claim> authClaims)
         {
