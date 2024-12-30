@@ -28,13 +28,13 @@ const ETicket = () => {
             if (response.data) {
                 setTicketData(response.data);
             } else {
-                setError('Không tìm thấy thông tin vé.');
+                setError('Ticket information not found.');
             }
         } catch (err) {
             console.error('Error fetching ticket:', err);
             setError(
                 err.response?.data?.message || 
-                'Có lỗi xảy ra khi tìm vé. Vui lòng thử lại sau.'
+                'An error occurred while fetching the ticket. Please try again later.'
             );
         } finally {
             setLoading(false);
@@ -49,61 +49,61 @@ const ETicket = () => {
         return (
             <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden ticket-info">
                 <div className="bg-blue-500 text-white p-4 ticket-header">
-                    <h2 className="text-xl font-semibold">Thông tin vé điện tử</h2>
+                    <h2 className="text-xl font-semibold">E-Ticket Information</h2>
                 </div>
                 
                 <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-3">
                             <h3 className="font-semibold text-lg border-b pb-2">
-                                Thông tin hành khách
+                                Passenger Information
                             </h3>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Họ tên:</span>
+                                <span className="text-gray-600">Full Name:</span>
                                 <span className="font-medium">{passenger.fullName}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Tuổi:</span>
+                                <span className="text-gray-600">Age:</span>
                                 <span>{passenger.age}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Giới tính:</span>
+                                <span className="text-gray-600">Gender:</span>
                                 <span>{passenger.gender}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Mã vé:</span>
+                                <span className="text-gray-600">Ticket Code:</span>
                                 <span className="font-medium">{passenger.ticketCode}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Giá vé:</span>
+                                <span className="text-gray-600">Ticket Price:</span>
                                 <span className="font-medium text-blue-600">
-                                    {passenger.ticketPrice.toLocaleString('vi-VN')} VNĐ
+                                    {passenger.ticketPrice.toLocaleString('en-US')} VND
                                 </span>
                             </p>
                         </div>
                         
                         <div className="space-y-3">
                             <h3 className="font-semibold text-lg border-b pb-2">
-                                Thông tin chuyến bay
+                                Flight Information
                             </h3>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Hành trình:</span>
+                                <span className="text-gray-600">Route:</span>
                                 <span className="font-medium">{fromTo}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Ngày bay:</span>
+                                <span className="text-gray-600">Flight Date:</span>
                                 <span>{flightDate}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Hãng bay:</span>
+                                <span className="text-gray-600">Airline:</span>
                                 <span>{airline}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Hành lý:</span>
+                                <span className="text-gray-600">Luggage:</span>
                                 <span>{amenities}</span>
                             </p>
                             <p className="flex justify-between">
-                                <span className="text-gray-600">Mã đặt chỗ:</span>
+                                <span className="text-gray-600">Reservation Code:</span>
                                 <span className="font-medium">{reservationCode}</span>
                             </p>
                         </div>
@@ -116,7 +116,7 @@ const ETicket = () => {
     return (
         <div className="eticket-container">
             <div className="container mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold text-center mb-8">Tra cứu vé máy bay</h1>
+                <h1 className="text-3xl font-bold text-center mb-8">Flight Ticket Lookup</h1>
                 
                 <form onSubmit={handleSearch} className="max-w-md mx-auto mb-8">
                     <div className="flex flex-col gap-4">
@@ -124,7 +124,7 @@ const ETicket = () => {
                             type="text"
                             value={ticketCode}
                             onChange={(e) => setTicketCode(e.target.value)}
-                            placeholder="Nhập mã vé của bạn (VD: VN123TK001)"
+                            placeholder="Enter your ticket code (e.g., VN123TK001)"
                             className="w-full p-3 border rounded-lg search-input"
                             required
                         />
@@ -133,7 +133,7 @@ const ETicket = () => {
                             className="w-full bg-blue-500 text-white p-3 rounded-lg search-button hover:bg-blue-600"
                             disabled={loading || !ticketCode}
                         >
-                            {loading ? 'Đang tìm kiếm...' : 'Tìm vé'}
+                            {loading ? 'Searching...' : 'Search Ticket'}
                         </button>
                     </div>
                 </form>

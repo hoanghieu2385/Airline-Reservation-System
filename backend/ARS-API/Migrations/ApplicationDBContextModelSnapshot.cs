@@ -452,6 +452,32 @@ namespace ARS_API.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "f5f8c7f3-a6c8-4ec5-9b87-2e74c0dc8ace",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = "1e0e4cc6-09b9-4c97-9b3e-4ec19b9b7d7a",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "c8fa86b3-f2b7-4b31-9e99-7f71fd02ad32",
+                            Name = "Clerk",
+                            NormalizedName = "CLERK"
+                        },
+                        new
+                        {
+                            Id = "86222a2c-2e1f-4518-ab57-19f75f61e24c",
+                            Name = "Guest",
+                            NormalizedName = "GUEST"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

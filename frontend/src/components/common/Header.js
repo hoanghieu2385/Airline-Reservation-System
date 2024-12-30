@@ -12,15 +12,28 @@ const Header = () => {
     const isIndexPage = location.pathname === "/";
     const navigate = useNavigate();
     const userEmail = sessionStorage.getItem("userEmail");
+    const userRole = sessionStorage.getItem("userRole"); // Lấy role từ sessionStorage
 
-    const getDisplayName = (email) => {
+    const getDisplayName = (email, role) => {
+        if (role === "ADMIN") return "Admin";
+        if (role === "CLERK") return "Clerk";
         if (!email.includes("@")) return email;
-        return email.split("@")[0];
+        return email.split("@")[0]; // Mặc định lấy phần trước '@'
     };
 
     const handleLogout = () => {
         sessionStorage.clear();
-        navigate("/");
+        window.location.reload();
+    };
+
+    const navigateToDashboard = () => {
+        if (userRole === "ADMIN") {
+            navigate("/admin");
+        } else if (userRole === "CLERK") {
+            navigate("/clerk");
+        } else {
+            navigate("/user/dashboard");
+        }
     };
 
     useEffect(() => {
@@ -49,8 +62,7 @@ const Header = () => {
 
     return (
         <header
-            className={`header-container ${isScrolled ? "scrolled" : ""} ${isIndexPage ? "overlay" : ""
-                }`}
+            className={`header-container ${isScrolled ? "scrolled" : ""} ${isIndexPage ? "overlay" : ""}`}
         >
             <nav className="navbar navbar-expand-lg navbar-light">
                 <div className="container">
@@ -112,16 +124,20 @@ const Header = () => {
                                     onMouseLeave={() => setDropdownVisible(false)}
                                 >
                                     <span className="nav-link">
-                                        Hi, {getDisplayName(userEmail)}
+                                        Hi, {getDisplayName(userEmail, userRole)}
                                         <FontAwesomeIcon icon={faUser} className="user-icon" />
                                     </span>
                                     {isDropdownVisible && (
                                         <ul className="dropdown-menu">
                                             <li
                                                 className="dropdown-item"
-                                                onClick={() => navigate("/user/dashboard")}
+                                                onClick={navigateToDashboard}
                                             >
-                                                User Detail
+                                                {userRole === "ADMIN"
+                                                    ? "Admin Dashboard"
+                                                    : userRole === "CLERK"
+                                                    ? "Clerk Dashboard"
+                                                    : "User Profile"}
                                             </li>
                                             <li className="dropdown-item" onClick={handleLogout}>
                                                 Logout

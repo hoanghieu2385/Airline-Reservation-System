@@ -14,12 +14,12 @@ public class ApplicationDBContext : IdentityDbContext<ApplicationUser, IdentityR
         base.OnModelCreating(builder);
 
         // Tạo sẵn các role
-        // builder.Entity<IdentityRole>().HasData(
-        //     new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "User", NormalizedName = "USER" },
-        //     new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Admin", NormalizedName = "ADMIN" },
-        //     new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Clerk", NormalizedName = "CLERK" },
-        //     new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Guest", NormalizedName = "GUEST" }
-        // );
+        builder.Entity<IdentityRole>().HasData(
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "User", NormalizedName = "USER" },
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Admin", NormalizedName = "ADMIN" },
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Clerk", NormalizedName = "CLERK" },
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = "Guest", NormalizedName = "GUEST" }
+        );
 
         // Flight -> Origin Airport (many-to-one)
         builder.Entity<Flight>()

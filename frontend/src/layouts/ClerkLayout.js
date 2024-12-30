@@ -58,6 +58,21 @@ const ClerkLayout = ({ children }) => {
                                 </Link>
                             </li>
                             <li className="menu-item">
+                                <Link to="/clerk/clerk_client" className={`menu-link ${isActive("/clerk/clerk_client")}`}>
+                                Client
+                                </Link>
+                            </li>
+                            <li className="menu-item">
+                                <Link to="/clerk/clerk_profile" className={`menu-link ${isActive("/clerk/clerk_profile")}`}>
+                                Profile
+                                </Link>
+                            </li>
+                            <li className="menu-item">
+                                <Link to="/clerk/clerk_security" className={`menu-link ${isActive("/clerk/clerk_security")}`}>
+                                Change Password
+                                </Link>
+                            </li>
+                            <li className="menu-item">
                                 <button className="menu-link" onClick={handleLogout}>
                                     Logout
                                 </button>
