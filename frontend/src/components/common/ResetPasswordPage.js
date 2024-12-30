@@ -1,9 +1,14 @@
-// src/components/ResetPasswordPage/ResetPasswordPage.js
-
 import React, { useState, useEffect } from "react";
 import { resetPassword } from "../../services/authApi";
 import "../../assets/css/ResetPasswordPage.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEye,
+  faEyeSlash,
+  faCheck,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 const ResetPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -13,18 +18,38 @@ const ResetPasswordPage = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordConditions, setPasswordConditions] = useState({
+    hasUppercase: false,
+    hasSpecialChar: false,
+    hasMinLength: false,
+  });
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Extract token and email from query parameters
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const validatePassword = (password) => {
+    const conditions = {
+      hasUppercase: /[A-Z]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      hasMinLength: password.length >= 8,
+    };
+    setPasswordConditions(conditions);
+    return (
+      conditions.hasUppercase &&
+      conditions.hasSpecialChar &&
+      conditions.hasMinLength
+    );
+  };
+
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     const tokenParam = query.get("token");
     const emailParam = query.get("email");
-
-    console.log("Extracted Token:", tokenParam);
-    console.log("Extracted Email:", emailParam);
 
     if (tokenParam && emailParam) {
       setToken(tokenParam);
@@ -34,26 +59,16 @@ const ResetPasswordPage = () => {
     }
   }, [location.search]);
 
-  // Function to validate strong password
-  const validatePassword = (password) => {
-    // At least 8 characters, including uppercase, lowercase, number, and special character
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(password);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
-    // Check if token and email are set
     if (!token || !email) {
       setError("The reset password link is invalid.");
       return;
     }
 
-    // Validate input fields
     if (!newPassword || !confirmPassword) {
       setError("Please fill out all fields.");
       return;
@@ -73,54 +88,30 @@ const ResetPasswordPage = () => {
 
     setIsLoading(true);
     try {
-      // Send reset password request
-      console.log('Sending data:', { email: email.trim(), token: token, newPassword: newPassword });
-
       const response = await resetPassword({
         email: email.trim(),
         token: token,
         newPassword: newPassword,
       });
-      console.log("Response:", response); // Log response for debugging
-
       setSuccess(
         "Your password has been successfully updated. You will be redirected to the login page."
       );
       setNewPassword("");
       setConfirmPassword("");
 
-      // Redirect to login page after successful reset
       setTimeout(() => {
         navigate("/login");
       }, 3000);
     } catch (err) {
-      console.error("Error details:", err); // Log detailed error
-
       let errorMessage = "Failed to reset password. Please try again later.";
-
       if (err.response) {
-        console.log("Error response:", err.response); // Log response error
-
         const errorData = err.response.data;
-        console.log("Error Data:", errorData); // Log errorData to check structure
-
         if (typeof errorData === "string") {
           errorMessage = errorData;
         } else if (errorData?.message) {
           errorMessage = errorData.message;
         }
-
-        if (errorData?.errors) {
-          if (Array.isArray(errorData.errors)) {
-            errorMessage = errorData.errors.join(" ");
-          } else if (typeof errorData.errors === "string") {
-            errorMessage = errorData.errors;
-          } else {
-            errorMessage = "Failed to reset password.";
-          }
-        }
       }
-
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -145,43 +136,90 @@ const ResetPasswordPage = () => {
         )}
 
         <form onSubmit={handleSubmit} noValidate>
-          {/* Hidden field to store email */}
-          <input
-            type="hidden"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
           <div className="reset-password__input-container">
             <label htmlFor="newPassword" className="reset-password__label">
               New Password
             </label>
-            <input
-              id="newPassword"
-              type="password"
-              className="reset-password__input"
-              placeholder="Enter new password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              disabled={isLoading}
-              required
-            />
+            <div className="reset-password__input-wrapper">
+              <input
+                id="newPassword"
+                type={passwordVisible ? "text" : "password"}
+                className="reset-password__input"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  validatePassword(e.target.value);
+                }}
+                disabled={isLoading}
+                required
+              />
+              <span
+                className="reset-password__password-toggle-icon"
+                onClick={togglePasswordVisibility}
+              >
+                <FontAwesomeIcon icon={passwordVisible ? faEyeSlash : faEye} />
+              </span>
+            </div>
           </div>
 
           <div className="reset-password__input-container">
             <label htmlFor="confirmPassword" className="reset-password__label">
               Confirm Password
             </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              className="reset-password__input"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={isLoading}
-              required
-            />
+            <div className="reset-password__input-wrapper">
+              <input
+                id="confirmPassword"
+                type={passwordVisible ? "text" : "password"}
+                className="reset-password__input"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
+                required
+              />
+              <span
+                className="reset-password__password-toggle-icon"
+                onClick={togglePasswordVisibility}
+              >
+                <FontAwesomeIcon icon={passwordVisible ? faEyeSlash : faEye} />
+              </span>
+            </div>
+          </div>
+
+          <div className="reset-password__password-hints">
+            <p
+              className={
+                passwordConditions.hasUppercase ? "valid-icon" : "invalid-icon"
+              }
+            >
+              <FontAwesomeIcon
+                icon={passwordConditions.hasUppercase ? faCheck : faTimes}
+              />{" "}
+              At least one uppercase letter
+            </p>
+            <p
+              className={
+                passwordConditions.hasSpecialChar
+                  ? "valid-icon"
+                  : "invalid-icon"
+              }
+            >
+              <FontAwesomeIcon
+                icon={passwordConditions.hasSpecialChar ? faCheck : faTimes}
+              />{" "}
+              At least one special character
+            </p>
+            <p
+              className={
+                passwordConditions.hasMinLength ? "valid-icon" : "invalid-icon"
+              }
+            >
+              <FontAwesomeIcon
+                icon={passwordConditions.hasMinLength ? faCheck : faTimes}
+              />{" "}
+              Minimum 8 characters
+            </p>
           </div>
 
           <button
