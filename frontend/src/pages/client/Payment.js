@@ -1,15 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { createPayPalOrder } from "../../services/paymentApi";
 import "../../assets/css/Payment.css";
+import { parse } from "date-fns";
+
+import { parse as dateFnsParse } from "date-fns";
+
 
 const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
+  if (!dateString) {
+    console.warn("Invalid dateString passed to formatDate:", dateString);
+    return "Invalid Date";
+  }
+
+  try {
+    const parsedDate = parse(dateString, "dd-MM-yyyy, HH:mm", new Date());
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(parsedDate.getDate()).padStart(2, "0");
+    const hours = String(parsedDate.getHours()).padStart(2, "0");
+    const minutes = String(parsedDate.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  } catch (error) {
+    console.error("Error parsing dateString in formatDate:", error);
+    return "Invalid Date";
+  }
 };
 
 const Payment = () => {
@@ -21,16 +35,16 @@ const Payment = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isCanceled = urlParams.get("cancel");
-  
+
     // Thêm điều kiện để chỉ chạy alert một lần
     if (isCanceled && !sessionStorage.getItem("alertShown")) {
       alert("Payment was canceled. Please select another payment method or try again.");
       sessionStorage.setItem("alertShown", "true"); // Đặt cờ để không lặp lại alert
-  
+
       const storedTripDetails = sessionStorage.getItem("tripDetails");
       const storedContactInfo = sessionStorage.getItem("contactInfo");
       const storedTotalPrice = sessionStorage.getItem("totalPrice");
-  
+
       if (storedTripDetails && storedContactInfo && storedTotalPrice) {
         setTripDetails(JSON.parse(storedTripDetails));
         setContactInfo(JSON.parse(storedContactInfo));
@@ -39,13 +53,13 @@ const Payment = () => {
         console.error("No data to restore.");
       }
     }
-  
+
     // Xóa cờ khi rời khỏi trang để cho phép alert hiển thị lại nếu cần
     return () => {
       sessionStorage.removeItem("alertShown");
     };
   }, []);
-  
+
 
   const paymentMethods = [
     { id: "wechat", label: "WeChat Pay" },
@@ -66,10 +80,16 @@ const Payment = () => {
         returnUrl: "http://localhost:3000/success", // Sử dụng HTTP thay vì HTTPS
         cancelUrl: "http://localhost:3000/payment?cancel=true", // Sử dụng HTTP
       };
-      
+
 
       // Lưu trạng thái hiện tại vào sessionStorage
-      sessionStorage.setItem("tripDetails", JSON.stringify(tripDetails));
+      sessionStorage.setItem(
+        "tripDetails",
+        JSON.stringify({
+          ...tripDetails,
+          departureTime: tripDetails.FormattedDeparture,
+        })
+      );
       sessionStorage.setItem("contactInfo", JSON.stringify(contactInfo));
       sessionStorage.setItem("totalPrice", totalPrice);
 
@@ -164,7 +184,10 @@ const Payment = () => {
           <strong>Flight Number:</strong> {tripDetails?.flightNumber}
         </p>
         <p>
-          <strong>Departure Time:</strong> {formatDate(tripDetails?.departureTime)}
+          <p>
+            <strong>Departure Time:</strong> {formatDate(tripDetails?.departureTime)}
+          </p>
+
         </p>
         <p>
           <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
