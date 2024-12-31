@@ -58,33 +58,32 @@ const FlightRouteManagement = () => {
         }
     
         const payload = {
+            RouteId: editingRecord ? editingRecord.flightRouteId : undefined, // Include RouteId if editing
             originAirportId: form.originAirportId,
             destinationAirportId: form.destinationAirportId,
             distance: form.distance,
         };
     
-        console.log("Submitting form with payload:", payload);
+        // console.log("Submitting form with payload:", payload);
     
         try {
             if (editingRecord) {
                 await updateFlightRoute(editingRecord.flightRouteId, payload);
                 notifySuccess("Flight route updated successfully.");
-                console.log("Update successful for route:", editingRecord.flightRouteId);
             } else {
                 await addFlightRoute(payload);
                 notifySuccess("Flight route added successfully.");
-                console.log("Add successful for route:", payload);
             }
             setModalVisible(false);
             fetchFlightRoutes(); // Refresh data
         } catch (error) {
             console.error("Error saving flight route:", error.response?.data || error.message);
             notifyError(
-                error.response?.data?.title || "Failed to save flight route.",
+                error.response?.data?.message || "Failed to save flight route.",
             );
         }
-    };    
-
+    };
+    
     const handleDelete = async (record) => {
         if (
             !window.confirm(
