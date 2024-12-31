@@ -10,6 +10,7 @@ import ClerkManagement from "../components/admin/ClerkManagement";
 // import FlightSeatAllocationManagement from "../components/admin/FlightSeatAllocationManagement";
 import FlightManagement from "../components/admin/FlightManagement";
 import ReservationManagement from "../components/admin/ReservationsManagement";
+import FlightRouteManagement from "../components/admin/FlightRouteManagement";
 
 const AdminRoutes = () => {
   return (
@@ -22,8 +23,10 @@ const AdminRoutes = () => {
         <Route path="/airports" element={<AirportsManagement />} />
         <Route path="/cities" element={<CitiesManagement />} />
         {/* <Route path="/flightseatallocation" element={<FlightSeatAllocationManagement />} /> */}
-        <Route path="clients" element={<ClientManagement />} />
+        <Route path="/clients" element={<ClientManagement />} />
         <Route path="/clerks" element={<ClerkManagement />} />
+        <Route path="/flight_route" element={<FlightRouteManagement />} />
+
       </Routes>
     </AdminLayout>
   );

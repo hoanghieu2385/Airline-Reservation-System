@@ -83,6 +83,11 @@ const AdminLayout = ({ children }) => {
                 </Link>
               </li> */}
               <li className="menu-item">
+                <Link to="/admin/flight_route" className={`menu-link ${isActive("/admin/flight_route")}`}>
+                  Manage Flight Route
+                </Link>
+              </li>
+              <li className="menu-item">
                 <button className="menu-link" onClick={handleLogout}>
                   Logout
                 </button>
