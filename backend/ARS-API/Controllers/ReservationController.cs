@@ -35,17 +35,24 @@ namespace ARS_API.Controllers
         {
             var reservations = await _context.Reservations
                 .Include(r => r.Flight)
-                .Select(r => new ReservationDTO
+                .Join(
+                    _context.Users,
+                    reservation => reservation.UserId,
+                    user => user.Id,
+                    (reservation, user) => new { reservation, user })
+                .Select(ru => new ReservationDTO
                 {
-                    ReservationCode = r.ReservationCode,
-                    UserId = r.UserId,
-                    FlightId = r.FlightId,
-                    AllocationId = r.AllocationId,
-                    ReservationStatus = r.ReservationStatus,
-                    TotalPrice = r.TotalPrice,
-                    TravelDate = r.TravelDate,
-                    CreatedAt = r.CreatedAt,
-                    NumberOfBlockedSeats = r.NumberOfBlockedSeats
+                    ReservationId = ru.reservation.ReservationId,
+                    ReservationCode = ru.reservation.ReservationCode,
+                    UserId = ru.reservation.UserId,
+                    UserName = ru.user.UserName,
+                    FlightId = ru.reservation.FlightId,
+                    AllocationId = ru.reservation.AllocationId,
+                    ReservationStatus = ru.reservation.ReservationStatus,
+                    TotalPrice = ru.reservation.TotalPrice,
+                    TravelDate = ru.reservation.TravelDate,
+                    CreatedAt = ru.reservation.CreatedAt,
+                    NumberOfBlockedSeats = ru.reservation.NumberOfBlockedSeats
                 })
                 .ToListAsync();
 
@@ -68,7 +75,7 @@ namespace ARS_API.Controllers
                     AllocationId = r.AllocationId,
                     ReservationStatus = r.ReservationStatus,
                     TotalPrice = r.TotalPrice,
-                    TravelDate = r.TravelDate, // Include the raw TravelDate
+                    TravelDate = r.TravelDate,
                     CreatedAt = r.CreatedAt,
                     NumberOfBlockedSeats = r.NumberOfBlockedSeats
                 })
@@ -88,8 +95,9 @@ namespace ARS_API.Controllers
         public async Task<ActionResult<IEnumerable<ReservationDTO>>> SearchReservations(
         [FromQuery] string? reservationCode,
         [FromQuery] string? userId,
+        [FromQuery] string? userName,
         [FromQuery] Guid? flightId,
-        [FromQuery] bool includeCancelled = false) // New parameter
+        [FromQuery] bool includeCancelled = false)
         {
             var query = _context.Reservations.AsQueryable();
 
@@ -101,6 +109,17 @@ namespace ARS_API.Controllers
             if (!string.IsNullOrEmpty(userId))
             {
                 query = query.Where(r => r.UserId == userId);
+            }
+
+            if (!string.IsNullOrEmpty(userName))
+            {
+                query = query.Join(
+                    _context.Users,
+                    reservation => reservation.UserId,
+                    user => user.Id,
+                    (reservation, user) => new { reservation, user })
+                    .Where(ru => ru.user.Email.Contains(userName))
+                    .Select(ru => ru.reservation);
             }
 
             if (flightId.HasValue)
@@ -116,19 +135,25 @@ namespace ARS_API.Controllers
 
             var reservations = await query
                 .Include(r => r.Flight)
-                .OrderByDescending(r => r.CreatedAt) // Sort by CreatedAt in descending order
-                .Select(r => new ReservationDTO
+                .Join(
+                    _context.Users,
+                    reservation => reservation.UserId,
+                    user => user.Id,
+                    (reservation, user) => new { reservation, user })
+                .OrderByDescending(ru => ru.reservation.CreatedAt) // Sort by CreatedAt
+                .Select(ru => new ReservationDTO
                 {
-                    ReservationId = r.ReservationId,
-                    ReservationCode = r.ReservationCode,
-                    UserId = r.UserId,
-                    FlightId = r.FlightId,
-                    AllocationId = r.AllocationId,
-                    ReservationStatus = r.ReservationStatus,
-                    TotalPrice = r.TotalPrice,
-                    TravelDate = r.TravelDate,
-                    CreatedAt = r.CreatedAt,
-                    NumberOfBlockedSeats = r.NumberOfBlockedSeats
+                    ReservationId = ru.reservation.ReservationId,
+                    ReservationCode = ru.reservation.ReservationCode,
+                    UserId = ru.reservation.UserId,
+                    UserName = ru.user.Email,
+                    FlightId = ru.reservation.FlightId,
+                    AllocationId = ru.reservation.AllocationId,
+                    ReservationStatus = ru.reservation.ReservationStatus,
+                    TotalPrice = ru.reservation.TotalPrice,
+                    TravelDate = ru.reservation.TravelDate,
+                    CreatedAt = ru.reservation.CreatedAt,
+                    NumberOfBlockedSeats = ru.reservation.NumberOfBlockedSeats
                 })
                 .ToListAsync();
 
@@ -138,140 +163,6 @@ namespace ARS_API.Controllers
             }
 
             return Ok(reservations);
-        }
-
-        // POST: api/Reservations
-        [HttpPost]
-        public async Task<ActionResult<Reservation>> PostReservation(CreateReservationDTO createReservationDto)
-        {
-            // Validate foreign keys
-            var allocation = await _context.FlightSeatAllocation
-                .Include(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
-                .FirstOrDefaultAsync(fsa => fsa.AllocationId == createReservationDto.AllocationId);
-
-            if (allocation == null || allocation.AvailableSeats < createReservationDto.Passengers?.Count)
-            {
-                return BadRequest("Invalid seat allocation or insufficient seats.");
-            }
-
-            // Validate flight
-            var flight = await _context.Flights
-                .Include(f => f.OriginAirport)
-                .Include(f => f.DestinationAirport)
-                .FirstOrDefaultAsync(f => f.FlightId == createReservationDto.FlightId);
-            if (flight == null)
-            {
-                return BadRequest("Invalid flight ID.");
-            }
-
-            // Validate passengers
-            if (createReservationDto.Passengers == null || !createReservationDto.Passengers.Any())
-            {
-                return BadRequest("Passenger details must be provided.");
-            }
-
-            // Validate seat class
-            if (allocation.SeatClass == null)
-            {
-                return BadRequest("Seat class information is missing or invalid.");
-            }
-
-            // Process data and calculate dynamic price
-            var travelDate = flight.DepartureTime;
-            var daysBeforeDeparture = (travelDate - DateTime.UtcNow).Days;
-            var priceMultiplier = await _pricingService.GetPriceMultiplierAsync(daysBeforeDeparture);
-
-            // Calculate total price for passengers
-            decimal totalPrice = createReservationDto.Passengers.Sum(p =>
-                _pricingService.CalculateDynamicPrice(
-                    flight.BasePrice,
-                    allocation.SeatClass.BasePriceMultiplier,
-                    priceMultiplier)
-            );
-
-            // Determine block expiration time if ReservationStatus is "Blocked"
-            DateTime? blockExpirationTime = null;
-            if (createReservationDto.ReservationStatus == "Blocked")
-            {
-                if (daysBeforeDeparture >= 14)
-                {
-                    blockExpirationTime = DateTime.UtcNow.AddHours(72); // 72 hours
-                }
-                else if (daysBeforeDeparture < 14 && daysBeforeDeparture >= 1)
-                {
-                    blockExpirationTime = DateTime.UtcNow.AddHours(2); // 2 hours
-                }
-                else if (daysBeforeDeparture < 1)
-                {
-                    blockExpirationTime = DateTime.UtcNow.AddMinutes(10); // 10 minutes
-                }
-            }
-
-            // Create a new reservation
-            var reservation = new Reservation
-            {
-                ReservationId = Guid.NewGuid(),
-                ReservationCode = GenerateReservationCode(),
-                UserId = createReservationDto.UserId,
-                FlightId = createReservationDto.FlightId,
-                AllocationId = createReservationDto.AllocationId,
-                ReservationStatus = createReservationDto.ReservationStatus ?? "Blocked", // Default to "Blocked"
-                TotalPrice = totalPrice,
-                TravelDate = travelDate,
-                CreatedAt = DateTime.UtcNow,
-                NumberOfBlockedSeats = createReservationDto.ReservationStatus == "Blocked" ? createReservationDto.Passengers.Count : null,
-                BlockExpirationTime = blockExpirationTime // New column in the Reservations table
-            };
-
-            // Deduct seats for "Blocked" or "Confirmed" reservations
-            allocation.AvailableSeats -= createReservationDto.Passengers.Count;
-
-            // Add Reservation to the context
-            _context.Reservations.Add(reservation);
-
-            // Add passengers for all reservations
-            var passengers = createReservationDto.Passengers.Select(p => new Passenger
-            {
-                PassengerId = Guid.NewGuid(),
-                ReservationId = reservation.ReservationId,
-                FirstName = p.FirstName,
-                LastName = p.LastName,
-                Gender = p.Gender,
-                TicketCode = GenerateTicketCode(),
-                TicketPrice = _pricingService.CalculateDynamicPrice(
-                    flight.BasePrice,
-                    allocation.SeatClass.BasePriceMultiplier,
-                    priceMultiplier)
-            }).ToList();
-
-            _context.Passengers.AddRange(passengers);
-
-            // TODO: line 165 nen thay bang TicketCode chu khong phai la ReservationCode
-            // string emailBody = $@"
-            //     <div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;'>
-            //         <h1 style='text-align: center; color: #4CAF50;'>E-Ticket</h1>
-
-            //         <h2 style='color: #4CAF50;'>Passenger Information</h2>
-            //         <p><strong>Passenger Name:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
-            //         <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
-            //         <p><strong>Ticket price:</strong> {totalPrice:C}</p>
-
-            //         <h2 style='color: #4CAF50;'>Flight Details</h2>
-            //         <p><strong>Route:</strong> {reservation.Flight.OriginAirport.AirportName} -> {reservation.Flight.DestinationAirport.AirportName}</p>
-            //         <p><strong>Departure Time:</strong> {travelDate:dddd, dd MMMM yyyy}</p>
-            //         <p><strong>Airline:</strong> {flight.Airline}</p>
-            //         <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
-
-            //         <p style='text-align: center; margin-top: 20px;'>We appreciate you trusting and using our Services!</p>
-            //     </div>";
-
-            // await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Flight Reservation Confirmation", emailBody);
-
-            // Save changes
-            await _context.SaveChangesAsync();
-
-            // Return confirmation
-            return CreatedAtAction(nameof(GetReservationByCode), new { code = reservation.ReservationCode }, reservation);
         }
 
         // POST: api/Reservations/FinalizeReservation

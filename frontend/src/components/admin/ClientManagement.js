@@ -132,7 +132,7 @@ const ClientManagement = () => {
 
   return (
     <div className="user-management__container mt-4">
-      <h2>User Management</h2>
+      <h2>Client Management</h2>
 
       {/* Search form */}
       <div className="user-management__search mb-3">
@@ -163,7 +163,7 @@ const ClientManagement = () => {
           setModalVisible(true);
         }}
       >
-        Add User
+        Add Client
       </button>
 
       {/* Table user */}
