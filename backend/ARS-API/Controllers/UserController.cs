@@ -181,7 +181,7 @@ namespace ARS_API.Controllers
             });
         }
 
-        [HttpPost("create-user")]
+        [HttpPost("admin-create-user")]
         [Authorize(Roles = "ADMIN")] // Only ADMIN can create users
         public async Task<IActionResult> CreateUser([FromBody] AdminCreateUserDTO model)
         {
@@ -203,7 +203,8 @@ namespace ARS_API.Controllers
                 LastName = model.LastName,
                 PhoneNumber = model.PhoneNumber,
                 SkyMiles = model.SkyMiles,
-                EmailConfirmed = false // Admin-created accounts are confirmed by default
+                EmailConfirmed = true, // Admin-created accounts are confirmed by default
+                PhoneNumberConfirmed = model.PhoneNumberConfirmed // Use admin-provided value
             };
 
             // Create the user with the specified password
@@ -403,7 +404,7 @@ namespace ARS_API.Controllers
 
 
         [HttpPut("admin-update-user/{id}")]
-        [Authorize(Roles = "ADMIN, CLERK")] // Only ADMIN can update user information
+        [Authorize(Roles = "ADMIN, CLERK")] // Allow ADMIN and CLERK to update user information
         public async Task<IActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserDTO model)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -412,7 +413,7 @@ namespace ARS_API.Controllers
                 return NotFound("User not found.");
             }
 
-            // Cập nhật các trường cơ bản (không bắt buộc phải có)
+            // Update basic fields if provided
             if (!string.IsNullOrEmpty(model.FirstName))
                 user.FirstName = model.FirstName;
 
@@ -422,14 +423,15 @@ namespace ARS_API.Controllers
             if (!string.IsNullOrEmpty(model.PhoneNumber))
                 user.PhoneNumber = model.PhoneNumber;
 
-            // Cập nhật trạng thái EmailConfirmed (nếu có)
+            // Update EmailConfirmed status if provided
             if (model.EmailConfirmed.HasValue)
                 user.EmailConfirmed = model.EmailConfirmed.Value;
 
-            // Cập nhật trạng thái PhoneNumberConfirmed (nếu có)
+            // Update PhoneNumberConfirmed status if provided
             if (model.PhoneNumberConfirmed.HasValue)
                 user.PhoneNumberConfirmed = model.PhoneNumberConfirmed.Value;
 
+            // Save basic field updates
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
@@ -440,7 +442,7 @@ namespace ARS_API.Controllers
                 });
             }
 
-            // Cập nhật Role (nếu có và hợp lệ)
+            // Update Role if provided
             if (!string.IsNullOrEmpty(model.Role))
             {
                 string[] validRoles = { "USER", "CLERK", "ADMIN" };
@@ -450,24 +452,28 @@ namespace ARS_API.Controllers
                 }
 
                 var currentRoles = await _userManager.GetRolesAsync(user);
-                var roleUpdateResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                if (!roleUpdateResult.Succeeded)
+                if (!currentRoles.Contains(model.Role.ToUpper()))
                 {
-                    return BadRequest(new
+                    // Remove current roles and assign the new role
+                    var roleUpdateResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                    if (!roleUpdateResult.Succeeded)
                     {
-                        Message = "Failed to remove existing roles.",
-                        Errors = roleUpdateResult.Errors.Select(e => e.Description)
-                    });
-                }
+                        return BadRequest(new
+                        {
+                            Message = "Failed to remove existing roles.",
+                            Errors = roleUpdateResult.Errors.Select(e => e.Description)
+                        });
+                    }
 
-                var newRoleResult = await _userManager.AddToRoleAsync(user, model.Role.ToUpper());
-                if (!newRoleResult.Succeeded)
-                {
-                    return BadRequest(new
+                    var newRoleResult = await _userManager.AddToRoleAsync(user, model.Role.ToUpper());
+                    if (!newRoleResult.Succeeded)
                     {
-                        Message = "Failed to assign new role.",
-                        Errors = newRoleResult.Errors.Select(e => e.Description)
-                    });
+                        return BadRequest(new
+                        {
+                            Message = "Failed to assign new role.",
+                            Errors = newRoleResult.Errors.Select(e => e.Description)
+                        });
+                    }
                 }
             }
 

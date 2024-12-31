@@ -4,7 +4,7 @@ export const getUsers = (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return api.get(`/user/read${queryString ? `?${queryString}` : ""}`);
 };
-export const addUser = (data) => api.post("/user/create-user", data);
+export const addUser = (data) => api.post("/user/admin-create-user", data);
 export const updateUser = (userId, data) => api.put(`/user/admin-update-user/${userId}`, data);
 export const deleteUser = (userId) => api.delete(`/user/delete/${userId}`);
 
