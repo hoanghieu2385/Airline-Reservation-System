@@ -16,8 +16,8 @@ const AdminRoutes = () => {
     <AdminLayout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/flights" element={<FlightManagement />} />
         <Route path="/reservations" element={<ReservationManagement/>} />
+        <Route path="/flights" element={<FlightManagement />} />
         <Route path="/airlines" element={<AirlinesManagement />} />
         <Route path="/airports" element={<AirportsManagement />} />
         <Route path="/cities" element={<CitiesManagement />} />

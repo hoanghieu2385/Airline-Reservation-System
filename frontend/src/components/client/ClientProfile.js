@@ -128,8 +128,8 @@ const UserProfile = ({ profile }) => {
                     />
                 </div>
                 <div className="profile__field">
-                    <label htmlFor="skyMiles">Sky Miles:
-                        <span id="skyMiles" className="profile__value">{formData.skyMiles || 0}</span>
+                    <label htmlFor="skyMiles">Sky Miles: 
+                        <span id="skyMiles" className="profile__value"> {formData.skyMiles || 0} miles</span>
                     </label>
                 </div>
             </div>
