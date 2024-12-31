@@ -9,14 +9,19 @@ import {
 import "../../assets/css/Admin/ReservationsManagement.css";
 import AddReservationModal from "../modals/AddReservationModal";
 import EditReservationModal from "../modals/EditReservationModal";
-import {notifyInfo, notifyWarning, notifySuccess, notifyError } from "../../utils/notification";
-
+import {
+  notifyInfo,
+  notifyWarning,
+  notifySuccess,
+  notifyError,
+} from "../../utils/notification";
 
 const ReservationManagement = () => {
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({
     reservationCode: "",
     userId: "",
+    userName: "",
     flightId: "",
     includeCancelled: false,
   });
@@ -44,6 +49,7 @@ const ReservationManagement = () => {
   const fetchReservations = async () => {
     try {
       const response = await searchReservations(filters);
+      console.log(response.data);
       setData(response.data || []);
     } catch (error) {
       console.error("Error fetching reservations:", error);
@@ -95,12 +101,20 @@ const ReservationManagement = () => {
           value={filters.reservationCode}
           onChange={handleFilterChange}
         />
-        <input
+        {/* <input
           type="text"
           name="userId"
           placeholder="Search by user ID..."
           className="form-control mb-2"
           value={filters.userId}
+          onChange={handleFilterChange}
+        /> */}
+        <input
+          type="text"
+          name="userName"
+          placeholder="Search by user name (email)..."
+          className="form-control mb-2"
+          value={filters.userName}
           onChange={handleFilterChange}
         />
         <input
@@ -152,6 +166,7 @@ const ReservationManagement = () => {
               <th>Reservation ID</th>
               <th>Reservation Code</th>
               <th>User ID</th>
+              <th>User Name</th>
               <th>Flight ID</th>
               <th>Status</th>
               <th>Total Price</th>
@@ -167,6 +182,7 @@ const ReservationManagement = () => {
                   <td>{reservation.reservationId}</td>
                   <td>{reservation.reservationCode}</td>
                   <td>{reservation.userId}</td>
+                  <td>{reservation.userName}</td>
                   <td>{reservation.flightId}</td>
                   <td>{reservation.reservationStatus}</td>
                   <td>{reservation.totalPrice.toFixed(2)}</td>

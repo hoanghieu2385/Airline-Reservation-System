@@ -149,7 +149,7 @@ const ClerkManagement = () => {
 
   return (
     <div className="user-management__container mt-4">
-      <h2>CLERK Management</h2>
+      <h2>Clerk Management</h2>
 
       {/* Search form */}
       <div className="user-management__search mb-3">
