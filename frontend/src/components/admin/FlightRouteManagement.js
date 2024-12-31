@@ -22,7 +22,7 @@ const FlightRouteManagement = () => {
         distance: "",
     });
 
-    const [originAirportDisplay, setOriginAirportDisplay] = useState(""); // For displaying name and code
+    const [originAirportDisplay, setOriginAirportDisplay] = useState("");
     const [destinationAirportDisplay, setDestinationAirportDisplay] = useState("");
 
     const [originAirportSuggestions, setOriginAirportSuggestions] = useState([]);
@@ -44,41 +44,46 @@ const FlightRouteManagement = () => {
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!form.originAirportId || !form.destinationAirportId || !form.distance) {
             notifyError("All fields are required.");
+            console.log("Validation failed: Missing fields", form);
             return;
         }
-
+    
         if (form.distance <= 0) {
             notifyError("Distance must be greater than 0.");
+            console.log("Validation failed: Invalid distance", form.distance);
             return;
         }
-
+    
         const payload = {
             originAirportId: form.originAirportId,
             destinationAirportId: form.destinationAirportId,
             distance: form.distance,
         };
-
+    
+        console.log("Submitting form with payload:", payload);
+    
         try {
             if (editingRecord) {
                 await updateFlightRoute(editingRecord.flightRouteId, payload);
                 notifySuccess("Flight route updated successfully.");
+                console.log("Update successful for route:", editingRecord.flightRouteId);
             } else {
                 await addFlightRoute(payload);
                 notifySuccess("Flight route added successfully.");
+                console.log("Add successful for route:", payload);
             }
             setModalVisible(false);
-            fetchFlightRoutes();
+            fetchFlightRoutes(); // Refresh data
         } catch (error) {
-            console.error("Error saving flight route:", error.response?.data);
+            console.error("Error saving flight route:", error.response?.data || error.message);
             notifyError(
                 error.response?.data?.title || "Failed to save flight route.",
             );
         }
-    };
-
+    };    
 
     const handleDelete = async (record) => {
         if (
@@ -97,11 +102,14 @@ const FlightRouteManagement = () => {
         }
     };
 
-    const handleSearchAirport = async (query, field) => {
-        setForm((prevForm) => ({
-            ...prevForm,
-            [field]: query,
-        }));
+    const handleSearchAirport = (query, field) => {
+        if (field === "originAirportId") {
+            setOriginAirportDisplay(query);
+            setForm((prevForm) => ({ ...prevForm, originAirportId: "" }));
+        } else {
+            setDestinationAirportDisplay(query);
+            setForm((prevForm) => ({ ...prevForm, destinationAirportId: "" }));
+        }
 
         if (query.trim() === "") {
             if (field === "originAirportId") setOriginAirportSuggestions([]);
@@ -109,35 +117,33 @@ const FlightRouteManagement = () => {
             return;
         }
 
-        try {
-            setLoadingSuggestions(true);
-            const suggestions = await searchAirports(query);
-            if (field === "originAirportId") {
-                setOriginAirportSuggestions(suggestions || []);
-            } else {
-                setDestinationAirportSuggestions(suggestions || []);
-            }
-        } catch (error) {
-            notifyError("Failed to fetch airport suggestions.");
-        } finally {
-            setLoadingSuggestions(false);
-        }
+        setLoadingSuggestions(true);
+        searchAirports(query)
+            .then((suggestions) => {
+                if (field === "originAirportId") {
+                    setOriginAirportSuggestions(suggestions || []);
+                } else {
+                    setDestinationAirportSuggestions(suggestions || []);
+                }
+            })
+            .catch(() => notifyError("Failed to fetch airport suggestions."))
+            .finally(() => setLoadingSuggestions(false));
     };
 
     const handleSelectAirport = (airport, field) => {
         setForm((prevForm) => ({
             ...prevForm,
-            [field]: airport.airportId, // Store ID for API submission
+            [field]: airport.airportId, // Lưu ID để gửi API
         }));
-    
+
         if (field === "originAirportId") {
-            setOriginAirportDisplay(`${airport.airportName} (${airport.airportCode})`); // Display name (code)
-            setOriginAirportSuggestions([]); // Clear suggestions
+            setOriginAirportDisplay(`${airport.airportName} (${airport.airportCode})`); // Hiển thị tên và mã
+            setOriginAirportSuggestions([]); // Xóa gợi ý
         } else {
-            setDestinationAirportDisplay(`${airport.airportName} (${airport.airportCode})`); // Display name (code)
-            setDestinationAirportSuggestions([]); // Clear suggestions
+            setDestinationAirportDisplay(`${airport.airportName} (${airport.airportCode})`); // Hiển thị tên và mã
+            setDestinationAirportSuggestions([]); // Xóa gợi ý
         }
-    };    
+    };
 
     const filteredData = data.filter(
         (route) =>
@@ -275,10 +281,8 @@ const FlightRouteManagement = () => {
                                             className="form-control"
                                             id="floatingOriginAirportId"
                                             placeholder="Origin Airport"
-                                            value={form.originAirportId}
-                                            onChange={(e) =>
-                                                handleSearchAirport(e.target.value, "originAirportId")
-                                            }
+                                            value={originAirportDisplay} // Hiển thị tên và mã
+                                            onChange={(e) => handleSearchAirport(e.target.value, "originAirportId")} // Xử lý nhập
                                             required
                                         />
                                         <label htmlFor="floatingOriginAirportId">Origin Airport</label>
@@ -304,15 +308,11 @@ const FlightRouteManagement = () => {
                                             className="form-control"
                                             id="floatingDestinationAirportId"
                                             placeholder="Destination Airport"
-                                            value={form.destinationAirportId}
-                                            onChange={(e) =>
-                                                handleSearchAirport(e.target.value, "destinationAirportId")
-                                            }
+                                            value={destinationAirportDisplay} // Hiển thị tên và mã
+                                            onChange={(e) => handleSearchAirport(e.target.value, "destinationAirportId")} // Xử lý nhập
                                             required
                                         />
-                                        <label htmlFor="floatingDestinationAirportId">
-                                            Destination Airport
-                                        </label>
+                                        <label htmlFor="floatingDestinationAirportId">Destination Airport</label>
                                         {loadingSuggestions && <div>Loading...</div>}
                                         {destinationAirportSuggestions.length > 0 && (
                                             <ul className="suggestion-list">
