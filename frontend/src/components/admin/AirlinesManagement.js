@@ -6,6 +6,8 @@ import {
   updateAirline,
   deleteAirline,
 } from "../../services/adminApi";
+import { notifySuccess, notifyError } from "../../utils/notification";
+
 
 const AirlinesManagement = () => {
   const [airlines, setAirlines] = useState([]);
@@ -37,7 +39,7 @@ const AirlinesManagement = () => {
       setAirlines(response.data || []);
     } catch (error) {
       console.error("Error fetching airlines:", error.message);
-      alert("Failed to fetch airlines. Please try again.");
+      notifyError("Failed to fetch airlines. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -45,7 +47,7 @@ const AirlinesManagement = () => {
 
   const handleFormSubmit = async () => {
     if (!form.airlineName || !form.airlineCode || !form.contactNumber) {
-      alert("Airline Name, Code, and Contact Number are required.");
+      notifyError("Airline Name, Code, and Contact Number are required.");
       return;
     }
 
@@ -54,11 +56,11 @@ const AirlinesManagement = () => {
       if (editingAirline) {
         // Update existing airline
         await updateAirline(editingAirline.airlineId, form); // Call update API
-        alert("Airline updated successfully.");
+        notifySuccess("Airline updated successfully.");
       } else {
         // Add new airline
         await addAirline(form); // Call add API
-        alert("Airline added successfully.");
+        notifySuccess("Airline added successfully.");
       }
       closeModal();
       fetchAirlines(); // Refresh the airline list
@@ -67,7 +69,7 @@ const AirlinesManagement = () => {
         "Error saving airline:",
         error.response?.data || error.message
       );
-      alert("Failed to save airline. Please try again.");
+      notifyError("Failed to save airline. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -80,14 +82,14 @@ const AirlinesManagement = () => {
     setLoading(true);
     try {
       await deleteAirline(airline.airlineId);
-      alert("Airline deleted successfully.");
+      notifySuccess("Airline deleted successfully.");
       fetchAirlines();
     } catch (error) {
       console.error(
         "Error deleting airline:",
         error.response?.data || error.message
       );
-      alert("Failed to delete airline. Please try again.");
+      notifyError("Failed to delete airline. Please try again.");
     } finally {
       setLoading(false);
     }
