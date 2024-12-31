@@ -35,6 +35,8 @@ namespace ARS_API
 
             builder.Services.AddSingleton<PayPalService>();
 
+            builder.Services.AddHostedService<FlightStatusUpdaterService>();
+
             // Configure Email Service
             builder.Services.Configure<EmailSettings>(
                 builder.Configuration.GetSection("SmtpSettings"));
