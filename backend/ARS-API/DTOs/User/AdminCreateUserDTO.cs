@@ -9,5 +9,6 @@
         public string Role { get; set; } // USER, CLERK, ADMIN
         public int SkyMiles { get; set; } = 0; // Default 0
         public string Password { get; set; }
+        public bool PhoneNumberConfirmed { get; set; } = false; // Default to false
     }
 }

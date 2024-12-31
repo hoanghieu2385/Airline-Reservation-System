@@ -23,6 +23,7 @@ const ClientManagement = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
+  const [feedback, setFeedback] = useState("");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -56,17 +57,17 @@ const ClientManagement = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (form.email && !validateEmail(form.email)) {
-      alert("Invalid email format.");
+      setFeedback("Invalid email format.");
       return;
     }
-
+  
     if (form.phoneNumber && !validatePhoneNumber(form.phoneNumber)) {
-      alert("Invalid phone number format.");
+      setFeedback("Invalid phone number format.");
       return;
     }
-
+  
     try {
       if (editingRecord) {
         await updateUser(editingRecord.id, {
@@ -77,25 +78,25 @@ const ClientManagement = () => {
           emailConfirmed: form.emailConfirmed,
           phoneNumberConfirmed: form.phoneNumberConfirmed,
         });
-        alert("User updated successfully");
+        setFeedback("User updated successfully.");
       } else {
         await addUser({
           firstName: form.firstName,
           lastName: form.lastName,
           email: form.email,
           phoneNumber: form.phoneNumber,
+          phoneNumberConfirmed: form.phoneNumberConfirmed,
           role: form.role,
           password: form.password,
         });
-        alert("User added successfully");
+        setFeedback("User added successfully.");
       }
       setModalVisible(false);
       fetchClients();
     } catch (error) {
-      alert("Failed to save user");
+      setFeedback("Failed to save user.");
     }
   };
-
   const handleDelete = async (record) => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete the user ${record.firstName} ${record.lastName}?`
@@ -329,7 +330,7 @@ const ClientManagement = () => {
                       placeholder="Email"
                       value={form.email}
                       onChange={(e) =>
-                        setForm({ ...form, email: e.target.value })
+                        setForm({ ...form, email: e.target.value, emailConfirmed: true })
                       }
                       required
                     />
@@ -363,27 +364,7 @@ const ClientManagement = () => {
                       }
                     >
                       <option value="USER">User</option>
-                      {/* <option value="CLERK">Clerk</option> */}
-                      {/* <option value="ADMIN">Admin</option> */}
                     </select>
-                  </div>
-                  {/* Email Confirmed */}
-                  <div className="form-check mb-3">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="emailConfirmed"
-                      checked={form.emailConfirmed}
-                      onChange={(e) =>
-                        setForm({ ...form, emailConfirmed: e.target.checked })
-                      }
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor="emailConfirmed"
-                    >
-                      Email Confirmed
-                    </label>
                   </div>
 
                   {/* Phone Confirmed */}
@@ -434,7 +415,6 @@ const ClientManagement = () => {
                           </button>
                         </div>
                       </div>
-
                       <label htmlFor="floatingPassword">Password</label>
                     </div>
                   )}
