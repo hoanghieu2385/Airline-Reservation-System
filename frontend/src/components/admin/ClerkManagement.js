@@ -13,6 +13,8 @@ import {
   updateUser,
   deleteUser,
 } from "../../services/adminApi";
+import { notifySuccess, notifyError } from "../../utils/notification";
+
 
 const ClerkManagement = () => {
   const [data, setData] = useState([]);
@@ -56,46 +58,52 @@ const ClerkManagement = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Validate email and phone number
     if (form.email && !validateEmail(form.email)) {
-      alert("Invalid email format.");
+      notifyError("Invalid email format.");
       return;
     }
-
     if (form.phoneNumber && !validatePhoneNumber(form.phoneNumber)) {
-      alert("Invalid phone number format.");
+      notifyError("Invalid phone number format.");
       return;
     }
-
+  
+    // Construct the payload
+    const payload = {
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
+      email: form.email.trim(),
+      phoneNumber: form.phoneNumber.trim(),
+      emailConfirmed: Boolean(form.emailConfirmed),
+      phoneNumberConfirmed: Boolean(form.phoneNumberConfirmed),
+      role: typeof form.role === "string" ? form.role.toUpperCase() : "CLERK",
+      ...(editingRecord ? {} : { password: form.password.trim() }), // Add password only when creating
+    };
+  
     try {
       if (editingRecord) {
-        await updateUser(editingRecord.id, {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          phoneNumber: form.phoneNumber,
-          role: form.role,
-          emailConfirmed: form.emailConfirmed,
-          phoneNumberConfirmed: form.phoneNumberConfirmed,
-        });
-        alert("User updated successfully");
+        // Update user
+        await updateUser(editingRecord.id, payload);
+        notifySuccess("User updated successfully.");
       } else {
-        await addUser({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          phoneNumber: form.phoneNumber,
-          role: form.role,
-          password: form.password,
-        });
-        alert("User added successfully");
+        // Add new user
+        await addUser(payload);
+        notifySuccess("User added successfully.");
       }
+  
+      // Close modal and refresh data
       setModalVisible(false);
       fetchClerks();
     } catch (error) {
-      alert("Failed to save user");
+      // Handle API errors
+      notifyError(
+        error.response?.data?.message || "Failed to save user. Please try again."
+      );
+      console.error("Error:", error.response?.data || error.message);
     }
   };
-
+  
   const handleDelete = async (record) => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete the user ${record.firstName} ${record.lastName}?`
@@ -104,10 +112,10 @@ const ClerkManagement = () => {
 
     try {
       await deleteUser(record.id);
-      alert("User deleted successfully");
+      notifySuccess("User deleted successfully");
       fetchClerks();
     } catch (error) {
-      alert("Failed to delete user");
+      notifyError("Failed to delete user");
     }
   };
 
@@ -278,7 +286,7 @@ const ClerkManagement = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {editingRecord ? "Edit User" : "Add User"}
+                  {editingRecord ? "Edit Clerk" : "Add Clerk"}
                 </h5>
                 <button
                   type="button"
@@ -336,6 +344,22 @@ const ClerkManagement = () => {
                     <label htmlFor="floatingEmail">Email</label>
                   </div>
 
+                  {/* Email Confirmed */}
+                  <div className="form-check mb-3">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="emailConfirmed"
+                      checked={form.emailConfirmed}
+                      onChange={(e) =>
+                        setForm({ ...form, emailConfirmed: e.target.checked })
+                      }
+                    />
+                    <label className="form-check-label" htmlFor="emailConfirmed">
+                      Email Confirmed
+                    </label>
+                  </div>
+
                   {/* Phone Number */}
                   <div className="form-floating mb-3">
                     <input
@@ -349,41 +373,6 @@ const ClerkManagement = () => {
                       }
                     />
                     <label htmlFor="floatingPhoneNumber">Phone Number</label>
-                  </div>
-
-                  {/* Role */}
-                  <div className="form-group mb-3">
-                    <label htmlFor="roleSelect">Role</label>
-                    <select
-                      className="form-control"
-                      id="roleSelect"
-                      value={form.role}
-                      onChange={(e) =>
-                        setForm({ ...form, role: e.target.value })
-                      }
-                    >
-                      {/* <option value="USER">User</option> */}
-                      <option value="CLERK">Clerk</option>
-                      {/* <option value="ADMIN">Admin</option> */}
-                    </select>
-                  </div>
-                  {/* Email Confirmed */}
-                  <div className="form-check mb-3">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="emailConfirmed"
-                      checked={form.emailConfirmed}
-                      onChange={(e) =>
-                        setForm({ ...form, emailConfirmed: e.target.checked })
-                      }
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor="emailConfirmed"
-                    >
-                      Email Confirmed
-                    </label>
                   </div>
 
                   {/* Phone Confirmed */}
@@ -406,6 +395,19 @@ const ClerkManagement = () => {
                     >
                       Phone Confirmed
                     </label>
+                  </div>
+
+                  {/* Role */}
+                  <div className="form-group mb-3">
+                    <label htmlFor="roleSelect">Role</label>
+                    <select
+                      className="form-control"
+                      id="roleSelect"
+                      value={form.role}
+                      onChange={(e) => setForm({ ...form, role: e.target.value })}
+                    >
+                      <option value="CLERK">Clerk</option>
+                    </select>
                   </div>
 
                   {/* Password */}
@@ -434,7 +436,6 @@ const ClerkManagement = () => {
                           </button>
                         </div>
                       </div>
-
                       <label htmlFor="floatingPassword">Password</label>
                     </div>
                   )}
@@ -456,6 +457,7 @@ const ClerkManagement = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
