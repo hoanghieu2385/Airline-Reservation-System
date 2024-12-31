@@ -7,12 +7,8 @@ import {
   faSortUp,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/css/Admin/UserManagement.css";
-import {
-  getUsers,
-  addUser,
-  updateUser,
-  deleteUser,
-} from "../../services/adminApi";
+import { getUsers, addUser, updateUser, deleteUser } from "../../services/adminApi";
+import { notifySuccess, notifyError } from "../../utils/notification";
 
 const ClientManagement = () => {
   const [data, setData] = useState([]);
@@ -23,7 +19,6 @@ const ClientManagement = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
-  const [feedback, setFeedback] = useState("");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -42,7 +37,6 @@ const ClientManagement = () => {
   const fetchClients = async () => {
     try {
       const response = await getUsers({ role: "USER" });
-      console.log("API Response:", response.data); // Debugging: Ensure API returns correct data
       setData(response.data || []); // Ensure data is set only if it's valid
     } catch (error) {
       console.error("Failed to fetch users:", error);
@@ -57,46 +51,42 @@ const ClientManagement = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-  
     if (form.email && !validateEmail(form.email)) {
-      setFeedback("Invalid email format.");
+      notifyError("Invalid email format.");
+      return;
+    }
+    if (form.phoneNumber && !validatePhoneNumber(form.phoneNumber)) {
+      notifyError("Invalid phone number format.");
       return;
     }
   
-    if (form.phoneNumber && !validatePhoneNumber(form.phoneNumber)) {
-      setFeedback("Invalid phone number format.");
-      return;
-    }
+    const payload = {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phoneNumber: form.phoneNumber,
+      emailConfirmed: form.emailConfirmed,
+      phoneNumberConfirmed: form.phoneNumberConfirmed,
+      role: typeof form.role === "string" ? form.role.toUpperCase() : "USER",
+      ...(editingRecord ? {} : { password: form.password }),
+    };
   
     try {
       if (editingRecord) {
-        await updateUser(editingRecord.id, {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          phoneNumber: form.phoneNumber,
-          role: form.role,
-          emailConfirmed: form.emailConfirmed,
-          phoneNumberConfirmed: form.phoneNumberConfirmed,
-        });
-        setFeedback("User updated successfully.");
+        await updateUser(editingRecord.id, payload);
+        notifySuccess("User updated successfully.");
       } else {
-        await addUser({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          phoneNumber: form.phoneNumber,
-          phoneNumberConfirmed: form.phoneNumberConfirmed,
-          role: form.role,
-          password: form.password,
-        });
-        setFeedback("User added successfully.");
+        await addUser(payload);
+        notifySuccess("User added successfully.");
       }
       setModalVisible(false);
       fetchClients();
     } catch (error) {
-      setFeedback("Failed to save user.");
+      notifyError("Failed to save user.");
+      console.error("Error:", error.response?.data || error.message);
     }
-  };
+  };  
+
   const handleDelete = async (record) => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete the user ${record.firstName} ${record.lastName}?`
@@ -105,10 +95,10 @@ const ClientManagement = () => {
 
     try {
       await deleteUser(record.id);
-      alert("User deleted successfully");
+      notifySuccess("User deleted successfully");
       fetchClients();
     } catch (error) {
-      alert("Failed to delete user");
+      notifyError("Failed to delete user");
     }
   };
 
