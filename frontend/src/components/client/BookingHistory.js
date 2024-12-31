@@ -12,16 +12,29 @@ const BookingHistory = () => {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const response = await api.get('/reservations');
-                const data = response.data.map((booking) => ({
-                    id: booking.reservationCode, // Mã đặt chỗ
-                    flightCode: booking.flightId, // Mã chuyến bay
-                    from: "Placeholder From", // Placeholder nếu không có dữ liệu "From" từ API
-                    to: "Placeholder To", // Placeholder nếu không có dữ liệu "To" từ API
-                    date: booking.travelDate, // Ngày đi
-                    price: booking.totalPrice, // Tổng giá
-                    paymentStatus: booking.reservationStatus === "Paid", // Kiểm tra trạng thái thanh toán
-                }));
+                // Get reservations first
+                const reservationsResponse = await api.get('/reservations');
+                
+                // Get all flights to map the details
+                const flightsResponse = await api.get('/flight');
+                const flights = flightsResponse.data;
+
+                // Map reservation data with flight details
+                const data = reservationsResponse.data.map((booking) => {
+                    // Find corresponding flight
+                    const flight = flights.find(f => f.flightId === booking.flightId);
+                    
+                    return {
+                        id: booking.reservationCode,
+                        flightNumber: flight ? flight.flightNumber : 'N/A',
+                        from: flight ? flight.originAirportName : 'N/A',
+                        to: flight ? flight.destinationAirportName : 'N/A',
+                        date: booking.travelDate,
+                        price: booking.totalPrice,
+                        paymentStatus: booking.reservationStatus === "Paid",
+                    };
+                });
+                
                 setBookings(data);
             } catch (error) {
                 console.error("Error fetching bookings: ", error);
@@ -69,7 +82,7 @@ const BookingHistory = () => {
                     <table className="flight-booking__table">
                         <thead>
                             <tr>
-                                <th>Flight Code</th>
+                                <th>Flight Number</th>
                                 <th>From</th>
                                 <th>To</th>
                                 <th>Date</th>
@@ -81,7 +94,7 @@ const BookingHistory = () => {
                         <tbody>
                             {filteredBookings.map((booking) => (
                                 <tr key={booking.id}>
-                                    <td>{booking.flightCode}</td>
+                                    <td>{booking.flightNumber}</td>
                                     <td>{booking.from}</td>
                                     <td>{booking.to}</td>
                                     <td>{new Date(booking.date).toLocaleDateString()}</td>
