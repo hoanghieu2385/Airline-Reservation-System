@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { updateUser } from "../../services/clientApi";
+import React, { useState, useEffect } from "react";
+import { updateUser, getConfirmedSkyMiles } from "../../services/clientApi";
 import "../../assets/css/ClientDashboard/ClientProfile.css";
 
 const UserProfile = ({ profile }) => {
@@ -9,11 +9,27 @@ const UserProfile = ({ profile }) => {
         email: profile.email,
         phone: profile.phone || "",
         address: profile.address || "",
-        preferredCreditCard: profile.preferredCreditCard || "",
+        skyMiles: 0, // Initialize as 0; fetch dynamically
     });
 
     const [editMode, setEditMode] = useState(false);
     const [isChanged, setIsChanged] = useState(false);
+
+    // Fetch Sky Miles from API
+    useEffect(() => {
+        const fetchSkyMiles = async () => {
+            try {
+                console.log("Fetching sky miles for the user...");
+                const skyMiles = await getConfirmedSkyMiles();
+                console.log("Fetched sky miles:", skyMiles);
+                setFormData((prev) => ({ ...prev, skyMiles })); // Update the state
+            } catch (error) {
+                console.error("Error fetching sky miles:", error);
+            }
+        };
+
+        fetchSkyMiles();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -26,7 +42,7 @@ const UserProfile = ({ profile }) => {
 
     const handleSave = async () => {
         try {
-            const userId = profile.id;
+            const userId = profile.id; // Assuming `profile.id` is available
             await updateUser(userId, formData);
             alert("Profile updated successfully.");
             setEditMode(false);
@@ -35,7 +51,7 @@ const UserProfile = ({ profile }) => {
             console.error("Failed to update profile:", error);
             alert("Failed to update profile.");
         }
-    }; 
+    };
 
     return (
         <div className="flight-profile">
@@ -112,16 +128,9 @@ const UserProfile = ({ profile }) => {
                     />
                 </div>
                 <div className="profile__field">
-                    <label htmlFor="preferredCreditCard">Preferred Credit Card</label>
-                    <input
-                        type="text"
-                        id="preferredCreditCard"
-                        name="preferredCreditCard"
-                        placeholder="Preferred Credit Card"
-                        value={formData.preferredCreditCard}
-                        onChange={handleInputChange}
-                        disabled={!editMode}
-                    />
+                    <label htmlFor="skyMiles">Sky Miles:
+                        <span id="skyMiles" className="profile__value">{formData.skyMiles || 0}</span>
+                    </label>
                 </div>
             </div>
             <div className="profile__actions">

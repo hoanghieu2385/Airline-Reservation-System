@@ -104,3 +104,15 @@ export const searchFlights = async (params) => {
         throw new Error(error.response?.data?.message || 'Failed to fetch flights. Please try again.');
     }
 };
+
+// Fetch total sky miles for the authenticated user
+export const getConfirmedSkyMiles = async () => {
+    try {
+        const response = await api.get(`/FlightRoute/confirmed-distance`);
+        console.log("API Response:", response.data); // Debugging log for the response
+        return response.data.totalDistance; // Correctly extract `totalDistance`
+    } catch (error) {
+        console.error("Error fetching sky miles:", error);
+        throw error;
+    }
+};
