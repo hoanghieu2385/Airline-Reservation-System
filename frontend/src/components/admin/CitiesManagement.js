@@ -5,6 +5,8 @@ import {
   updateCity,
   deleteCity,
 } from "../../services/adminApi";
+import { notifySuccess, notifyError } from "../../utils/notification";
+
 
 const CitiesManagement = () => {
   const [data, setData] = useState([]);
@@ -28,7 +30,7 @@ const CitiesManagement = () => {
       const response = await getCities();
       setData(response.data || []);
     } catch (error) {
-      alert("Failed to fetch cities");
+      notifyError("Failed to fetch cities");
     }
   };
 
@@ -38,15 +40,15 @@ const CitiesManagement = () => {
     try {
       if (editingRecord) {
         await updateCity(editingRecord.cityId, form);
-        alert("City updated successfully");
+        notifySuccess("City updated successfully");
       } else {
         await addCity(form);
-        alert("City added successfully");
+        notifySuccess("City added successfully");
       }
       setModalVisible(false);
       fetchCities();
     } catch (error) {
-      alert("Failed to save city");
+      notifyError("Failed to save city");
     }
   };
 
@@ -60,10 +62,10 @@ const CitiesManagement = () => {
 
     try {
       await deleteCity(record.cityId);
-      alert("City deleted successfully");
+      notifySuccess("City deleted successfully");
       fetchCities();
     } catch (error) {
-      alert("Failed to delete city");
+      notifyError("Failed to delete city");
     }
   };
 

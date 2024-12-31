@@ -8,6 +8,7 @@ import {
     updateFlight,
     deleteFlight,
 } from "../../services/adminApi";
+import {notifyWarning, notifySuccess, notifyError } from "../../utils/notification";
 
 const FlightManagement = () => {
     const [flights, setFlights] = useState([]);
@@ -64,7 +65,7 @@ const FlightManagement = () => {
             if (editingFlight) {
                 // Chỉ validate các trường có thể edit khi đang update
                 if (!form.departureTime || !form.arrivalTime || !form.status) {
-                    alert("Please fill in all required fields");
+                    notifyWarning("Please fill in all required fields");
                     return;
                 }
 
@@ -72,7 +73,7 @@ const FlightManagement = () => {
                 const departureTime = new Date(form.departureTime);
                 const arrivalTime = new Date(form.arrivalTime);
                 if (departureTime >= arrivalTime) {
-                    alert("Departure time must be before arrival time");
+                    notifyWarning("Departure time must be before arrival time");
                     return;
                 }
 
@@ -83,13 +84,13 @@ const FlightManagement = () => {
                     status: form.status
                 });
 
-                alert("Flight updated successfully!");
+                notifySuccess("Flight updated successfully!");
             } else {
                 // Validate tất cả các trường khi tạo mới
                 if (!form.flightNumber || !form.airlineId || !form.originAirportId ||
                     !form.destinationAirportId || !form.departureTime || !form.arrivalTime ||
                     !form.duration || !form.totalSeats || !form.basePrice) {
-                    alert("Please fill in all required fields");
+                        notifyWarning("Please fill in all required fields");
                     return;
                 }
 
@@ -97,7 +98,7 @@ const FlightManagement = () => {
                 const departureTime = new Date(form.departureTime);
                 const arrivalTime = new Date(form.arrivalTime);
                 if (departureTime >= arrivalTime) {
-                    alert("Departure time must be before arrival time");
+                    notifyWarning("Departure time must be before arrival time");
                     return;
                 }
 
@@ -108,14 +109,14 @@ const FlightManagement = () => {
                 );
 
                 if (totalAllocatedSeats !== parseInt(form.totalSeats)) {
-                    alert(`Total allocated seats (${totalAllocatedSeats}) must match total seats (${form.totalSeats})`);
+                    notifyWarning(`Total allocated seats (${totalAllocatedSeats}) must match total seats (${form.totalSeats})`);
                     return;
                 }
 
                 // Validate seat allocations
                 for (const allocation of form.seatAllocations) {
                     if (!allocation.className || !allocation.availableSeats) {
-                        alert("Please fill in all seat allocation details");
+                        notifyWarning("Please fill in all seat allocation details");
                         return;
                     }
                 }
@@ -139,7 +140,7 @@ const FlightManagement = () => {
                 };
 
                 await createFlight(payload);
-                alert("Flight created successfully!");
+                notifySuccess("Flight created successfully!");
             }
 
             // Close modal and refresh list
@@ -166,7 +167,7 @@ const FlightManagement = () => {
         } catch (error) {
             console.error("Error saving flight:", error);
             const errorMessage = error.response?.data || "Check console for details";
-            alert(`Failed to save flight: ${errorMessage}`);
+            notifyError(`Failed to save flight: ${errorMessage}`);
         }
     };
 

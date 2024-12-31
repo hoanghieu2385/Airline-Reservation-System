@@ -9,6 +9,8 @@ import {
 import "../../assets/css/Admin/ReservationsManagement.css";
 import AddReservationModal from "../modals/AddReservationModal";
 import EditReservationModal from "../modals/EditReservationModal";
+import {notifyInfo, notifyWarning, notifySuccess, notifyError } from "../../utils/notification";
+
 
 const ReservationManagement = () => {
   const [data, setData] = useState([]);
@@ -45,7 +47,7 @@ const ReservationManagement = () => {
       setData(response.data || []);
     } catch (error) {
       console.error("Error fetching reservations:", error);
-      alert("Failed to fetch reservations.");
+      notifyError("Failed to fetch reservations.");
     }
   };
 
@@ -254,12 +256,12 @@ const ReservationManagement = () => {
         onSubmit={async (formData) => {
           try {
             await finalizeReservation(formData);
-            alert("Reservation added successfully!");
+            notifySuccess("Reservation added successfully!");
             setAddModalVisible(false);
             fetchReservations();
           } catch (error) {
             console.error("Error adding reservation:", error);
-            alert("Failed to add reservation.");
+            notifyError("Failed to add reservation.");
           }
         }}
         initialForm={form}
@@ -273,12 +275,12 @@ const ReservationManagement = () => {
         onSave={async () => {
           try {
             await updateReservation(editingRecord.reservationId, form);
-            alert("Reservation updated successfully!");
+            notifySuccess("Reservation updated successfully!");
             setEditModalVisible(false);
             fetchReservations();
           } catch (error) {
             console.error("Error updating reservation:", error);
-            alert("Failed to update reservation.");
+            notifyError("Failed to update reservation.");
           }
         }}
         onClose={() => setEditModalVisible(false)}

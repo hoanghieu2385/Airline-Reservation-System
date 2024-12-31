@@ -6,6 +6,8 @@ import {
   deleteAirport,
   getCities,
 } from "../../services/adminApi";
+import { notifySuccess, notifyError } from "../../utils/notification";
+
 
 const AirportsManagement = () => {
   const [data, setData] = useState([]);
@@ -37,7 +39,7 @@ const AirportsManagement = () => {
         }))
       );
     } catch (error) {
-      alert("Failed to fetch airports");
+      notifyError("Failed to fetch airports");
     }
   };
 
@@ -46,7 +48,7 @@ const AirportsManagement = () => {
       const response = await getCities();
       setCities(response.data || []);
     } catch (error) {
-      alert("Failed to fetch cities");
+      notifyError("Failed to fetch cities");
     }
   };
 
@@ -62,17 +64,17 @@ const AirportsManagement = () => {
 
       if (editingRecord) {
         await updateAirport(editingRecord.airportId, payload);
-        alert("Airport updated successfully!");
+        notifySuccess("Airport updated successfully!");
       } else {
         await addAirport(payload);
-        alert("Airport added successfully!");
+        notifySuccess("Airport added successfully!");
       }
 
       setModalVisible(false);
       fetchAirports();
     } catch (error) {
       console.error("Error during save operation:", error);
-      alert("Failed to save the airport. Check the console for details.");
+      notifyError("Failed to save the airport. Check the console for details.");
     }
   };
 
@@ -86,10 +88,10 @@ const AirportsManagement = () => {
 
     try {
       await deleteAirport(record.airportId);
-      alert("Airport deleted successfully");
+      notifySuccess("Airport deleted successfully");
       fetchAirports();
     } catch (error) {
-      alert("Failed to delete airport");
+      notifyError("Failed to delete airport");
     }
   };
 
