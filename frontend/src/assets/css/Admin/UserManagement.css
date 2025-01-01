@@ -1,3 +1,22 @@
+.user-management__table td,
+.user-management__table th {
+  white-space: nowrap; /* Prevent content from wrapping */
+  text-overflow: ellipsis; /* Add ellipsis for overflowed content */
+  overflow: hidden; /* Hide overflowing content */
+}
+
+.user-management__table .col-name {
+  max-width: 150px; /* Limit width for names */
+}
+
+.user-management__table .col-email {
+  max-width: 200px; /* Limit width for emails */
+}
+
+.user-management__table .col-phone {
+  max-width: 120px; /* Limit width for phone numbers */
+}
+
 .user-management__modal .input-group {
     display: flex;
     align-items: center;

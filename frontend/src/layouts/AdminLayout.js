@@ -43,13 +43,13 @@ const AdminLayout = ({ children }) => {
                 </Link>
               </li>
               <li className="menu-item">
-                <Link to="/admin/flights" className={`menu-link ${isActive("/admin/flights")}`}>
-                  Manage Flights
+                <Link to="/admin/reservations" className={`menu-link ${isActive("/admin/reservations")}`}>
+                  Manage Reservations
                 </Link>
               </li>
               <li className="menu-item">
-                <Link to="/admin/reservations" className={`menu-link ${isActive("/admin/reservations")}`}>
-                  Manage Reservations
+                <Link to="/admin/flights" className={`menu-link ${isActive("/admin/flights")}`}>
+                  Manage Flights
                 </Link>
               </li>
               <li className="menu-item">
@@ -82,6 +82,11 @@ const AdminLayout = ({ children }) => {
                   Manage Flight Seat Allocation
                 </Link>
               </li> */}
+              <li className="menu-item">
+                <Link to="/admin/flight_route" className={`menu-link ${isActive("/admin/flight_route")}`}>
+                  Manage Flight Route
+                </Link>
+              </li>
               <li className="menu-item">
                 <button className="menu-link" onClick={handleLogout}>
                   Logout

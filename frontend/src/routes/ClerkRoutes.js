@@ -9,12 +9,15 @@ import ClerkGetAirports from "../components/clerk/ClerkGetAirports";
 import ClerkGetClient from "../components/clerk/ClerkGetClient";
 import ClerkProfile from "../components/clerk/ClerkProfile";
 import ClerkSecurity from "../components/clerk/ClerkSecurity";
+import ClerkReservations from "../components/clerk/ClerkReservations";
+
 
 const ClerkRoutes = () => {
     return (
         <ClerkLayout>
             <Routes>
                 <Route path="" element={<ClerkDashboard />} />
+                <Route path="/clerk_reservations" element={<ClerkReservations />} />
                 <Route path="/clerk_flights" element={<ClerkGetFlight />} />
                 <Route path="/clerk_airlines" element={<ClerkGetAirlines />} />
                 <Route path="/clerk_airport" element={<ClerkGetAirports />} />

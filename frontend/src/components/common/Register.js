@@ -170,12 +170,12 @@ function RegisterPage() {
           </p>
         </div>
         <button type="submit" className="register-form__button">
-          SIGN UP
+          REGISTER
         </button>
       </form>
       <div className="register-form__login-prompt">
         <p>
-          Already have an account? <a href="/login">SIGN IN</a>
+          Already have an account? <a href="/login">LOG IN</a>
         </p>
       </div>
     </div>

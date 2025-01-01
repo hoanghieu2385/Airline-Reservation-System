@@ -9,7 +9,7 @@ import { notifySuccess, notifyError } from "../../utils/notification";
 
 
 const CitiesManagement = () => {
-  const [data, setData] = useState([]);
+  const [data, setCities] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -28,11 +28,14 @@ const CitiesManagement = () => {
   const fetchCities = async () => {
     try {
       const response = await getCities();
-      setData(response.data || []);
+      const sortedCities = (response.data || []).sort((a, b) =>
+        a.cityName.localeCompare(b.cityName)
+      );
+      setCities(sortedCities);
     } catch (error) {
-      notifyError("Failed to fetch cities");
+      notifyError("Failed to fetch cities.");
     }
-  };
+  };  
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();

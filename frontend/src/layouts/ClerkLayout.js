@@ -41,12 +41,17 @@ const ClerkLayout = ({ children }) => {
                         <ul className="menu">
                             <li className="menu-item">
                                 <Link to="/clerk" className={`menu-link ${isActive("/clerk")}`}>
-                                    Dashboard
+                                Dashboard
+                                </Link>
+                            </li>
+                            <li className="menu-item">
+                                <Link to="/clerk/clerk_reservations" className={`menu-link ${isActive("/clerk/clerk_reservations")}`}>
+                                Reservations
                                 </Link>
                             </li>
                             <li className="menu-item">
                                 <Link to="/clerk/clerk_flights" className={`menu-link ${isActive("/clerk/airlines")}`}>
-                                    Flight
+                                Flight
                                 </Link>
                             </li>
                             <li className="menu-item">
@@ -76,7 +81,7 @@ const ClerkLayout = ({ children }) => {
                             </li>
                             <li className="menu-item">
                                 <button className="menu-link" onClick={handleLogout}>
-                                    Logout
+                                Logout
                                 </button>
                             </li>
                         </ul>

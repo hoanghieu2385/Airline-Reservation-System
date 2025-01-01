@@ -144,12 +144,12 @@ const LoginPage = () => {
             <a href="/forgotPassword">Forgot Password?</a>
           </div>
           <button type="submit" className="login-form__button">
-            SIGN IN
+            LOG IN
           </button>
         </form>
         <div className="login-form__register-prompt">
           <p>
-            Need an account? <a href="/register">SIGN UP</a>
+            Need an account? <a href="/register">REGISTER</a>
           </p>
         </div>
       </div>

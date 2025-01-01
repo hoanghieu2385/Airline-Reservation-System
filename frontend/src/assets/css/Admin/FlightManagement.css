@@ -1,0 +1,121 @@
+.flight-management__modal {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050;
+}
+
+.flight-management__modal-dialog {
+    max-width: 800px;
+    width: 100%;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.flight-management__modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.flight-management__modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.flight-management__modal-body {
+    padding: 1rem;
+}
+
+.flight-management__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.flight-management__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.flight-management__form-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.flight-management__seat-allocations {
+    margin-bottom: 1rem;
+}
+
+.flight-management__seat-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.flight-management__seat-row .flight-management__form-input {
+    flex: 1;
+}
+
+.flight-management__btn-remove {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.flight-management__btn-remove:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.flight-management__modal-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-top: 1px solid #ddd;
+}
+
+.flight-management__btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.flight-management__btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.flight-management__btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.flight-management__btn-primary {
+    background-color: #28a745;
+    color: white;
+}
+
+.flight-management__btn-primary:hover {
+    background-color: #218838;
+}

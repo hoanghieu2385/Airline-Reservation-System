@@ -1,27 +1,17 @@
 import React, { useEffect, useState } from "react";
 import {
   searchReservations,
-  createReservation,
-  updateReservation,
-  deleteReservation,
   finalizeReservation,
 } from "../../services/adminApi";
 import "../../assets/css/Admin/ReservationsManagement.css";
 import AddReservationModal from "../modals/AddReservationModal";
-import EditReservationModal from "../modals/EditReservationModal";
-import {
-  notifyInfo,
-  notifyWarning,
-  notifySuccess,
-  notifyError,
-} from "../../utils/notification";
+
 
 const ReservationManagement = () => {
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({
     reservationCode: "",
     userId: "",
-    userName: "",
     flightId: "",
     includeCancelled: false,
   });
@@ -40,7 +30,6 @@ const ReservationManagement = () => {
   });
 
   const [addModalVisible, setAddModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
 
   useEffect(() => {
     fetchReservations();
@@ -49,11 +38,10 @@ const ReservationManagement = () => {
   const fetchReservations = async () => {
     try {
       const response = await searchReservations(filters);
-      console.log(response.data);
       setData(response.data || []);
     } catch (error) {
       console.error("Error fetching reservations:", error);
-      notifyError("Failed to fetch reservations.");
+      alert("Failed to fetch reservations.");
     }
   };
 
@@ -64,23 +52,6 @@ const ReservationManagement = () => {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
-
-  // const handleDelete = async (record) => {
-  //   if (
-  //     !window.confirm(
-  //       `Are you sure you want to delete the reservation with code ${record.reservationCode}?`
-  //     )
-  //   )
-  //     return;
-
-  //   try {
-  //     await deleteReservation(record.reservationId);
-  //     alert("Reservation deleted successfully");
-  //     fetchReservations();
-  //   } catch (error) {
-  //     alert("Failed to delete reservation");
-  //   }
-  // };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -101,20 +72,12 @@ const ReservationManagement = () => {
           value={filters.reservationCode}
           onChange={handleFilterChange}
         />
-        {/* <input
+        <input
           type="text"
           name="userId"
           placeholder="Search by user ID..."
           className="form-control mb-2"
           value={filters.userId}
-          onChange={handleFilterChange}
-        /> */}
-        <input
-          type="text"
-          name="userName"
-          placeholder="Search by user name (email)..."
-          className="form-control mb-2"
-          value={filters.userName}
           onChange={handleFilterChange}
         />
         <input
@@ -163,15 +126,12 @@ const ReservationManagement = () => {
           <thead>
             <tr>
               <th>#</th>
-              <th>Reservation ID</th>
               <th>Reservation Code</th>
               <th>User ID</th>
-              <th>User Name</th>
               <th>Flight ID</th>
               <th>Status</th>
               <th>Total Price</th>
               <th>Travel Date</th>
-              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -179,48 +139,14 @@ const ReservationManagement = () => {
               currentReservations.map((reservation, index) => (
                 <tr key={reservation.reservationId}>
                   <td>{indexOfFirstItem + index + 1}</td>
-                  <td>{reservation.reservationId}</td>
                   <td>{reservation.reservationCode}</td>
                   <td>{reservation.userId}</td>
-                  <td>{reservation.userName}</td>
                   <td>{reservation.flightId}</td>
                   <td>{reservation.reservationStatus}</td>
                   <td>{reservation.totalPrice.toFixed(2)}</td>
                   <td>
                     {reservation.formattedTravelDate ||
                       new Date(reservation.travelDate).toLocaleString()}
-                  </td>
-                  <td>
-                    <button
-                      className={`btn btn-sm me-2 ${
-                        reservation.reservationStatus === "Cancelled"
-                          ? "btn-secondary"
-                          : "btn-warning"
-                      }`}
-                      onClick={() => {
-                        setForm({
-                          reservationCode: reservation.reservationCode,
-                          userId: reservation.userId,
-                          flightId: reservation.flightId,
-                          allocationId: reservation.allocationId,
-                          reservationStatus: reservation.reservationStatus,
-                          totalPrice: reservation.totalPrice,
-                          travelDate: reservation.travelDate,
-                        });
-                        setEditingRecord(reservation);
-                        setEditModalVisible(true);
-                      }}
-                      disabled={reservation.reservationStatus === "Cancelled"}
-                    >
-                      Edit
-                    </button>
-
-                    {/* <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(reservation)}
-                    >
-                      Delete
-                    </button> */}
                   </td>
                 </tr>
               ))
@@ -272,35 +198,17 @@ const ReservationManagement = () => {
         onSubmit={async (formData) => {
           try {
             await finalizeReservation(formData);
-            notifySuccess("Reservation added successfully!");
+            alert("Reservation added successfully!");
             setAddModalVisible(false);
             fetchReservations();
           } catch (error) {
             console.error("Error adding reservation:", error);
-            notifyError("Failed to add reservation.");
+            alert("Failed to add reservation.");
           }
         }}
         initialForm={form}
       />
 
-      {/* EditReservationModal */}
-      <EditReservationModal
-        visible={editModalVisible}
-        form={form}
-        onFormChange={(updatedForm) => setForm(updatedForm)}
-        onSave={async () => {
-          try {
-            await updateReservation(editingRecord.reservationId, form);
-            notifySuccess("Reservation updated successfully!");
-            setEditModalVisible(false);
-            fetchReservations();
-          } catch (error) {
-            console.error("Error updating reservation:", error);
-            notifyError("Failed to update reservation.");
-          }
-        }}
-        onClose={() => setEditModalVisible(false)}
-      />
     </div>
   );
 };

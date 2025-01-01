@@ -58,7 +58,7 @@ const ClerkManagement = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Validate email and phone number
     if (form.email && !validateEmail(form.email)) {
       notifyError("Invalid email format.");
@@ -68,7 +68,7 @@ const ClerkManagement = () => {
       notifyError("Invalid phone number format.");
       return;
     }
-  
+
     // Construct the payload
     const payload = {
       firstName: form.firstName.trim(),
@@ -80,7 +80,7 @@ const ClerkManagement = () => {
       role: typeof form.role === "string" ? form.role.toUpperCase() : "CLERK",
       ...(editingRecord ? {} : { password: form.password.trim() }), // Add password only when creating
     };
-  
+
     try {
       if (editingRecord) {
         // Update user
@@ -91,7 +91,7 @@ const ClerkManagement = () => {
         await addUser(payload);
         notifySuccess("User added successfully.");
       }
-  
+
       // Close modal and refresh data
       setModalVisible(false);
       fetchClerks();
@@ -103,7 +103,7 @@ const ClerkManagement = () => {
       console.error("Error:", error.response?.data || error.message);
     }
   };
-  
+
   const handleDelete = async (record) => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete the user ${record.firstName} ${record.lastName}?`
@@ -149,7 +149,7 @@ const ClerkManagement = () => {
 
   return (
     <div className="user-management__container mt-4">
-      <h2>CLERK Management</h2>
+      <h2>Clerk Management</h2>
 
       {/* Search form */}
       <div className="user-management__search mb-3">
@@ -188,30 +188,8 @@ const ClerkManagement = () => {
         <thead>
           <tr>
             <th>#</th>
-            <th
-              onClick={() => handleSort("firstName")}
-              className="user-management__sortable-column"
-            >
-              First Name{" "}
-              {sortConfig.key === "firstName" &&
-                (sortConfig.direction === "asc" ? (
-                  <FontAwesomeIcon icon={faSortDown} />
-                ) : (
-                  <FontAwesomeIcon icon={faSortUp} />
-                ))}
-            </th>
-            <th
-              onClick={() => handleSort("lastName")}
-              className="user-management__sortable-column"
-            >
-              Last Name{" "}
-              {sortConfig.key === "lastName" &&
-                (sortConfig.direction === "asc" ? (
-                  <FontAwesomeIcon icon={faSortDown} />
-                ) : (
-                  <FontAwesomeIcon icon={faSortUp} />
-                ))}
-            </th>
+            <th>First Name</th>
+            <th>Last Name</th>
             <th>Email</th>
             <th>Email Confirmed</th>
             <th>Phone Number</th>
@@ -224,11 +202,11 @@ const ClerkManagement = () => {
           {currentUsers.map((user, index) => (
             <tr key={user.id}>
               <td>{indexOfFirstItem + index + 1}</td>
-              <td>{user.firstName}</td>
-              <td>{user.lastName}</td>
-              <td>{user.email}</td>
+              <td className="col-name">{user.firstName}</td>
+              <td className="col-name">{user.lastName}</td>
+              <td className="col-email">{user.email}</td>
               <td>{user.emailConfirmed ? "Yes" : "No"}</td>
-              <td>{user.phoneNumber}</td>
+              <td className="col-phone">{user.phoneNumber}</td>
               <td>{user.phoneNumberConfirmed ? "Yes" : "No"}</td>
               <td>{user.role}</td>
               <td>

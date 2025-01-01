@@ -66,3 +66,104 @@
     background-color: #fff3cd;
     color: #856404;
 }
+
+/* Thêm vào file BookingHistory.css */
+
+/* Modal Styles */
+.booking-history-modal {
+    /* Namespace prefix for all modal elements */
+    --bh-modal-z-index: 9999;
+    --bh-modal-padding: 2rem;
+    --bh-modal-border-radius: 8px;
+    --bh-modal-bg: white;
+    --bh-modal-overlay-bg: rgba(0, 0, 0, 0.5);
+}
+
+.booking-history-modal__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bh-modal-overlay-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--bh-modal-z-index);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.booking-history-modal__overlay--active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.booking-history-modal__content {
+    background: var(--bh-modal-bg);
+    padding: var(--bh-modal-padding);
+    border-radius: var(--bh-modal-border-radius);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.booking-history-modal__overlay--active .booking-history-modal__content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.booking-history-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.booking-history-modal__close:hover {
+    color: #333;
+}
+
+.booking-history-modal__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-right: 2rem;
+}
+
+.booking-history-modal__body {
+    margin-bottom: 1rem;
+}
+
+/* Contact info specific styles */
+.booking-history-modal__contact-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+.booking-history-modal__contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.booking-history-modal__note {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 1rem;
+}
