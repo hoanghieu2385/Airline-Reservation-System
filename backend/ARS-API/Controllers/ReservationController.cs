@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ARS_API.Services;
+using System.Globalization;
 
 namespace ARS_API.Controllers
 {
@@ -292,12 +293,16 @@ namespace ARS_API.Controllers
             // Validate flight
             var flight = await _context.Flights
                 .Include(f => f.Airline)
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
                 .FirstOrDefaultAsync(f => f.FlightId == createReservationDto.FlightId);
 
             if (flight == null)
             {
                 return BadRequest("Invalid flight ID.");
             }
+
+            string airlineName = flight.Airline?.AirlineName ?? "Hãng hàng không không xác định";
 
             // Process data received from frontend
             var travelDate = flight.DepartureTime;
@@ -392,6 +397,27 @@ namespace ARS_API.Controllers
                 CreatedAt = reservation.CreatedAt,
                 NumberOfBlockedSeats = reservation.NumberOfBlockedSeats
             };
+
+            // Gửi email sau khi hoàn tất việc lưu trữ
+            string emailBody = $@"
+                <div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;'>
+                    <h1 style='text-align: center; color: #4CAF50;'>E-Ticket</h1>
+
+                    <h2 style='color: #4CAF50;'>Passenger Information</h2>
+                    <p><strong>Passenger Name:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
+                    <p><strong>Ticket Code:</strong> {passengers.First().TicketCode}</p>
+                    <p><strong>Ticket price:</strong> {totalPrice.ToString("C2", CultureInfo.GetCultureInfo("en-US"))}</p>
+
+                    <h2 style='color: #4CAF50;'>Flight Details</h2>
+                    <p><strong>Route:</strong> {flight.OriginAirport.AirportName} -> {flight.DestinationAirport.AirportName}</p>
+                    <p><strong>Departure Time:</strong> {travelDate:dddd, dd MMMM yyyy}</p>
+                    <p><strong>Airline:</strong> {airlineName}</p>
+                    <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
+
+                    <p style='text-align: center; margin-top: 20px;'>We appreciate you trusting and using our Services!</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Flight Reservation Confirmation", emailBody);
 
             // Return confirmation
             return CreatedAtAction(nameof(GetReservationByCode), new { code = reservationDto.ReservationCode }, reservationDto);

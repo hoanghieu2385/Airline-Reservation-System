@@ -26,6 +26,7 @@ namespace ARS_API.Models
         public string ContactNumber { get; set; } 
 
         [StringLength(255)]
-        public string WebsiteUrl { get; set; } 
+        public string WebsiteUrl { get; set; }
+        public ICollection<Flight> Flights { get; set; }
     }
 }
