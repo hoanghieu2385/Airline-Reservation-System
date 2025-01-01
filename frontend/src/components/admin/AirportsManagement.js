@@ -31,17 +31,19 @@ const AirportsManagement = () => {
   const fetchAirports = async () => {
     try {
       const response = await getAirports();
-      setData(
-        response.data.map((record) => ({
+      const sortedData = response.data
+        .map((record) => ({
           ...record,
           cityName: record.city.cityName,
           country: record.city.country,
         }))
-      );
+        .sort((a, b) => a.airportName.localeCompare(b.airportName)); // Sắp xếp theo tên sân bay từ A-Z
+  
+      setData(sortedData);
     } catch (error) {
       notifyError("Failed to fetch airports");
     }
-  };
+  };  
 
   const fetchCities = async () => {
     try {

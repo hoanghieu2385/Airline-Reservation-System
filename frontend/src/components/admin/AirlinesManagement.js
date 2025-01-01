@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "../../assets/css/Admin/AirlinesManagement.css";
 import {
   getAirlines,
   addAirline,
@@ -8,68 +7,61 @@ import {
 } from "../../services/adminApi";
 import { notifySuccess, notifyError } from "../../utils/notification";
 
-
 const AirlinesManagement = () => {
   const [airlines, setAirlines] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAirline, setEditingAirline] = useState(null);
-  const [form, setForm] = useState(initialFormState());
+  const [form, setForm] = useState({
+    airlineName: "",
+    airlineCode: "",
+    country: "",
+    contactNumber: "",
+    logoUrl: "",
+    websiteUrl: "",
+  });
 
   useEffect(() => {
     fetchAirlines();
   }, []);
 
-  function initialFormState() {
-    return {
-      airlineName: "",
-      airlineCode: "",
-      country: "",
-      contactNumber: "",
-      logoUrl: "",
-      websiteUrl: "",
-      seatClasses: [{ className: "", luggageAllowance: 0, baseMultiplier: 0 }],
-    };
-  }
-
   const fetchAirlines = async () => {
     setLoading(true);
     try {
       const response = await getAirlines();
-      setAirlines(response.data || []);
+      const sortedAirlines = (response.data || []).sort((a, b) =>
+        a.airlineName.localeCompare(b.airlineName)
+      );
+      setAirlines(sortedAirlines);
     } catch (error) {
-      console.error("Error fetching airlines:", error.message);
-      notifyError("Failed to fetch airlines. Please try again.");
+      notifyError("Failed to fetch airlines.");
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
     if (!form.airlineName || !form.airlineCode || !form.contactNumber) {
       notifyError("Airline Name, Code, and Contact Number are required.");
       return;
     }
-
     setLoading(true);
     try {
       if (editingAirline) {
-        // Update existing airline
-        await updateAirline(editingAirline.airlineId, form); // Call update API
+        await updateAirline(editingAirline.airlineId, form);
         notifySuccess("Airline updated successfully.");
       } else {
-        // Add new airline
-        await addAirline(form); // Call add API
+        await addAirline(form);
         notifySuccess("Airline added successfully.");
       }
-      closeModal();
-      fetchAirlines(); // Refresh the airline list
+      setIsModalOpen(false);
+      fetchAirlines();
     } catch (error) {
-      console.error(
-        "Error saving airline:",
-        error.response?.data || error.message
-      );
-      notifyError("Failed to save airline. Please try again.");
+      notifyError("Failed to save airline.");
     } finally {
       setLoading(false);
     }
@@ -78,92 +70,103 @@ const AirlinesManagement = () => {
   const handleDelete = async (airline) => {
     if (!window.confirm("Are you sure you want to delete this airline?"))
       return;
-
     setLoading(true);
     try {
       await deleteAirline(airline.airlineId);
       notifySuccess("Airline deleted successfully.");
       fetchAirlines();
     } catch (error) {
-      console.error(
-        "Error deleting airline:",
-        error.response?.data || error.message
-      );
-      notifyError("Failed to delete airline. Please try again.");
+      notifyError("Failed to delete airline.");
     } finally {
       setLoading(false);
     }
   };
 
-  const closeModal = () => {
-    setForm(initialFormState());
-    setEditingAirline(null);
-    setIsModalOpen(false);
-  };
+  const filteredAirlines = airlines.filter(
+    (airline) =>
+      airline.airlineName.toLowerCase().includes(searchText.toLowerCase()) ||
+      airline.airlineCode.toLowerCase().includes(searchText.toLowerCase()) ||
+      airline.country.toLowerCase().includes(searchText.toLowerCase())
+  );
 
-  const handleSeatClassChange = (index, field, value) => {
-    const updatedSeatClasses = [...form.seatClasses];
-    updatedSeatClasses[index][field] = value;
-    setForm((prev) => ({ ...prev, seatClasses: updatedSeatClasses }));
-  };
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAirlines = filteredAirlines.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredAirlines.length / itemsPerPage);
 
   return (
-    <div className="airlines-management">
+    <div className="management-container mt-4">
+      <h2>Airlines Management</h2>
+
+      {/* Search Bar */}
+      <div className="mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Search by name, code, or country..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
+
+      {/* Add Button */}
       <button
-        className="add-button"
+        className="btn btn-primary mb-3"
         onClick={() => setIsModalOpen(true)}
-        aria-label="Add Airline"
       >
         Add Airline
       </button>
+
+      {/* Table */}
       {loading ? (
-        <p>Loading...</p>
+        <div className="text-center">Loading...</div>
       ) : (
-        <table className="data-table">
+        <table className="table table-striped">
           <thead>
             <tr>
+              <th>#</th>
               <th>Name</th>
               <th>Code</th>
               <th>Country</th>
-              <th>Logo</th>
               <th>Contact</th>
               <th>Website</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {airlines.length > 0 ? (
-              airlines.map((airline) => (
+            {currentAirlines.length > 0 ? (
+              currentAirlines.map((airline, index) => (
                 <tr key={airline.airlineId}>
+                  <td>{indexOfFirstItem + index + 1}</td>
                   <td>{airline.airlineName}</td>
                   <td>{airline.airlineCode}</td>
                   <td>{airline.country}</td>
-                  <td>{airline.logoUrl}</td>
                   <td>{airline.contactNumber}</td>
-                  <td>{airline.websiteUrl}</td>
+                  <td>
+                    {airline.websiteUrl ? (
+                      <a href={airline.websiteUrl} target="_blank">
+                        Visit
+                      </a>
+                    ) : (
+                      "N/A"
+                    )}
+                  </td>
                   <td>
                     <button
-                      className="edit-button"
+                      className="btn btn-warning btn-sm me-2"
                       onClick={() => {
-                        setForm({
-                          airlineId: airline.airlineId, // Include AirlineId here
-                          airlineName: airline.airlineName,
-                          airlineCode: airline.airlineCode,
-                          country: airline.country,
-                          contactNumber: airline.contactNumber,
-                          logoUrl: airline.logoUrl,
-                          websiteUrl: airline.websiteUrl,
-                          seatClasses: airline.seatClasses || [], // Ensure seatClasses is set
-                        });
-                        setEditingAirline(airline); // Store the airline being edited
-                        setIsModalOpen(true); // Open the modal
+                        setForm(airline);
+                        setEditingAirline(airline);
+                        setIsModalOpen(true);
                       }}
                     >
                       Edit
                     </button>
-
                     <button
-                      className="delete-button"
+                      className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(airline)}
                     >
                       Delete
@@ -173,167 +176,87 @@ const AirlinesManagement = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="8">No airlines available</td>
+                <td colSpan="8" className="text-center">
+                  No airlines available.
+                </td>
               </tr>
             )}
           </tbody>
         </table>
       )}
+
+      {/* Pagination */}
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <button
+          className="btn btn-outline-secondary"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => prev - 1)}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          className="btn btn-outline-secondary"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Modal */}
       {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>{editingAirline ? "Edit Airline" : "Add Airline"}</h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleFormSubmit();
-              }}
-            >
-              <div className="form-group">
-                <label>Airline Name</label>
-                <input
-                  type="text"
-                  value={form.airlineName}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      airlineName: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Code</label>
-                <input
-                  type="text"
-                  value={form.airlineCode}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      airlineCode: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Contact Number</label>
-                <input
-                  type="text"
-                  value={form.contactNumber}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      contactNumber: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Seat Classes</label>
-                {form.seatClasses.map((seat, index) => (
-                  <div key={index} className="seat-class-group">
-                    <select
-                      value={seat.className}
-                      onChange={(e) =>
-                        handleSeatClassChange(
-                          index,
-                          "className",
-                          e.target.value
-                        )
-                      }
-                    >
-                      <option value="">Select Class</option>
-                      <option value="Economy">Economy</option>
-                      <option value="Business">Business</option>
-                      <option value="FirstClass">First Class</option>
-                    </select>
-                    <br></br>
-                    <br></br>
-                    <input
-                      type="number"
-                      placeholder="Luggage Allowance"
-                      value={seat.luggageAllowance}
-                      onChange={(e) =>
-                        handleSeatClassChange(
-                          index,
-                          "luggageAllowance",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                    />
-                    <br></br>
-                    <br></br>
-                    <input
-                      type="number"
-                      placeholder="Base Multiplier"
-                      value={seat.baseMultiplier}
-                      onChange={(e) =>
-                        handleSeatClassChange(
-                          index,
-                          "baseMultiplier",
-                          parseFloat(e.target.value) || 0
-                        )
-                      }
-                    />
-                  </div>
-                ))}
-                <br></br>
-                <br></br>
+        <div className="modal show d-block">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {editingAirline ? "Edit Airline" : "Add Airline"}
+                </h5>
                 <button
                   type="button"
-                  onClick={() =>
-                    setForm((prev) => ({
-                      ...prev,
-                      seatClasses: [
-                        ...prev.seatClasses,
-                        {
-                          className: "",
-                          luggageAllowance: 0,
-                          baseMultiplier: 0,
-                        },
-                      ],
-                    }))
-                  }
-                >
-                  Add Seat Class
-                </button>
+                  className="btn-close"
+                  onClick={() => setIsModalOpen(false)}
+                ></button>
               </div>
-              <div className="form-group">
-                <label>Logo URL</label>
-                <input
-                  type="text"
-                  value={form.logoUrl}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, logoUrl: e.target.value }))
-                  }
-                />
+              <div className="modal-body">
+                <form onSubmit={handleFormSubmit}>
+                  {/* Form Fields */}
+                  {["airlineName", "airlineCode", "country", "contactNumber"].map(
+                    (field) => (
+                      <div className="form-floating mb-3" key={field}>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder={field}
+                          value={form[field]}
+                          onChange={(e) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              [field]: e.target.value,
+                            }))
+                          }
+                          required={field !== "country"}
+                        />
+                        <label>{field}</label>
+                      </div>
+                    )
+                  )}
+                  <button type="submit" className="btn btn-primary">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary ms-2"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                </form>
               </div>
-              <div className="form-group">
-                <label>Website URL</label>
-                <input
-                  type="text"
-                  value={form.websiteUrl}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, websiteUrl: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="save-button">
-                  Save
-                </button>
-                <button
-                  type="button"
-                  className="cancel-button"
-                  onClick={closeModal}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

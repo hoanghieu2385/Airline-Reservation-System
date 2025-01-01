@@ -3,8 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEye,
   faEyeSlash,
-  faSortDown,
-  faSortUp,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/css/Admin/UserManagement.css";
 import { getUsers, addUser, updateUser, deleteUser } from "../../services/adminApi";
@@ -59,7 +57,7 @@ const ClientManagement = () => {
       notifyError("Invalid phone number format.");
       return;
     }
-  
+
     const payload = {
       firstName: form.firstName,
       lastName: form.lastName,
@@ -70,7 +68,7 @@ const ClientManagement = () => {
       role: typeof form.role === "string" ? form.role.toUpperCase() : "USER",
       ...(editingRecord ? {} : { password: form.password }),
     };
-  
+
     try {
       if (editingRecord) {
         await updateUser(editingRecord.id, payload);
@@ -85,7 +83,7 @@ const ClientManagement = () => {
       notifyError("Failed to save user.");
       console.error("Error:", error.response?.data || error.message);
     }
-  };  
+  };
 
   const handleDelete = async (record) => {
     const confirmDelete = window.confirm(
@@ -171,33 +169,11 @@ const ClientManagement = () => {
         <thead>
           <tr>
             <th>#</th>
-            <th
-              onClick={() => handleSort("firstName")}
-              className="user-management__sortable-column"
-            >
-              First Name{" "}
-              {sortConfig.key === "firstName" &&
-                (sortConfig.direction === "asc" ? (
-                  <FontAwesomeIcon icon={faSortDown} />
-                ) : (
-                  <FontAwesomeIcon icon={faSortUp} />
-                ))}
-            </th>
-            <th
-              onClick={() => handleSort("lastName")}
-              className="user-management__sortable-column"
-            >
-              Last Name{" "}
-              {sortConfig.key === "lastName" &&
-                (sortConfig.direction === "asc" ? (
-                  <FontAwesomeIcon icon={faSortDown} />
-                ) : (
-                  <FontAwesomeIcon icon={faSortUp} />
-                ))}
-            </th>
-            <th>Email</th>
+            <th className="col-name">First Name</th>
+            <th className="col-name">Last Name</th>
+            <th className="col-email">Email</th>
             <th>Email Confirmed</th>
-            <th>Phone Number</th>
+            <th className="col-phone">Phone Number</th>
             <th>Phone Confirmed</th>
             <th>Role</th>
             <th>Actions</th>
@@ -207,11 +183,11 @@ const ClientManagement = () => {
           {currentUsers.map((user, index) => (
             <tr key={user.id}>
               <td>{indexOfFirstItem + index + 1}</td>
-              <td>{user.firstName}</td>
-              <td>{user.lastName}</td>
-              <td>{user.email}</td>
+              <td className="col-name">{user.firstName}</td>
+              <td className="col-name">{user.lastName}</td>
+              <td className="col-email">{user.email}</td>
               <td>{user.emailConfirmed ? "Yes" : "No"}</td>
-              <td>{user.phoneNumber}</td>
+              <td className="col-phone">{user.phoneNumber}</td>
               <td>{user.phoneNumberConfirmed ? "Yes" : "No"}</td>
               <td>{user.role}</td>
               <td>
