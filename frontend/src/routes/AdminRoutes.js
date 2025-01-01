@@ -7,7 +7,7 @@ import AirportsManagement from "../components/admin/AirportsManagement";
 import CitiesManagement from "../components/admin/CitiesManagement";
 import ClientManagement from "../components/admin/ClientManagement";
 import ClerkManagement from "../components/admin/ClerkManagement";
-import FlightManagement from "../components/admin/FlightManagement";
+import FlightManagement from "../components/admin/FlightManagement/FlightManagement";
 import ReservationManagement from "../components/admin/ReservationsManagement";
 import FlightRouteManagement from "../components/admin/FlightRouteManagement";
 

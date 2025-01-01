@@ -349,8 +349,8 @@ namespace ARS_API.Controllers
 
                         if (updateDto.ReservationStatus == "Cancelled")
                         {
-                            allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
                             var passengers = _context.Passengers.Where(p => p.ReservationId == reservation.ReservationId).ToList();
+                            allocation.AvailableSeats += passengers.Count;
                             _context.Passengers.RemoveRange(passengers);
                         }
                     }
@@ -364,8 +364,8 @@ namespace ARS_API.Controllers
                     if (updateDto.ReservationStatus == "Cancelled")
                     {
                         reservation.ReservationStatus = "Cancelled";
-                        allocation.AvailableSeats += reservation.NumberOfBlockedSeats ?? 0;
                         var passengers = _context.Passengers.Where(p => p.ReservationId == reservation.ReservationId).ToList();
+                        allocation.AvailableSeats += passengers.Count;
                         _context.Passengers.RemoveRange(passengers);
                     }
                     else
