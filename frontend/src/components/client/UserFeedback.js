@@ -2,6 +2,11 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../assets/css/UserFeedback.css';
 
+import ElonMuskImage from '../../assets/images/client/ElonMusk.jpg';
+import BillGatesImage from '../../assets/images/client/BillGates.jpg';
+import OprahWinfreyImage from '../../assets/images/client/Winfrey.jpg';
+import RonaldoImage from '../../assets/images/client/ronaldo.jpg';
+
 const feedbacks = [
     {
         id: 1,
@@ -9,7 +14,7 @@ const feedbacks = [
         country: 'USA',
         review: 'An outstanding service! I am truly impressed with the quality and professionalism.',
         rating: 5,
-        image: 'https://imgcdn.stablediffusionweb.com/2024/11/12/3a76ea03-959f-4266-a211-c4849b2e65c8.jpg',
+        image: ElonMuskImage,
     },
     {
         id: 2,
@@ -17,7 +22,7 @@ const feedbacks = [
         country: 'USA',
         review: 'Innovative, reliable, and top-notch. Highly recommended for everyone.',
         rating: 5,
-        image: 'https://i.pinimg.com/280x280_RS/7c/97/45/7c974512b36170f5444cd132756ba85f.jpg',
+        image: BillGatesImage,
     },
     {
         id: 3,
@@ -25,7 +30,7 @@ const feedbacks = [
         country: 'USA',
         review: 'It’s a game-changer. Absolutely loved it!',
         rating: 5,
-        image: 'https://t.ctcdn.com.br/ghHviLxjyA6_ocejHAQq6al5gCY=/1024x576/smart/i332133.jpeg',
+        image: OprahWinfreyImage,
     },
     {
         id: 4,
@@ -33,7 +38,7 @@ const feedbacks = [
         country: 'Portugal',
         review: 'A truly exceptional experience. Worth every bit of praise.',
         rating: 5,
-        image: 'https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/240784102_403944054469080_940987349106364301_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=eY11zmCu93wQ7kNvgHhSarf&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=A_ucJWlcBRRQWdGjweE0qxC&oh=00_AYAYGpeHNeJNNOAT4t9m1E0udGb5yZf2l7E6hjmucxzy-g&oe=67656989',
+        image: RonaldoImage,
     },
 ];
 const UserFeedback = () => {
