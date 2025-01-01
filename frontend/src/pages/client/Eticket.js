@@ -1,28 +1,34 @@
-// src/pages/client/ETicket.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { eticketAPI } from "../../services/eticketApi";
 import "../../assets/css/Eticket.css";
 
 const ETicket = () => {
+    const [searchParams] = useSearchParams();
     const [ticketCode, setTicketCode] = useState('');
     const [ticketData, setTicketData] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const formatTicketCode = (code) => {
-        return code.trim();
-    };
+    useEffect(() => {
+        const code = searchParams.get('code');
+        if (code) {
+            setTicketCode(code);
+            handleSearch(null, code);
+        }
+    }, [searchParams]);
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        if (!ticketCode) return;
+    const handleSearch = async (e, codeFromParams = null) => {
+        if (e) e.preventDefault();
+        const codeToUse = codeFromParams || ticketCode;
+        if (!codeToUse) return;
 
         setLoading(true);
         setError('');
         setTicketData(null);
 
         try {
-            const formattedCode = formatTicketCode(ticketCode);
+            const formattedCode = codeToUse.trim();
             const response = await eticketAPI.getETicketByCode(formattedCode);
             
             if (response.data) {
@@ -118,7 +124,7 @@ const ETicket = () => {
             <div className="container mx-auto px-4 py-8">
                 <h1 className="text-3xl font-bold text-center mb-8">Flight Ticket Lookup</h1>
                 
-                <form onSubmit={handleSearch} className="max-w-md mx-auto mb-8">
+                <form onSubmit={(e) => handleSearch(e)} className="max-w-md mx-auto mb-8">
                     <div className="flex flex-col gap-4">
                         <input
                             type="text"

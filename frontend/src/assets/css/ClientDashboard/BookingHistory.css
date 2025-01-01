@@ -85,14 +85,15 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--bh-modal-overlay-bg);
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: var(--bh-modal-z-index);
+    z-index: 9999;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(2px);
 }
 
 .booking-history-modal__overlay--active {
@@ -101,17 +102,16 @@
 }
 
 .booking-history-modal__content {
-    background: var(--bh-modal-bg);
-    padding: var(--bh-modal-padding);
-    border-radius: var(--bh-modal-border-radius);
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
     width: 90%;
     max-width: 500px;
     position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transform: translateY(-20px);
     opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    max-height: 90vh;
-    overflow-y: auto;
+    transition: all 0.3s ease;
 }
 
 .booking-history-modal__overlay--active .booking-history-modal__content {
