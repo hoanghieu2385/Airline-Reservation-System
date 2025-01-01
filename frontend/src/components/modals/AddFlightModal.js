@@ -1,8 +1,7 @@
-// src/components/modals/FlightModal.js
 import React from "react";
 import "../../assets/css/Admin/Modals/FlightModal.css";
 
-const FlightModal = ({
+const AddFlightModal = ({
   visible,
   form,
   setForm,
@@ -87,6 +86,7 @@ const FlightModal = ({
                   className="form-control"
                   value={form.airlineId}
                   onChange={handleInputChange}
+                  disabled={!!editingFlight}
                   required
                 >
                   <option value="">Select Airline</option>
@@ -105,6 +105,7 @@ const FlightModal = ({
                   className="form-control"
                   value={form.originAirportId}
                   onChange={handleInputChange}
+                  disabled={!!editingFlight}
                   required
                 >
                   <option value="">Select Origin Airport</option>
@@ -123,6 +124,7 @@ const FlightModal = ({
                   className="form-control"
                   value={form.destinationAirportId}
                   onChange={handleInputChange}
+                  disabled={!!editingFlight}
                   required
                 >
                   <option value="">Select Destination Airport</option>
@@ -164,90 +166,80 @@ const FlightModal = ({
                 </div>
               </div>
 
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <div className="form-floating mb-3">
-                    <input
-                      type="number"
-                      name="totalSeats"
-                      className="form-control"
-                      value={form.totalSeats || ""}
-                      onChange={(e) =>
-                        handleInputChange({
-                          target: {
-                            name: "totalSeats",
-                            value: parseInt(e.target.value) || null,
-                          },
-                        })
-                      }
-                      required
-                      min="0"
-                    />
-                    <label>Total Seats</label>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="form-floating mb-3">
-                    <input
-                      type="number"
-                      name="duration"
-                      className="form-control"
-                      value={form.duration || ""}
-                      onChange={(e) =>
-                        handleInputChange({
-                          target: {
-                            name: "duration",
-                            value: parseInt(e.target.value) || null,
-                          },
-                        })
-                      }
-                      required
-                      min="0"
-                    />
-                    <label>Duration (minutes)</label>
-                  </div>
-                </div>
+              <div className="form-floating mb-3">
+                <input
+                  type="number"
+                  name="duration"
+                  className="form-control"
+                  value={form.duration || ""}
+                  onChange={(e) =>
+                    handleInputChange({
+                      target: {
+                        name: "duration",
+                        value: parseInt(e.target.value) || null,
+                      },
+                    })
+                  }
+                  required
+                  min="0"
+                />
+                <label>Duration (minutes)</label>
               </div>
 
-              <div className="row mb-3">
-                <div className="col-md-6">
-                  <div className="form-floating mb-3">
-                    <input
-                      type="number"
-                      name="basePrice"
-                      className="form-control"
-                      value={form.basePrice || ""}
-                      onChange={(e) =>
-                        handleInputChange({
-                          target: {
-                            name: "basePrice",
-                            value: parseFloat(e.target.value) || null,
-                          },
-                        })
-                      }
-                      required
-                      min="0"
-                      step="0.01"
-                    />
-                    <label>Base Price</label>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="form-floating mb-3">
-                    <select
-                      name="status"
-                      className="form-control"
-                      value={form.status}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="ACTIVE">Active</option>
-                      <option value="DELAYED">Delayed</option>
-                      <option value="CANCELLED">Cancelled</option>
-                    </select>
-                    <label>Status</label>
-                  </div>
-                </div>
+              <div className="form-floating mb-3">
+                <input
+                  type="number"
+                  name="totalSeats"
+                  className="form-control"
+                  value={form.totalSeats || ""}
+                  onChange={(e) =>
+                    handleInputChange({
+                      target: {
+                        name: "totalSeats",
+                        value: parseInt(e.target.value) || null,
+                      },
+                    })
+                  }
+                  required
+                  min="0"
+                />
+                <label>Total Seats</label>
+              </div>
+
+              <div className="form-floating mb-3">
+                <input
+                  type="number"
+                  name="basePrice"
+                  className="form-control"
+                  value={form.basePrice || ""}
+                  onChange={(e) =>
+                    handleInputChange({
+                      target: {
+                        name: "basePrice",
+                        value: parseFloat(e.target.value) || null,
+                      },
+                    })
+                  }
+                  required
+                  min="0"
+                  step="0.01"
+                />
+                <label>Base Price</label>
+              </div>
+
+              <div className="form-floating mb-3">
+                <select
+                  name="status"
+                  className="form-control"
+                  value={form.status}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="DELAYED">Delayed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+                <label>Status</label>
               </div>
 
               <label>Seat Classes</label>
@@ -259,25 +251,17 @@ const FlightModal = ({
                     placeholder="Class Name"
                     value={allocation.className}
                     onChange={(e) =>
-                      handleSeatAllocationChange(
-                        index,
-                        "className",
-                        e.target.value
-                      )
+                      handleSeatAllocationChange(index, "className", e.target.value)
                     }
                     required
                   />
                   <input
-                    type="text"
+                    type="number"
                     className="form-control mb-1"
                     placeholder="Available Seats"
                     value={allocation.availableSeats || ""}
                     onChange={(e) =>
-                      handleSeatAllocationChange(
-                        index,
-                        "availableSeats",
-                        parseInt(e.target.value)
-                      )
+                      handleSeatAllocationChange(index, "availableSeats", parseInt(e.target.value))
                     }
                     required
                     min="0"
@@ -329,4 +313,4 @@ const FlightModal = ({
   );
 };
 
-export default FlightModal;
+export default AddFlightModal;
