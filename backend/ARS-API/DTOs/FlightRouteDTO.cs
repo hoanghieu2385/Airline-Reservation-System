@@ -1,6 +1,6 @@
 ﻿namespace ARS_API.DTOs
 {
-    public class FlightRoutelDTO
+    public class FlightRouteDTO
     {
         public Guid FlightRouteId { get; set; }
         public string OriginAirportName { get; set; }

@@ -456,25 +456,25 @@ namespace ARS_API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "f5f8c7f3-a6c8-4ec5-9b87-2e74c0dc8ace",
+                            Id = "a9e0ba6f-df21-47a2-9679-dce2864642c9",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "1e0e4cc6-09b9-4c97-9b3e-4ec19b9b7d7a",
+                            Id = "83623668-273b-4418-9862-d3aa32b1f046",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "c8fa86b3-f2b7-4b31-9e99-7f71fd02ad32",
+                            Id = "42130735-08d6-4732-9bca-ac89cc53d931",
                             Name = "Clerk",
                             NormalizedName = "CLERK"
                         },
                         new
                         {
-                            Id = "86222a2c-2e1f-4518-ab57-19f75f61e24c",
+                            Id = "732fd4f9-2623-458d-8c33-15f4c44d65e5",
                             Name = "Guest",
                             NormalizedName = "GUEST"
                         });
