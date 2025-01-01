@@ -7,6 +7,32 @@ export const getUsers = (params = {}) => {
 export const addUser = (data) => api.post("/user/admin-create-user", data);
 export const updateUser = (userId, data) => api.put(`/user/admin-update-user/${userId}`, data);
 export const deleteUser = (userId) => api.delete(`/user/delete/${userId}`);
+// Change admin password
+export const changePassword = async (userId, data) => {
+    try {
+        // Map the formData to match the backend's UpdateUserDto
+        const payload = {
+            currentPassword: data.currentPassword,
+            newPassword: data.newPassword,
+            confirmPassword: data.confirmPassword,
+        };
+
+        console.log("Change Password Payload:", payload);
+
+        // Send request to the existing update endpoint
+        const response = await api.put(`/user/update/${userId}`, payload);
+
+        return response.data;
+    } catch (error) {
+        console.error("Change Password Error Details:", {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message,
+        });
+
+        throw new Error(error.response?.data?.message || "Failed to change password");
+    }
+};
 
 // Airline Management APIs
 export const getAirlines = () => api.get("/Airline");

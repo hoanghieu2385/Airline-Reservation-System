@@ -23,7 +23,7 @@ const Header = () => {
 
     const handleLogout = () => {
         sessionStorage.clear();
-        window.location.reload();
+        navigate("/");
     };
 
     const navigateToDashboard = () => {
