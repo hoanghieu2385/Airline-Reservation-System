@@ -99,7 +99,7 @@ namespace ARS_API.Controllers
                 .Include(r => r.OriginAirport)
                 .Include(r => r.DestinationAirport)
                 .Where(r => r.FlightRouteId == id)
-                .Select(r => new FlightRoutelDTO
+                .Select(r => new FlightRouteDTO
                 {
                     FlightRouteId = r.FlightRouteId,
                     OriginAirportName = r.OriginAirport.AirportName,
