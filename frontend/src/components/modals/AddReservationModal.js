@@ -202,17 +202,19 @@ const AddReservationModal = ({ visible, onClose, onSubmit, initialForm }) => {
               </div>
 
               {/* Form Actions */}
-              <div className="form-actions">
-                <button type="submit" className="btn btn-primary">
-                  Add
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
+              <div className="modal-footer">
+                <div className="form-actions">
+                  <button type="submit" className="btn btn-primary">
+                    Add Reservation
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={onClose}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </form>
           </div>
