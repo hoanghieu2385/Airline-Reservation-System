@@ -1,10 +1,10 @@
-.modal-body {
+.add-reservation-modal-body {
     display: flex;
     flex-direction: column;
     gap: 1rem; /* Add spacing between sections */
   }
   
-  .passenger-buttons {
+  .add-reservation-modal-passenger-buttons {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1rem;

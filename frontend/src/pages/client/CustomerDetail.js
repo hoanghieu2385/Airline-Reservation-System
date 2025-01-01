@@ -273,7 +273,6 @@ const CustomerDetail = () => {
             <p>
               <strong>Class: </strong> {flightDetails.seatClass}
             </p>
-            {/* <p><strong>Base Price:</strong> {flightDetails.basePrice.toLocaleString()} USD</p> */}
           </section>
 
           <section className="checkout-baggage-info mb-4">
