@@ -36,6 +36,7 @@ const FlightRouteManagement = () => {
     const fetchFlightRoutes = async () => {
         try {
             const response = await getFlightRoutes();
+            // console.log("Flight routes data:", response.data);
             setData(response.data || []);
         } catch (error) {
             notifyError("Failed to fetch flight routes.");
@@ -44,28 +45,26 @@ const FlightRouteManagement = () => {
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!form.originAirportId || !form.destinationAirportId || !form.distance) {
             notifyError("All fields are required.");
             console.log("Validation failed: Missing fields", form);
             return;
         }
-    
+
         if (form.distance <= 0) {
             notifyError("Distance must be greater than 0.");
             console.log("Validation failed: Invalid distance", form.distance);
             return;
         }
-    
+
         const payload = {
-            RouteId: editingRecord ? editingRecord.flightRouteId : undefined, // Include RouteId if editing
+            RouteId: editingRecord ? editingRecord.flightRouteId : undefined,
             originAirportId: form.originAirportId,
             destinationAirportId: form.destinationAirportId,
             distance: form.distance,
         };
-    
-        // console.log("Submitting form with payload:", payload);
-    
+
         try {
             if (editingRecord) {
                 await updateFlightRoute(editingRecord.flightRouteId, payload);
@@ -75,7 +74,7 @@ const FlightRouteManagement = () => {
                 notifySuccess("Flight route added successfully.");
             }
             setModalVisible(false);
-            fetchFlightRoutes(); // Refresh data
+            fetchFlightRoutes();
         } catch (error) {
             console.error("Error saving flight route:", error.response?.data || error.message);
             notifyError(
@@ -83,7 +82,7 @@ const FlightRouteManagement = () => {
             );
         }
     };
-    
+
     const handleDelete = async (record) => {
         if (
             !window.confirm(
@@ -132,34 +131,27 @@ const FlightRouteManagement = () => {
     const handleSelectAirport = (airport, field) => {
         setForm((prevForm) => ({
             ...prevForm,
-            [field]: airport.airportId, // Lưu ID để gửi API
+            [field]: airport.airportId,
         }));
 
         if (field === "originAirportId") {
-            setOriginAirportDisplay(`${airport.airportName} (${airport.airportCode})`); // Hiển thị tên và mã
-            setOriginAirportSuggestions([]); // Xóa gợi ý
+            setOriginAirportDisplay(`${airport.airportName} (${airport.airportCode})`);
+            setOriginAirportSuggestions([]);
         } else {
-            setDestinationAirportDisplay(`${airport.airportName} (${airport.airportCode})`); // Hiển thị tên và mã
-            setDestinationAirportSuggestions([]); // Xóa gợi ý
+            setDestinationAirportDisplay(`${airport.airportName} (${airport.airportCode})`);
+            setDestinationAirportSuggestions([]);
         }
     };
 
-    const filteredData = data.filter(
-        (route) =>
-            route.originAirportId.toLowerCase().includes(searchText.toLowerCase()) ||
-            route.destinationAirportId.toLowerCase().includes(searchText.toLowerCase())
-    );
-
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentRoutes = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const currentRoutes = data.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(data.length / itemsPerPage);
 
     return (
         <div className="flight-route-mgmt-container mt-4">
             <h2>Flight Route Management</h2>
 
-            {/* Search bar */}
             <div className="flight-route-mgmt-search mb-3">
                 <input
                     type="text"
@@ -170,7 +162,6 @@ const FlightRouteManagement = () => {
                 />
             </div>
 
-            {/* Add flight route button */}
             <button
                 className="btn btn-primary flight-route-mgmt-add-button mb-3"
                 onClick={() => {
@@ -182,7 +173,6 @@ const FlightRouteManagement = () => {
                 Add Flight Route
             </button>
 
-            {/* Flight routes table */}
             <table className="table table-striped flight-route-mgmt-table">
                 <thead>
                     <tr>
@@ -198,9 +188,9 @@ const FlightRouteManagement = () => {
                         currentRoutes.map((route, index) => (
                             <tr key={route.flightRouteId}>
                                 <td>{index + 1}</td>
-                                <td>{route.originAirport?.airportName || "N/A"}</td>
-                                <td>{route.destinationAirport?.airportName || "N/A"}</td>
-                                <td>{route.distance}</td>
+                                <td>{route.originAirportName || "Unknown"}</td>
+                                <td>{route.destinationAirportName || "Unknown"}</td>
+                                <td>{route.distance || "N/A"} km</td>
                                 <td>
                                     <button
                                         className="btn btn-warning btn-sm me-2"
@@ -235,7 +225,6 @@ const FlightRouteManagement = () => {
                 </tbody>
             </table>
 
-            {/* Pagination */}
             <div className="flight-route-mgmt-pagination d-flex justify-content-between align-items-center">
                 <button
                     className="btn btn-outline-secondary"
@@ -256,7 +245,6 @@ const FlightRouteManagement = () => {
                 </button>
             </div>
 
-            {/* Add/Edit modal */}
             {modalVisible && (
                 <div className="modal show d-block flight-route-mgmt-modal" tabIndex="-1">
                     <div className="modal-dialog" role="document">
@@ -273,15 +261,14 @@ const FlightRouteManagement = () => {
                             </div>
                             <div className="modal-body">
                                 <form onSubmit={handleFormSubmit}>
-                                    {/* Origin Airport */}
                                     <div className="form-floating mb-3 position-relative">
                                         <input
                                             type="text"
                                             className="form-control"
                                             id="floatingOriginAirportId"
                                             placeholder="Origin Airport"
-                                            value={originAirportDisplay} // Hiển thị tên và mã
-                                            onChange={(e) => handleSearchAirport(e.target.value, "originAirportId")} // Xử lý nhập
+                                            value={originAirportDisplay}
+                                            onChange={(e) => handleSearchAirport(e.target.value, "originAirportId")}
                                             required
                                         />
                                         <label htmlFor="floatingOriginAirportId">Origin Airport</label>
@@ -300,15 +287,14 @@ const FlightRouteManagement = () => {
                                         )}
                                     </div>
 
-                                    {/* Destination Airport */}
                                     <div className="form-floating mb-3 position-relative">
                                         <input
                                             type="text"
                                             className="form-control"
                                             id="floatingDestinationAirportId"
                                             placeholder="Destination Airport"
-                                            value={destinationAirportDisplay} // Hiển thị tên và mã
-                                            onChange={(e) => handleSearchAirport(e.target.value, "destinationAirportId")} // Xử lý nhập
+                                            value={destinationAirportDisplay}
+                                            onChange={(e) => handleSearchAirport(e.target.value, "destinationAirportId")}
                                             required
                                         />
                                         <label htmlFor="floatingDestinationAirportId">Destination Airport</label>
@@ -327,7 +313,6 @@ const FlightRouteManagement = () => {
                                         )}
                                     </div>
 
-                                    {/* Distance */}
                                     <div className="form-floating mb-3">
                                         <input
                                             type="number"
