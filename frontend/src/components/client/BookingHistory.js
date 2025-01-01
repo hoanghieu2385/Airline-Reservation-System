@@ -8,12 +8,12 @@ const Modal = ({ isOpen, onClose, children }) => {
         const handleEscape = (event) => {
             if (event.keyCode === 27) onClose();
         };
-
+        
         if (isOpen) {
             document.addEventListener('keydown', handleEscape);
             document.body.style.overflow = 'hidden';
         }
-
+        
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.body.style.overflow = 'unset';
@@ -21,12 +21,12 @@ const Modal = ({ isOpen, onClose, children }) => {
     }, [isOpen, onClose]);
 
     return (
-        <div
-            className={`modal-overlay ${isOpen ? 'active' : ''}`}
+        <div 
+            className={`booking-history-modal__overlay ${isOpen ? 'booking-history-modal__overlay--active' : ''}`}
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="modal-content">
-                <button className="modal-close" onClick={onClose}>×</button>
+            <div className="booking-history-modal__content">
+                <button className="booking-history-modal__close" onClick={onClose}>×</button>
                 {children}
             </div>
         </div>
@@ -35,21 +35,21 @@ const Modal = ({ isOpen, onClose, children }) => {
 
 const CancelModal = () => (
     <>
-        <h2 className="modal-title">Cancel Booking Instructions</h2>
-        <div className="modal-body">
+        <h2 className="booking-history-modal__title">Cancel Booking Instructions</h2>
+        <div className="booking-history-modal__body">
             <p>
-                To cancel your flight booking, please contact our customer service team.
-                Based on our <Link to="/policies" className="text-blue-600 hover:underline">Cancel/Refund policies</Link>,
+                To cancel your flight booking, please contact our customer service team. 
+                Based on our <Link to="/policies" className="text-blue-600 hover:underline">Cancel/Refund policies</Link>, 
                 our team will guide you through the cancellation process and any applicable refunds.
             </p>
-
-            <div className="contact-info">
+            
+            <div className="booking-history-modal__contact-info">
                 <h3 className="font-semibold mb-3">Contact Information:</h3>
-                <div className="contact-item">
+                <div className="booking-history-modal__contact-item">
                     <span>📞</span>
                     <span>Phone: +84 123 456 789</span>
                 </div>
-                <div className="contact-item">
+                <div className="booking-history-modal__contact-item">
                     <span>✉️</span>
                     <span>Email: support@airlineservice.com</span>
                 </div>
@@ -57,7 +57,7 @@ const CancelModal = () => (
 
             <p className="mb-2">Please have your booking reference number ready when contacting us.</p>
             <p className="mb-2">Our customer service team is available 24/7 to assist you with your cancellation request.</p>
-            <p className="note-text">Note: Cancellation fees may apply depending on your fare type and how close to the departure date you are cancelling.</p>
+            <p className="booking-history-modal__note">Note: Cancellation fees may apply depending on your fare type and how close to the departure date you are cancelling.</p>
         </div>
     </>
 );
