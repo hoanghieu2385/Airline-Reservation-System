@@ -66,17 +66,11 @@ export const searchAirports = async (query) => {
     const response = await api.get(`/airport/search`, { params: { query } });
     return response.data;
 };
-
-
 export const getFlightRoutes = (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return api.get(`/FlightRoute${queryString ? `?${queryString}` : ""}`);
 };
-
 export const getFlightRouteById = (id) => api.get(`/FlightRoute/${id}`);
-
 export const addFlightRoute = (data) => api.post("/FlightRoute", data);
-
 export const updateFlightRoute = (id, data) => api.put(`/FlightRoute/${id}`, data);
-
 export const deleteFlightRoute = (id) => api.delete(`/FlightRoute/${id}`);

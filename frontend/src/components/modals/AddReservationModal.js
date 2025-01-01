@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../assets/css/Admin/AddReservationModal.css";
+import "../../assets/css/Admin/Modals/AddReservationModal.css";
 
 const AddReservationModal = ({ visible, onClose, onSubmit, initialForm }) => {
   const [form, setForm] = useState(initialForm);
@@ -22,7 +22,7 @@ const AddReservationModal = ({ visible, onClose, onSubmit, initialForm }) => {
               onClick={onClose}
             ></button>
           </div>
-          <div className="modal-body">
+          <div className="add-reservation-modal-body">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -164,7 +164,7 @@ const AddReservationModal = ({ visible, onClose, onSubmit, initialForm }) => {
               ))}
 
               {/* Passenger Actions */}
-              <div className="passenger-buttons">
+              <div className="add-reservation-modal-passenger-buttons">
                 <button
                   type="button"
                   className="btn btn-secondary"
