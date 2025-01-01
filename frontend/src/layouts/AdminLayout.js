@@ -88,6 +88,11 @@ const AdminLayout = ({ children }) => {
                 </Link>
               </li>
               <li className="menu-item">
+                <Link to="/admin/admin_security" className={`menu-link ${isActive("/admin/admin_security")}`}>
+                  Security
+                </Link>
+              </li>
+              <li className="menu-item">
                 <button className="menu-link" onClick={handleLogout}>
                   Logout
                 </button>

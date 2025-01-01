@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { changePassword } from "../../services/clerkApi";
+import { changePassword } from "../../services/adminApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/css/ClientDashboard/Security.css";
 import {notifySuccess, notifyError } from "../../utils/notification";
 
 
-const ClerkSecurity = () => {
+const AdminChangePassword = () => {
     const [formData, setFormData] = useState({
         currentPassword: "",
         newPassword: "",
@@ -25,15 +25,15 @@ const ClerkSecurity = () => {
         hasMinLength: false,
     });
 
-    const [clerkId, setClerkId] = useState(null);
+    const [adminId, setAdminId] = useState(null);
 
-    // Lấy clerkId từ sessionStorage khi component được mount
+    // Lấy adminId từ sessionStorage khi component được mount
     useEffect(() => {
         const storedClerkId = sessionStorage.getItem("userId");
         if (storedClerkId) {
-            setClerkId(storedClerkId);
+            setAdminId(storedClerkId);
         } else {
-            notifyError("Clerk ID not found. Please log in again.");
+            notifyError("Admin ID not found. Please log in again.");
         }
     }, []);
 
@@ -57,8 +57,8 @@ const ClerkSecurity = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!clerkId) {
-            notifyError("Clerk ID is missing. Please log in again.");
+        if (!adminId) {
+            notifyError("Admin ID is missing. Please log in again.");
             return;
         }
 
@@ -73,7 +73,7 @@ const ClerkSecurity = () => {
         }
 
         try {
-            await changePassword(clerkId, formData);
+            await changePassword(adminId, formData);
             notifySuccess("Password changed successfully.");
             setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" });
             setPasswordConditions({
@@ -175,4 +175,4 @@ const ClerkSecurity = () => {
     );
 };
 
-export default ClerkSecurity;
+export default AdminChangePassword;
