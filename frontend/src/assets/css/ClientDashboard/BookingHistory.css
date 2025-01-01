@@ -167,3 +167,14 @@
     color: #666;
     margin-top: 1rem;
 }
+.flight-booking__status.cancelled {
+    color: red;
+}
+
+.flight-booking__status.blocked {
+    color: orange;
+}
+
+.flight-booking__status.confirmed {
+    color: green;
+}

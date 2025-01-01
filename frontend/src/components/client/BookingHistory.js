@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import api from "../../services/api";
-import '../../assets/css/ClientDashboard/BookingHistory.css'
+import '../../assets/css/ClientDashboard/BookingHistory.css';
 
 const Modal = ({ isOpen, onClose, children }) => {
     useEffect(() => {
@@ -87,6 +87,7 @@ const BookingHistory = () => {
                         date: booking.travelDate,
                         price: booking.totalPrice,
                         paymentStatus: booking.reservationStatus === "Paid",
+                        status: booking.reservationStatus, // Add reservation status from database
                     };
                 });
 
@@ -106,6 +107,8 @@ const BookingHistory = () => {
             setFilteredBookings(bookings.filter((booking) => booking.paymentStatus));
         } else if (filter === "pending") {
             setFilteredBookings(bookings.filter((booking) => !booking.paymentStatus));
+        } else {
+            setFilteredBookings(bookings.filter((booking) => booking.status === filter));
         }
     }, [filter, bookings]);
 
@@ -127,6 +130,9 @@ const BookingHistory = () => {
                         <option value="all">All Bookings</option>
                         <option value="paid">Paid</option>
                         <option value="pending">Pending</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Blocked">Blocked</option>
+                        <option value="Confirmed">Confirmed</option>
                     </select>
                 </div>
             </div>
@@ -163,9 +169,9 @@ const BookingHistory = () => {
                                     <td>${booking.price.toFixed(2)}</td>
                                     <td>
                                         <span
-                                            className={`flight-booking__status ${booking.paymentStatus ? "paid" : "pending"}`}
+                                            className={`flight-booking__status ${booking.status.toLowerCase()}`}
                                         >
-                                            {booking.paymentStatus ? "Paid" : "Pending"}
+                                            {booking.status}
                                         </span>
                                     </td>
                                     <td className="space-x-2">
