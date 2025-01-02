@@ -10,6 +10,9 @@ const FlightManagement = () => {
     const [airlines, setAirlines] = useState([]);
     const [airports, setAirports] = useState([]);
     const [searchText, setSearchText] = useState("");
+    const [showCompleted, setShowCompleted] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const flightsPerPage = 15;
 
     useEffect(() => {
         fetchFlights();
@@ -44,13 +47,29 @@ const FlightManagement = () => {
         }
     };
 
-    const filteredFlights = flights.filter(
-        (flight) =>
-            flight.flightNumber.toLowerCase().includes(searchText.toLowerCase()) ||
-            flight.airlineName.toLowerCase().includes(searchText.toLowerCase()) ||
-            flight.originAirportName.toLowerCase().includes(searchText.toLowerCase()) ||
-            flight.destinationAirportName.toLowerCase().includes(searchText.toLowerCase())
+    // Filter and sort flights
+    const filteredFlights = flights
+        .filter((flight) =>
+            (flight.flightNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+                flight.airlineName.toLowerCase().includes(searchText.toLowerCase()) ||
+                flight.originAirportName.toLowerCase().includes(searchText.toLowerCase()) ||
+                flight.destinationAirportName.toLowerCase().includes(searchText.toLowerCase())) &&
+            (showCompleted || flight.status !== "COMPLETED")
+        )
+        .sort((a, b) => new Date(a.departureTime) - new Date(b.departureTime));
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredFlights.length / flightsPerPage);
+    const paginatedFlights = filteredFlights.slice(
+        (currentPage - 1) * flightsPerPage,
+        currentPage * flightsPerPage
     );
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
 
     return (
         <div className="flight-management__container mt-4">
@@ -60,16 +79,32 @@ const FlightManagement = () => {
             <div className="mb-3">
                 <input
                     type="text"
-                    className="form-control"
+                    className="form-control flight-management__search-input"
                     placeholder="Search by flight number, airline, origin, destination..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                 />
             </div>
 
+            {/* Show Completed Checkbox */}
+            <div className="mb-3">
+                <div className="form-check">
+                    <input
+                        type="checkbox"
+                        className="form-check-input flight-management__checkbox"
+                        id="showCompleted"
+                        checked={showCompleted}
+                        onChange={(e) => setShowCompleted(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="showCompleted">
+                        Show Completed Flights
+                    </label>
+                </div>
+            </div>
+
             {/* Flights Table */}
             <div className="table-responsive">
-                <table className="table table-striped">
+                <table className="table table-striped flight-management__table">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -83,9 +118,9 @@ const FlightManagement = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredFlights.map((flight, index) => (
+                        {paginatedFlights.map((flight, index) => (
                             <tr key={flight.flightId}>
-                                <td>{index + 1}</td>
+                                <td>{(currentPage - 1) * flightsPerPage + index + 1}</td>
                                 <td>{flight.flightNumber}</td>
                                 <td>{flight.airlineName}</td>
                                 <td>{flight.originAirportName}</td>
@@ -97,6 +132,27 @@ const FlightManagement = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="d-flex justify-content-between align-items-center mt-3">
+                <button
+                    className="btn btn-primary flight-management__prev-btn"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </button>
+                <span>
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button
+                    className="btn btn-primary flight-management__next-btn"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                </button>
             </div>
         </div>
     );
