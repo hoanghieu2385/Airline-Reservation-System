@@ -1,76 +1,118 @@
-/* src/assets/css/ClientDashboard/Eticket.css */
-
-.eticket-details {
-    padding: 40px;
-    max-width: 1200px;
-    margin: 10px auto;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.eticket-container {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 900px;
 }
 
-.eticket-details h2 {
-    text-align: center;
+.eticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 15px;
+}
+
+.eticket-logo {
+    max-width: 100px;
+}
+
+.eticket-reservation-code h5 {
+    margin: 0;
     color: #333;
-    margin-bottom: 30px;
-    font-size: 2em;
+    font-size: 1.1em;
 }
 
-.eticket-details p {
+.eticket-reservation-code p {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: bold;
     color: #555;
-    line-height: 1.6;
+}
+
+/* Flight detail */
+.eticket-flight-details,
+.eticket-passengers {
+    margin-top: 20px;
+    padding: 15px;
+    /* background-color: #ffffff; */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.eticket-flight-details .row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.eticket-flight-details .col-md-6 {
+    flex: 1;
+    min-width: 45%; /* Ensure two columns fit on most screen sizes */
     margin-bottom: 10px;
 }
 
-.eticket-details strong {
+/* Notice */
+.eticket-notice {
+    /* background-color: #f9f9f9; */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.eticket-notice-icon {
+    font-size: 2rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.eticket-notice p {
+    font-size: 1rem;
+    margin: 0;
     color: #333;
 }
 
-.flight-details, .passengers {
-    margin-bottom: 30px;
-}
-
-.flight-details h3, .passengers h3 {
-    color: #444;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    font-size: 1.5em;
-}
-
-.flight-details p, .passengers p {
-    margin: 8px 0;
-}
-
-.passenger {
-    background-color: #fff;
-    padding: 15px 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+/* Passenger */
+.eticket-section-title {
+    color: #333;
     margin-bottom: 15px;
-    transition: box-shadow 0.3s ease;
+    font-size: 1.4em;
+    font-weight: bold;
 }
 
-.passenger:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.eticket-passenger-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.passenger p {
-    margin: 5px 0;
-    color: #555;
+.eticket-passenger-item {
+    padding: 10px 0;
+}
+
+.eticket-passenger-divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+}
+
+.error,
+.loading {
+    text-align: center;
+    font-size: 1.2em;
+    color: #d9534f;
+    margin-top: 20px;
 }
 
 @media (max-width: 768px) {
-    .eticket-details {
-        padding: 20px;
-        margin: 20px;
+    .eticket-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .eticket-details h2 {
-        font-size: 1.5em;
-    }
-
-    .flight-details h3, .passengers h3 {
-        font-size: 1.2em;
+    .eticket-reservation-code {
+        margin-top: 15px;
     }
 }
