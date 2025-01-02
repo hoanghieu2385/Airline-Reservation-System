@@ -41,7 +41,7 @@ const Footer = () => {
                     <div className="col-md-3 mb-4 text-end">
                         <h5 className="custom-footer-heading">Copyright</h5>
                         <p>&copy; 2024 Flight Reservation. All rights reserved.</p>
-                        <p>Developed by <a href="https://yourwebsite.com" className="text-dark text-decoration-none">Your Company</a>.</p>
+                        <p>Developed by <a href="/" className="text-dark text-decoration-none">ARS</a>.</p>
                     </div>
                 </div>
             </div>
