@@ -93,7 +93,7 @@ const CustomerDetail = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phoneNumber, setPhone] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -216,7 +216,7 @@ const CustomerDetail = () => {
     sessionStorage.setItem("userId", loggedInUser.id);
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !phone) {
+    if (!firstName || !lastName || !email || !phoneNumber) {
       alert(
         "Please fill in all customer information fields before proceeding."
       );
@@ -227,7 +227,7 @@ const CustomerDetail = () => {
       firstName: loggedInUser.firstName,
       lastName: loggedInUser.lastName,
       email: loggedInUser.email,
-      phone: loggedInUser.phone,
+      phoneNumber: loggedInUser.phoneNumber,
     };
 
     const passengers = [
@@ -235,7 +235,7 @@ const CustomerDetail = () => {
         firstName,
         lastName,
         email,
-        phone,
+        phoneNumber,
         gender,
       },
     ];
@@ -372,7 +372,7 @@ const CustomerDetail = () => {
                   type="tel"
                   id="phone"
                   className="form-control"
-                  value={phone}
+                  value={phoneNumber}
                   onChange={(e) => setPhone(e.target.value)}
                   required
                 />

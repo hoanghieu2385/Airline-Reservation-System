@@ -9,7 +9,6 @@ const Payment = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [isProcessingReservation, setIsProcessingReservation] = useState(false);
-  
 
   // Debugging useEffect
   useEffect(() => {
@@ -26,8 +25,8 @@ const Payment = () => {
       const savedCheckoutData = sessionStorage.getItem("checkoutData");
 
       if (savedCheckoutData) {
-        console.log("Saved Checkout Data:", JSON.parse(savedCheckoutData));
         const parsedData = JSON.parse(savedCheckoutData);
+        console.log("Loaded Checkout Data:", parsedData);
 
         setTripDetails(parsedData.tripDetails || {});
         setContactInfo(parsedData.contactInfo || {});
@@ -109,8 +108,8 @@ const Payment = () => {
       console.log("Reservation Data:", reservationData);
 
       const passengers = sessionStorage.getItem("passengers")
-      ? JSON.parse(sessionStorage.getItem("passengers"))
-      : [];
+        ? JSON.parse(sessionStorage.getItem("passengers"))
+        : [];
 
       const userId = reservationData.userId || sessionStorage.getItem("userId");
       const reservationId = reservationData.reservationId;
@@ -138,7 +137,7 @@ const Payment = () => {
         if (!response.ok) throw new Error(await response.text());
 
         alert(`Reservation ${status.toLowerCase()} successfully updated!`);
-        return;
+        window.location.href = "/user/dashboard";
       } else {
         // Create new reservation
         const finalReservationData = {
@@ -151,7 +150,7 @@ const Payment = () => {
             LastName: passenger.lastName,
             Gender: passenger.gender,
             Email: passenger.email,
-            PhoneNumber: passenger.phone,
+            PhoneNumber: passenger.phoneNumber,
           })),
         };
 
@@ -220,104 +219,107 @@ const Payment = () => {
 
   return (
     <div className="payment-page-container">
-      <div className="container">
-        <h2 className="page-title">Finalize Your Reservation</h2>
+      <h2 className="payment-page-title">Finalize Your Reservation</h2>
 
-        {/* Trip Details Container */}
-        <div className="details-container">
-          <h3>Trip Details</h3>
-          <p>
-            <strong>Airline:</strong> {tripDetails.airlineName || "N/A"}
-          </p>
-          <p>
-            <strong>Flight Number:</strong> {tripDetails.flightNumber || "N/A"}
-          </p>
-          <p>
-            <strong>Departure Time:</strong>{" "}
-            {tripDetails.formattedDeparture || "N/A"}
-          </p>
-          <p>
-            <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
-          </p>
-        </div>
+      <div className="payment-content">
+        {/* Left Container: Trip Details & Passenger Information */}
+        <div className="payment-left-container">
+          <div className="details-container">
+            <h3>Trip Details</h3>
+            <p>
+              <strong>Airline:</strong> {tripDetails.airlineName || "N/A"}
+            </p>
+            <p>
+              <strong>Flight Number:</strong>{" "}
+              {tripDetails.flightNumber || "N/A"}
+            </p>
+            <p>
+              <strong>Departure Time:</strong>{" "}
+              {tripDetails.formattedDeparture || "N/A"}
+            </p>
+            <p>
+              <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
+            </p>
+          </div>
 
-        {/* Contact Information Container */}
-        <div className="details-container">
-          <h3>Contact Information</h3>
-          <p>
-            <strong>Name:</strong> {contactInfo.firstName || "N/A"}{" "}
-            {contactInfo.lastName || "N/A"}
-          </p>
-          <p>
-            <strong>Email:</strong> {contactInfo.email || "N/A"}
-          </p>
-          <p>
-            <strong>Phone:</strong> {contactInfo.phone || "N/A"}
-          </p>
-        </div>
-
-        {/* Passenger Information Container */}
-        <div className="passenger-container">
-          <h3>Passenger Information</h3>
-          {passengers.length > 0 ? (
-            passengers.map((passenger, index) => (
-              <div key={index} className="passenger-info">
-                <p>
-                  <strong>Title:</strong> {passenger.gender || "N/A"}
-                </p>
-                <p>
-                  <strong>Name:</strong> {passenger.firstName}{" "}
-                  {passenger.lastName}
-                </p>
-                <p>
-                  <strong>Email:</strong> {passenger.email}
-                </p>
-                <p>
-                  <strong>Phone Number:</strong> {passenger.phone}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p>No passenger information available.</p>
-          )}
-        </div>
-
-        {/* Payment Method Selection */}
-        <div className="payment-methods">
-          <h3>Select Your Payment Method</h3>
-          <div className="payment-methods-list">
-            {paymentMethods.map((method) => (
-              <div key={method.id} className="payment-method-box">
-                <input
-                  type="radio"
-                  id={method.id}
-                  name="payment"
-                  value={method.id}
-                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                />
-                <label htmlFor={method.id}>{method.label}</label>
-              </div>
-            ))}
+          <div className="payment-passenger-info">
+            <h3>Passenger Information</h3>
+            {passengers.length > 0 ? (
+              passengers.map((passenger, index) => (
+                <div key={index} className="passenger-info">
+                  <p>
+                    <strong>Title:</strong> {passenger.gender || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Name:</strong> {passenger.firstName}{" "}
+                    {passenger.lastName}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {passenger.email}
+                  </p>
+                  <p>
+                    <strong>Phone Number:</strong> {passenger.phoneNumber}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p>No passenger information available.</p>
+            )}
           </div>
         </div>
 
-        {/* Reservation Actions */}
-        <div className="payment-actions">
-          <button
-            onClick={() => handleReservation("Confirmed")}
-            className="confirm-button"
-            disabled={isProcessingReservation}
-          >
-            Confirm Reservation
-          </button>
-          <button
-            onClick={() => handleReservation("Blocked")}
-            className="block-button"
-            disabled={isProcessingReservation}
-          >
-            Block Reservation
-          </button>
+        {/* Right Container: Contact Information & Payment Methods */}
+        <div className="payment-right-container">
+          <div className="details-container">
+            <h3>Contact Information</h3>
+            <p>
+              <strong>Name:</strong> {contactInfo.firstName || "N/A"}{" "}
+              {contactInfo.lastName || "N/A"}
+            </p>
+            <p>
+              <strong>Email:</strong> {contactInfo.email || "N/A"}
+            </p>
+            <p>
+              <strong>Phone:</strong> {contactInfo.phoneNumber || "N/A"}
+            </p>
+          </div>
+
+          <div className="payment-methods">
+            <h3>Select Your Payment Method</h3>
+            <div className="payment-methods-list">
+              {paymentMethods.map((method) => (
+                <div key={method.id} className="payment-method-box">
+                  <input
+                    type="radio"
+                    id={method.id}
+                    name="payment"
+                    value={method.id}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
+                  <label htmlFor={method.id}>{method.label}</label>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Reservation Actions */}
+      <div className="payment-actions">
+        <button
+          onClick={() => handleReservation("Confirmed")}
+          className="confirm-button"
+          disabled={isProcessingReservation}
+        >
+          Confirm Reservation
+        </button>
+        <button
+          onClick={() => handleReservation("Blocked")}
+          className="block-button"
+          disabled={isProcessingReservation}
+        >
+          Block Reservation
+        </button>
       </div>
     </div>
   );

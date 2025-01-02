@@ -1,88 +1,102 @@
-/* CSS for Proper Two-Column Layout on Payment Page */
-
 .payment-page-container {
   display: flex;
-  flex-wrap: nowrap; /* Keeps two-column layout */
-  gap: 20px;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
-  margin-top: 60px; /* Ensures content stays below header */
-  justify-content: space-between;
+  margin-top: 60px;
+}
+
+.payment-page-title {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.payment-content {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  gap: 20px;
+}
+
+.payment-left-container,
+.payment-right-container {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 1.1rem; /* Increased font size */
+}
+
+.payment-left-container h3,
+.payment-right-container h3 {
+  margin-bottom: 15px;
+  font-size: 1.5rem; /* Increased section title size */
+}
+
+.payment-passenger-info {
+  margin-top: 20px;
+}
+
+.payment-passenger-info p {
+  margin: 5px 0;
 }
 
 .payment-methods {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  margin-top: 20px;
 }
 
 .payment-method-box {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
   display: flex;
   align-items: center;
-  background-color: #fff;
-  cursor: pointer;
-  justify-content: flex-start; /* Adjust for better alignment */
-  transition: box-shadow 0.3s ease;
+  gap: 10px; /* Adds spacing between radio button and label */
+  padding: 10px;
+  font-size: 1.1rem; /* Matches overall text size */
 }
 
-.payment-method-box:hover {
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+.payment-method-box input[type="radio"] {
+  width: 20px;
+  height: 20px; /* Increased size for better visibility */
 }
 
-.payment-summary {
-  flex: 1;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  background-color: #fff;
+.payment-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  gap: 20px;
 }
 
-.payment-summary h3 {
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-}
-
-.payment-summary p,
-.payment-summary .total-price {
-  margin: 10px 0;
-}
-
-.confirm-button {
+.payment-actions .confirm-button,
+.payment-actions .block-button {
   background-color: #4caf50;
   color: white;
-  padding: 10px 20px;
+  padding: 12px 25px;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  margin-right: 10px;
+  font-size: 1.1rem; /* Adjusted button text size */
 }
 
-.block-button {
+.payment-actions .block-button {
   background-color: #f44336;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
 }
 
-.confirm-button:hover, .block-button:hover {
+.payment-actions .confirm-button:hover,
+.payment-actions .block-button:hover {
   opacity: 0.8;
 }
 
-
-/* Responsive Design */
 @media (max-width: 768px) {
-  .payment-page-container {
-    flex-direction: column; /* Stacks into one column for smaller screens */
+  .payment-content {
+    flex-direction: column;
   }
 
-  .payment-methods,
-  .payment-summary {
-    width: 100%; /* Ensures full width */
+  .payment-left-container,
+  .payment-right-container {
+    width: 100%;
   }
 }
-

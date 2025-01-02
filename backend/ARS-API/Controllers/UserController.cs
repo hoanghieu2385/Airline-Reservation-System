@@ -100,7 +100,8 @@ namespace ARS_API.Controllers
                     user.UserName,
                     user.Email,
                     user.FirstName,
-                    user.LastName
+                    user.LastName,
+                    user.PhoneNumber
                 }
             });
         }
