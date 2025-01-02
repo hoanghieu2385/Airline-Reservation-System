@@ -1,25 +1,11 @@
-/* src/pages/client/Eticket.css */
-:root {
-    --primary-color: #333;
-    --secondary-color: #555;
-    --accent-color: #28a745; /* Màu cho trạng thái "Được hoàn tiền" */
-    --font-family: "Arial", sans-serif;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    font-family: var(--font-family);
-    background-color: #f9f9f9;
-}
-
 .eticket-container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #fff;
-    border: 1px solid #ddd;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
     border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 900px;
 }
 
 .eticket-header {
@@ -27,150 +13,106 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid #ddd;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+    padding-bottom: 15px;
 }
 
 .eticket-logo {
-    font-size: 24px;
+    max-width: 100px;
+}
+
+.eticket-reservation-code h5 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.eticket-reservation-code p {
+    margin: 0;
+    font-size: 1.2em;
     font-weight: bold;
+    color: #555;
 }
 
-.eticket-title h1 {
-    margin: 0;
-    font-size: 20px;
-    color: var(--primary-color);
+/* Flight detail */
+.eticket-flight-details,
+.eticket-passengers {
+    margin-top: 20px;
+    padding: 15px;
+    /* background-color: #ffffff; */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
 }
 
-.eticket-title h2 {
-    margin: 0;
-    font-size: 16px;
-    color: var(--secondary-color);
-}
-
-.eticket-booking {
-    text-align: right;
-}
-
-.eticket-booking p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--secondary-color);
-}
-
-.eticket-booking h3 {
-    margin: 0;
-    font-size: 18px;
-    color: var(--primary-color);
-}
-
-.flight-info {
-    margin-bottom: 20px;
-}
-
-.flight-date {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.flight-route {
+.eticket-flight-details .row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
 }
 
-.route-separator {
-    font-size: 24px;
-    margin: 0 10px;
-}
-
-.flight-airline {
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-.flight-status {
-    margin-top: 10px;
-    padding: 10px;
-    background: var(--accent-color);
-    color: white;
-    text-align: center;
-    border-radius: 4px;
-}
-
-.instructions {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-}
-
-.instruction-item {
-    text-align: center;
-}
-
-.instruction-item img {
-    width: 50px;
-    height: 50px;
+.eticket-flight-details .col-md-6 {
+    flex: 1;
+    min-width: 45%; /* Ensure two columns fit on most screen sizes */
     margin-bottom: 10px;
 }
 
-.flight-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.flight-table th,
-.flight-table td {
+/* Notice */
+.eticket-notice {
+    /* background-color: #f9f9f9; */
     border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
+    border-radius: 8px;
+    padding: 20px;
 }
 
-.flight-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-.passenger-info table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.passenger-info th,
-.passenger-info td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-.passenger-info th {
-    background: #f2f2f2;
-    font-weight: bold;
-}
-
-.reschedule-refund {
-    margin-top: 20px;
-}
-
-.reschedule-refund .how-to {
-    margin-bottom: 20px;
-}
-
-.reschedule-refund h3 {
-    font-size: 16px;
+.eticket-notice-icon {
+    font-size: 2rem;
+    color: #555;
     margin-bottom: 10px;
 }
 
-.reschedule-refund ol {
+.eticket-notice p {
+    font-size: 1rem;
     margin: 0;
-    padding-left: 20px;
+    color: #333;
 }
 
-.eticket-footer {
+/* Passenger */
+.eticket-section-title {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.eticket-passenger-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.eticket-passenger-item {
+    padding: 10px 0;
+}
+
+.eticket-passenger-divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+}
+
+.error,
+.loading {
+    text-align: center;
+    font-size: 1.2em;
+    color: #d9534f;
     margin-top: 20px;
-    font-size: 12px;
-    color: var(--secondary-color);
+}
+
+@media (max-width: 768px) {
+    .eticket-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .eticket-reservation-code {
+        margin-top: 15px;
+    }
 }

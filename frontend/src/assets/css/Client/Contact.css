@@ -1,0 +1,15 @@
+.contact-page {
+    font-family: Arial, sans-serif;
+}
+
+.contact-info {
+    text-align: left;
+}
+
+.map-container iframe {
+    border-radius: 10px;
+}
+
+.contact-page .container {
+    max-width: 1000px;
+}

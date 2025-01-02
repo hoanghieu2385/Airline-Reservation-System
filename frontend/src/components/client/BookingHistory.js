@@ -81,6 +81,7 @@ const CancelModal = () => (
 );
 
 const BookingHistory = () => {
+
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -114,6 +115,7 @@ const BookingHistory = () => {
       } catch (error) {
         console.error("Error fetching bookings: ", error);
       }
+
     };
 
     fetchBookings();
@@ -134,8 +136,7 @@ const BookingHistory = () => {
   }, [filter, bookings]);
 
   const handleViewDetails = (booking) => {
-    navigate(`/eticket?code=${booking.reservationCode}`);
-  };
+    navigate(`/eticket?reservationCode=${booking.reservationCode}`);
 
   const handleConfirmReservation = async (booking) => {
     try {
