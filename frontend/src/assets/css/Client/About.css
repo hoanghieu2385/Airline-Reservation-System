@@ -1,0 +1,62 @@
+.about-page {
+    font-family: Arial, sans-serif;
+}
+
+.header-section {
+    background: #f8f9fa;
+    padding: 40px 20px;
+}
+
+.header-section h1 {
+    color: #343a40;
+}
+
+.header-section p {
+    color: #6c757d;
+}
+
+.story-section img {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mission-section {
+    background: #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 40px;
+}
+
+.mission-section h2 {
+    color: #007bff;
+}
+
+.mission-section p {
+    color: #495057;
+    font-size: 1.2rem;
+}
+
+.choose-us-section .card {
+    border: none;
+    background: #ffffff;
+    border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+.choose-us-section .card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.choose-us-section .card-body {
+    padding: 20px;
+}
+
+.closing-section {
+    padding: 30px 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.closing-section p {
+    font-size: 1.3rem;
+    color: #343a40;
+}
