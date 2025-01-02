@@ -80,6 +80,31 @@ namespace ARS_API.Controllers
             return Ok(seatAllocation.AllocationId);
         }
 
+        // GET: api/SeatClass/GetClassNameByFlightAndAllocation
+        [HttpGet("GetClassNameByFlightAndAllocation")]
+        public async Task<ActionResult<string>> GetClassNameByFlightAndAllocation(Guid flightId, Guid allocationId)
+        {
+            // Find the seat allocation for the given flightId and allocationId
+            var seatAllocation = await _context.FlightSeatAllocation
+                .FirstOrDefaultAsync(fsa => fsa.FlightId == flightId && fsa.AllocationId == allocationId);
+
+            if (seatAllocation == null)
+            {
+                return BadRequest("No seat allocation found for this flight and allocation.");
+            }
+
+            // Find the seat class using the ClassId from the seat allocation
+            var seatClass = await _context.SeatClasses
+                .FirstOrDefaultAsync(sc => sc.ClassId == seatAllocation.ClassId);
+
+            if (seatClass == null)
+            {
+                return NotFound("Seat class not found.");
+            }
+
+            // Return the ClassName
+            return Ok(new { ClassName = seatClass.ClassName });
+        }
 
         // POST: api/SeatClass
         [HttpPost]
