@@ -171,6 +171,11 @@ namespace ARS_API.Controllers
         public async Task<ActionResult<Reservation>> FinalizeReservation(CreateReservationDTO createReservationDto)
         {
 
+            if (createReservationDto.Passengers == null || !createReservationDto.Passengers.Any())
+            {
+                return BadRequest("No passengers provided.");
+            }
+
             // Validate seat allocation
             var allocation = await _context.FlightSeatAllocation
                 .Include(fsa => fsa.SeatClass) // Ensure SeatClass is loaded
@@ -253,6 +258,12 @@ namespace ARS_API.Controllers
             // Deduct seats
             allocation.AvailableSeats -= createReservationDto.Passengers.Count;
 
+            if (createReservationDto.Passengers == null || !createReservationDto.Passengers.Any())
+            {
+                _logger.LogWarning("No passengers provided: {@Passengers}", createReservationDto.Passengers);
+                return BadRequest("No passengers provided.");
+            }
+
             // Add passengers regardless of ReservationStatus
             var passengers = createReservationDto.Passengers.Select(p => new Passenger
             {
@@ -289,15 +300,17 @@ namespace ARS_API.Controllers
                 NumberOfBlockedSeats = reservation.NumberOfBlockedSeats
             };
 
-            // Gửi email sau khi hoàn tất việc lưu trữ
-            string emailBody = $@"
+            // Send email only if ReservationStatus is "Confirmed"
+            if (createReservationDto.ReservationStatus == "Confirmed")
+            {
+                string emailBody = $@"
                 <div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;'>
                     <h1 style='text-align: center; color: #4CAF50;'>E-Ticket</h1>
 
                     <h2 style='color: #4CAF50;'>Passenger Information</h2>
-                    <p><strong>Passenger Name:</strong> {createReservationDto.Passengers.First().FirstName} {createReservationDto.Passengers.First().LastName}</p>
-                    <p><strong>Ticket Code:</strong> {passengers.First().TicketCode}</p>
-                    <p><strong>Ticket price:</strong> {totalPrice.ToString("C2", CultureInfo.GetCultureInfo("en-US"))}</p>
+                    <p><strong>Passenger Name:</strong> {createReservationDto.Passengers.FirstOrDefault().FirstName} {createReservationDto.Passengers.FirstOrDefault().LastName}</p>
+                    <p><strong>Ticket Code:</strong> {passengers.FirstOrDefault().TicketCode}</p>
+                    <p><strong>Ticket Price:</strong> {totalPrice.ToString("C2", CultureInfo.GetCultureInfo("en-US"))}</p>
 
                     <h2 style='color: #4CAF50;'>Flight Details</h2>
                     <p><strong>Route:</strong> {flight.OriginAirport.AirportName} -> {flight.DestinationAirport.AirportName}</p>
@@ -305,10 +318,12 @@ namespace ARS_API.Controllers
                     <p><strong>Airline:</strong> {airlineName}</p>
                     <p><strong>Reservation Code:</strong> {reservation.ReservationCode}</p>
 
-                    <p style='text-align: center; margin-top: 20px;'>We appreciate you trusting and using our Services!</p>
+                    <p style='text-align: center; margin-top: 20px;'>We appreciate you trusting and using our services!</p>
                 </div>";
 
-            await _emailService.SendEmailAsync(createReservationDto.Passengers.First().Email, "Flight Reservation Confirmation", emailBody);
+                await _emailService.SendEmailAsync(createReservationDto.Passengers.FirstOrDefault().Email, "Flight Reservation Confirmation", emailBody);
+            }
+
 
             // Return confirmation
             return CreatedAtAction(nameof(GetReservationByCode), new { code = reservationDto.ReservationCode }, reservationDto);
