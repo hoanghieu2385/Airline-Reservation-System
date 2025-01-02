@@ -18,7 +18,7 @@ const Contact = () => {
                         <h2>Contact Information</h2>
                         <p><strong>Phone:</strong> +1 234 567 890</p>
                         <p><strong>Email:</strong> contact@flightreservation.com</p>
-                        <p><strong>Address:</strong> 123 Main Street, City, Country</p>
+                        <p><strong>Address:</strong> 8A, Tôn Thất Thuyết, Mỹ Đình 2, Hà Nội</p>
                     </div>
 
                     {/* Google Map */}
