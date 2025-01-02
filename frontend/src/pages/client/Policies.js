@@ -15,9 +15,9 @@ const Policies = () => {
                         <li>Limit the number of displayed advertisements.</li>
                     </ul>
                     <p className="policies-paragraph">
-                        By clicking Agree when the cookie notification is displayed, you consent to cookies being set and read on the website www.vietnamairlines.com and its linked subdomains.
+                        By clicking Agree when the cookie notification is displayed, you consent to cookies being set and read on the website and its linked subdomains.
                     </p>
-                    <h4 className="policies-subtitle">How does Vietnam Airlines use cookies?</h4>
+                    <h4 className="policies-subtitle">How does our website use cookies?</h4>
                     <ul className="policies-list">
                         <li>Essential cookies</li>
                         <li>Functional cookies</li>
@@ -60,7 +60,7 @@ const Policies = () => {
                     </ul>
                     <h4 className="policies-subtitle">2. Sensitive Data</h4>
                     <p className="policies-paragraph">
-                        Vietnam Airlines may collect certain information about your health condition.
+                        Our website may collect certain information about your health condition.
                     </p>
                 </section>
             </div>
