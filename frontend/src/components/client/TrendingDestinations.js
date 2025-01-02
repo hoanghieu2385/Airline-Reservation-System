@@ -12,7 +12,7 @@ const TrendingDestinations = () => {
             <div className="container text-center">
                 <h2 className="section-title mb-4">Trending <span className="highlight">Destination</span> Now Days</h2>
                 <p className="section-subtitle mb-5">
-                    Tempora Facere Doloribus Id Aut. Ea Maiores Esse Accusantium Laboriosam. Quos Commodi Non Assumenda Quam Illum.
+                Explore our most popular destinations, each offering unique experiences and unforgettable memories.
                 </p>
 
                 <div className="row g-4">

@@ -49,7 +49,7 @@ const UserFeedback = () => {
                     User <span className="highlight">Feedback</span>
                 </h2>
                 <p className="section-subtitle mb-5">
-                    Tempora Facere Doloribus Id Aut. Ea Maiores Esse Accusantium Laboriosam. Quos Commodi Non Assumenda Quam Illum.
+                See what our satisfied customers have to say about their booking experience
                 </p>
 
                 <div className="row justify-content-center g-4">

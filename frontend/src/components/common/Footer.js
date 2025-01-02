@@ -23,6 +23,7 @@ const Footer = () => {
                             <li><a href="/faqs" className="text-dark text-decoration-none">FAQ</a></li>
                             <li><a href="/contact" className="text-dark text-decoration-none">Contact</a></li>
                             <li><a href="/terms" className="text-dark text-decoration-none">Terms & Conditions</a></li>
+                            <li><a href="/RefundPolicies" className="text-dark text-decoration-none">Refund Policies</a></li>
                         </ul>
                     </div>
 

@@ -13,8 +13,7 @@ const HomePage = () => {
                 <div className="hero-content text-center">
                     <h1>Embark On Your Journey To Secure The Ideal Getaway</h1>
                     <p>
-                        Temporas Facere Doloribus Id Aut. Ea Maiores Esse Accusantium Laboriosam.
-                        Quos Commodi Non Assumenda Quam Illum.
+                    Plan your perfect escape with just a few clicks
                     </p>
 
                     <SearchForm />
@@ -33,13 +32,13 @@ const HomePage = () => {
                         <div className="why-choose-us-text">
                             <h2 className="section-title">Why Choose Us</h2>
                             <p className="section-subtitle">
-                                Temporas Facere Doloribus Id Aut. Ea Maiores Esse Accusantium Laboriosam. Quos Commodi Non Assumenda Quam Illum.
+                            Discover destinations that turn dreams into memories.
                             </p>
                             <ul className="features-list">
-                                <li>Assumenda Nobis Sit Deserunt Dolorem Repudiandae Occaecati Quisquam.</li>
-                                <li>Beatae Aut Beatae Sed Aliquid Et Accusamus Vel.</li>
-                                <li>Dolores Qui Nihil Quaerat Ducimus Fugit Aut Praesentium.</li>
-                                <li>Necessitatibus Ut Culpa Molestias Deleniti Porro Maxime Enim Sed Vel.</li>
+                                <li>Experience seamless booking with our user-friendly platform.</li>
+                                <li>Access exclusive deals and competitive prices.</li>
+                                <li>Enjoy 24/7 dedicated customer support.</li>
+                                <li>Book with confidence with our secure payment system.</li>
                             </ul>
                         </div>
                     </div>

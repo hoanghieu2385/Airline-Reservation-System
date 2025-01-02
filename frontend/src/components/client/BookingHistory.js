@@ -46,7 +46,7 @@ const CancelModal = () => (
       <p>
         To cancel your flight booking, please contact our customer service team.
         Based on our{" "}
-        <Link to="/policies" className="text-blue-600 hover:underline">
+        <Link to="/RefundPolicies" className="text-blue-600 hover:underline">
           Cancel/Refund policies
         </Link>
         , our team will guide you through the cancellation process and any
