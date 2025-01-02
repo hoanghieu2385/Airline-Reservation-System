@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../assets/css/ClientDashboard/ClientDashboard.css";
 import UserProfile from "../../components/client/ClientProfile";
 import BookingHistory from "../../components/client/BookingHistory";
@@ -8,39 +8,15 @@ import { getCurrentUser } from "../../services/clientApi";
 
 const FlightDashboard = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState("profile");
+    const location = useLocation();
+
+    // Lấy tab hiện tại từ URL hoặc mặc định là "profile"
+    const currentTab = new URLSearchParams(location.search).get("tab") || "profile";
+
+    const [activeTab, setActiveTab] = useState(currentTab);
     const [userProfile, setUserProfile] = useState(null);
 
-    // Hardcoded bookings
-    const bookings = [
-        {
-            id: 1,
-            flightCode: "FL1234",
-            from: "New York (JFK)",
-            to: "Los Angeles (LAX)",
-            date: "2024-12-25",
-            price: 350,
-            paymentStatus: true,
-        },
-        {
-            id: 2,
-            flightCode: "FL5678",
-            from: "Chicago (ORD)",
-            to: "Miami (MIA)",
-            date: "2024-11-15",
-            price: 200,
-            paymentStatus: false,
-        },
-        {
-            id: 3,
-            flightCode: "FL9101",
-            from: "San Francisco (SFO)",
-            to: "Seattle (SEA)",
-            date: "2024-10-20",
-            price: 150,
-            paymentStatus: true,
-        },
-    ];
+    const bookings = [];
 
     // Check login status
     useEffect(() => {
@@ -60,6 +36,10 @@ const FlightDashboard = () => {
         };
         fetchProfile();
     }, [activeTab]);
+
+    useEffect(() => {
+        navigate(`?tab=${activeTab}`, { replace: true });
+    }, [activeTab, navigate]);
 
     if (!userProfile) {
         return (

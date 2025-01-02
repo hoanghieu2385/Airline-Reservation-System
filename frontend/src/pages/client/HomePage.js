@@ -12,9 +12,7 @@ const HomePage = () => {
             <section className="hero">
                 <div className="hero-content text-center">
                     <h1>Embark On Your Journey To Secure The Ideal Getaway</h1>
-                    <p>
-                    Plan your perfect escape with just a few clicks
-                    </p>
+                    <p></p>
 
                     <SearchForm />
                 </div>
