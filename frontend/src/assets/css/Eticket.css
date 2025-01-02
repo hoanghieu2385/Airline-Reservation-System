@@ -1,176 +1,76 @@
-/* src/pages/client/Eticket.css */
-:root {
-    --primary-color: #333;
-    --secondary-color: #555;
-    --accent-color: #28a745; /* Màu cho trạng thái "Được hoàn tiền" */
-    --font-family: "Arial", sans-serif;
-}
+/* src/assets/css/ClientDashboard/Eticket.css */
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: var(--font-family);
+.eticket-details {
+    padding: 40px;
+    max-width: 1200px;
+    margin: 10px auto;
     background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.eticket-container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+.eticket-details h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 2em;
 }
 
-.eticket-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.eticket-details p {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.eticket-details strong {
+    color: #333;
+}
+
+.flight-details, .passengers {
+    margin-bottom: 30px;
+}
+
+.flight-details h3, .passengers h3 {
+    color: #444;
     border-bottom: 2px solid #ddd;
     padding-bottom: 10px;
     margin-bottom: 20px;
+    font-size: 1.5em;
 }
 
-.eticket-logo {
-    font-size: 24px;
-    font-weight: bold;
+.flight-details p, .passengers p {
+    margin: 8px 0;
 }
 
-.eticket-title h1 {
-    margin: 0;
-    font-size: 20px;
-    color: var(--primary-color);
+.passenger {
+    background-color: #fff;
+    padding: 15px 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: box-shadow 0.3s ease;
 }
 
-.eticket-title h2 {
-    margin: 0;
-    font-size: 16px;
-    color: var(--secondary-color);
+.passenger:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.eticket-booking {
-    text-align: right;
+.passenger p {
+    margin: 5px 0;
+    color: #555;
 }
 
-.eticket-booking p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--secondary-color);
-}
+@media (max-width: 768px) {
+    .eticket-details {
+        padding: 20px;
+        margin: 20px;
+    }
 
-.eticket-booking h3 {
-    margin: 0;
-    font-size: 18px;
-    color: var(--primary-color);
-}
+    .eticket-details h2 {
+        font-size: 1.5em;
+    }
 
-.flight-info {
-    margin-bottom: 20px;
-}
-
-.flight-date {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.flight-route {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.route-separator {
-    font-size: 24px;
-    margin: 0 10px;
-}
-
-.flight-airline {
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-.flight-status {
-    margin-top: 10px;
-    padding: 10px;
-    background: var(--accent-color);
-    color: white;
-    text-align: center;
-    border-radius: 4px;
-}
-
-.instructions {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-}
-
-.instruction-item {
-    text-align: center;
-}
-
-.instruction-item img {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 10px;
-}
-
-.flight-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.flight-table th,
-.flight-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-}
-
-.flight-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-.passenger-info table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.passenger-info th,
-.passenger-info td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-.passenger-info th {
-    background: #f2f2f2;
-    font-weight: bold;
-}
-
-.reschedule-refund {
-    margin-top: 20px;
-}
-
-.reschedule-refund .how-to {
-    margin-bottom: 20px;
-}
-
-.reschedule-refund h3 {
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.reschedule-refund ol {
-    margin: 0;
-    padding-left: 20px;
-}
-
-.eticket-footer {
-    margin-top: 20px;
-    font-size: 12px;
-    color: var(--secondary-color);
+    .flight-details h3, .passengers h3 {
+        font-size: 1.2em;
+    }
 }

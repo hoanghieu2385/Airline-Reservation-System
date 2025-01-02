@@ -81,6 +81,7 @@ const BookingHistory = () => {
 
                     return {
                         id: booking.reservationCode,
+                        reservationCode: booking.reservationCode,
                         flightNumber: flight ? flight.flightNumber : 'N/A',
                         from: flight ? flight.originAirportName : 'N/A',
                         to: flight ? flight.destinationAirportName : 'N/A',
@@ -113,7 +114,7 @@ const BookingHistory = () => {
     }, [filter, bookings]);
 
     const handleViewDetails = (booking) => {
-        navigate(`/eticket?code=${booking.id}`);
+        navigate(`/eticket?reservationCode=${booking.reservationCode}`);
     };
 
     return (
