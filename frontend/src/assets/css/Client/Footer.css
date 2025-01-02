@@ -1,0 +1,33 @@
+.custom-footer {
+    border-top: 1px solid #dee2e6;
+    font-size: 0.9rem;
+}
+
+.custom-footer-heading {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.custom-footer-social-icons a {
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.custom-footer-social-icons a:hover {
+    color: #007bff;
+}
+
+.custom-footer ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.custom-footer ul li {
+    margin-bottom: 5px;
+}
+
+.custom-footer ul li a:hover {
+    text-decoration: underline;
+}

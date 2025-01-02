@@ -18,16 +18,17 @@ const SearchResults = () => {
     const [error, setError] = useState(null);
     const [filterPrice, setFilterPrice] = useState(1000);
     const [sortOption, setSortOption] = useState("priceAsc");
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Check login state
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showLoginPopup, setShowLoginPopup] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [flightsPerPage] = useState(10);
 
     const modalRef = useRef(null);
 
     useEffect(() => {
-        // Check login status
         const checkLoginStatus = () => {
             const token = sessionStorage.getItem("token");
-            setIsLoggedIn(!!token); // Update login state
+            setIsLoggedIn(!!token);
         };
         checkLoginStatus();
     }, []);
@@ -44,7 +45,7 @@ const SearchResults = () => {
                 });
                 setFlights(flights);
             } catch (err) {
-                setError(err.message);
+                setError("Failed to fetch flights. Please try again.");
             }
         };
 
@@ -54,7 +55,7 @@ const SearchResults = () => {
     useEffect(() => {
         const handleOutsideClick = (event) => {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
-                setShowLoginPopup(false); // Close popup if clicked outside
+                setShowLoginPopup(false);
             }
         };
 
@@ -71,11 +72,14 @@ const SearchResults = () => {
 
     const handleFlightSelect = (flight) => {
         if (!isLoggedIn) {
-            sessionStorage.setItem("redirectAfterLogin", window.location.pathname + window.location.search);
-            setShowLoginPopup(true); // Show login popup if not logged in
+            sessionStorage.setItem(
+                "redirectAfterLogin",
+                window.location.pathname + window.location.search
+            );
+            setShowLoginPopup(true);
             return;
         }
-    
+
         sessionStorage.setItem(
             "selectedFlight",
             JSON.stringify({
@@ -99,9 +103,23 @@ const SearchResults = () => {
         return 0;
     });
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const indexOfLastFlight = currentPage * flightsPerPage;
+    const indexOfFirstFlight = indexOfLastFlight - flightsPerPage;
+    const currentFlights = sortedFlights.slice(indexOfFirstFlight, indexOfLastFlight);
+
+    const totalPages = Math.ceil(sortedFlights.length / flightsPerPage);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     return (
         <div className="container mt-4 search-results">
@@ -121,7 +139,9 @@ const SearchResults = () => {
                         />
                     </div>
                     <div className="sort-dropdown">
-                        <label htmlFor="sortOption" className="form-label">Sort by:</label>
+                        <label htmlFor="sortOption" className="form-label">
+                            Sort by:
+                        </label>
                         <select
                             id="sortOption"
                             className="form-select"
@@ -137,45 +157,89 @@ const SearchResults = () => {
                 </div>
 
                 <div className="col-md-8 main-content">
-                    <h4>Choose flight: {sortedFlights.length} search results found</h4>
+                    <h4>
+                        Choose flight: {error ? "Error occurred" : `${sortedFlights.length} search results found`}
+                    </h4>
                     <div>
-                        {sortedFlights.map((flight) => (
-                            <div
-                                key={flight.flightId}
-                                onClick={() => handleFlightSelect(flight)}
-                                className="flight-card mb-3 p-3 shadow-sm"
-                                style={{ borderRadius: "8px", cursor: "pointer" }}
-                            >
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p className="mb-1"><strong>{flight.airlineName}</strong></p>
-                                        <p className="text-muted mb-0">
-                                            {new Date(flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            {" "} - {" "}
-                                            {new Date(flight.arrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="mb-0 text-uppercase" style={{ fontWeight: "bold", fontSize: "14px" }}>
-                                            {flight.originAirportCode} → {flight.destinationAirportCode}
-                                        </p>
-                                        <p className="text-muted" style={{ fontSize: "12px" }}>
-                                            {new Date(flight.departureTime).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <div className="text-end">
-                                        <h5 className="mb-0"><strong>${flight.dynamicPrice}</strong></h5>
-                                        {/* <p className="text-muted mb-0">Seats: {flight.availableSeats}</p> */}
+                        {error ? (
+                            <div className="alert alert-danger">{error}</div>
+                        ) : (
+                            currentFlights.map((flight) => (
+                                <div
+                                    key={flight.flightId}
+                                    onClick={() => handleFlightSelect(flight)}
+                                    className="flight-card mb-3 p-3 shadow-sm"
+                                    style={{ borderRadius: "8px", cursor: "pointer" }}
+                                >
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p className="mb-1">
+                                                <strong>{flight.airlineName}</strong>
+                                            </p>
+                                            <p className="text-muted mb-0">
+                                                {new Date(flight.departureTime).toLocaleTimeString([], {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
+                                                {" - "}
+                                                {new Date(flight.arrivalTime).toLocaleTimeString([], {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
+                                            </p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p
+                                                className="mb-0 text-uppercase"
+                                                style={{ fontWeight: "bold", fontSize: "14px" }}
+                                            >
+                                                {flight.originAirportCode} → {flight.destinationAirportCode}
+                                            </p>
+                                            <p className="text-muted" style={{ fontSize: "12px" }}>
+                                                {new Date(flight.departureTime).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <div className="text-end">
+                                            <h5 className="mb-0">
+                                                <strong>${flight.dynamicPrice}</strong>
+                                            </h5>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
 
+            {/* Pagination */}
+            <div className="custom-pagination mt-4 d-flex justify-content-between">
+                <button
+                    className="btn btn-outline-primary pagination-prev"
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </button>
+                <span className="pagination-info">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button
+                    className="btn btn-outline-primary pagination-next"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                </button>
+            </div>
+
             {showLoginPopup && (
-                <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+                <div
+                    className="modal show d-block"
+                    tabIndex="-1"
+                    role="dialog"
+                    style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                >
                     <div className="modal-dialog modal-dialog-centered" role="document">
                         <div ref={modalRef} className="modal-content">
                             <div className="modal-header">
@@ -193,11 +257,7 @@ const SearchResults = () => {
                                 >
                                     Log In
                                 </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={closeLoginPopup}
-                                >
+                                <button type="button" className="btn btn-secondary" onClick={closeLoginPopup}>
                                     Cancel
                                 </button>
                             </div>

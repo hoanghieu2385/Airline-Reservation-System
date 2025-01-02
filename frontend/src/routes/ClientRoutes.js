@@ -14,6 +14,10 @@ import Success from "../pages/client/Success";
 import ForgotPasswordPage from "../components/common/ForgotPasswordPage";
 import ResetPasswordPage from "../components/common/ResetPasswordPage";
 import Eticket from '../pages/client/Eticket';
+import FAQ from "../pages/client/FAQs";
+import Contact from "../pages/client/Contact";
+import About from "../pages/client/About";
+import Terms from "../pages/client/Terms";
 
 function ClientRoutes() {
     return (
@@ -32,6 +36,10 @@ function ClientRoutes() {
                 <Route path="/forgotPassword" element={<ForgotPasswordPage />} />
                 <Route path="/reset-Password" element={<ResetPasswordPage />} />
                 <Route path="/eticket" element={<Eticket />} />
+                <Route path="/faqs" element={<FAQ />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/terms" element={<Terms />} />
             </Routes>
         </ClientLayout>
     );
