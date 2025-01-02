@@ -2,76 +2,73 @@ import React, { useEffect, useState } from "react";
 import { createPayPalOrder } from "../../services/paymentApi";
 import "../../assets/css/Payment.css";
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
-
 const Payment = () => {
   const [tripDetails, setTripDetails] = useState({});
   const [contactInfo, setContactInfo] = useState({});
+  const [passengers, setPassengers] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [isProcessingReservation, setIsProcessingReservation] = useState(false);
+  
+
+  // Debugging useEffect
+  useEffect(() => {
+    console.log("Trip Details State Updated:", tripDetails);
+    console.log("Contact Info State Updated:", contactInfo);
+    console.log("Total Price State Updated:", totalPrice);
+  }, [tripDetails, contactInfo, totalPrice]);
 
   useEffect(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const isCanceled = urlParams.get("cancel");
       const isSuccess = urlParams.get("success");
-      const savedReservationData = sessionStorage.getItem("reservationData");
-  
-      // Check if reservation has already been processed
-      const reservationProcessed = sessionStorage.getItem("reservationProcessed");
-  
-      if (isSuccess && savedReservationData && !reservationProcessed) {
-        const parsedData = JSON.parse(savedReservationData);
-  
-        // Mark reservation as processed
-        sessionStorage.setItem("reservationProcessed", "true");
-  
-        handleFinalizeReservation("Confirmed", parsedData);
-        return;
-      }
-  
-      if (isCanceled && !sessionStorage.getItem("alertShown")) {
-        alert("Payment was canceled. Please select another payment method or try again.");
-        sessionStorage.setItem("alertShown", "true");
-  
-        if (savedReservationData) {
-          const parsedData = JSON.parse(savedReservationData);
-          setTripDetails(parsedData.tripDetails);
-          setContactInfo(parsedData.contactInfo);
-          setTotalPrice(parsedData.totalPrice);
+      const savedCheckoutData = sessionStorage.getItem("checkoutData");
+
+      if (savedCheckoutData) {
+        console.log("Saved Checkout Data:", JSON.parse(savedCheckoutData));
+        const parsedData = JSON.parse(savedCheckoutData);
+
+        setTripDetails(parsedData.tripDetails || {});
+        setContactInfo(parsedData.contactInfo || {});
+        setPassengers(parsedData.passengers || []);
+        setTotalPrice(parsedData.totalPrice || 0);
+
+        // Format departure time
+        if (parsedData.tripDetails?.departureTime) {
+          const formattedDate = new Date(
+            parsedData.tripDetails.departureTime
+          ).toLocaleDateString("en-GB"); // Format as DD/MM/YYYY
+          setTripDetails((prev) => ({
+            ...prev,
+            formattedDeparture: formattedDate,
+          }));
+        }
+
+        if (isSuccess) {
+          handleFinalizeReservation("Confirmed", parsedData);
+          return;
         }
       } else {
-        const storedData = sessionStorage.getItem("checkoutData");
-        if (storedData) {
-          const parsedData = JSON.parse(storedData);
-          setTripDetails(parsedData.flightDetails);
-          setContactInfo(parsedData.contactInfo);
-          setTotalPrice(parsedData.totalPrice);
-        }
+        console.warn("No checkout data found in sessionStorage.");
+      }
+
+      if (isCanceled && !sessionStorage.getItem("alertShown")) {
+        alert(
+          "Payment was canceled. Please select another payment method or try again."
+        );
+        sessionStorage.setItem("alertShown", "true");
       }
     } catch (error) {
       console.error("Error processing payment data:", error);
     }
-  
+
     return () => {
       sessionStorage.removeItem("alertShown");
     };
   }, []);
-  
 
-  const paymentMethods = [
-    { id: "paypal", label: "PayPal" },
-    { id: "googlepay", label: "Google Pay" },
-  ];
+  const paymentMethods = [{ id: "paypal", label: "PayPal" }];
 
   const handlePayPalPayment = async () => {
     try {
@@ -109,50 +106,80 @@ const Payment = () => {
 
   const handleFinalizeReservation = async (status, reservationData) => {
     try {
-      const passengers = JSON.parse(reservationData.passengers) || [];
-      const userId = reservationData.userId;
+      console.log("Reservation Data:", reservationData);
+
+      const passengers = sessionStorage.getItem("passengers")
+      ? JSON.parse(sessionStorage.getItem("passengers"))
+      : [];
+
+      const userId = reservationData.userId || sessionStorage.getItem("userId");
+      const reservationId = reservationData.reservationId;
 
       if (!userId) {
         throw new Error("User is not logged in or UserId is missing.");
       }
 
-      const finalReservationData = {
-        ReservationStatus: status,
-        UserId: userId,
-        FlightId: reservationData.tripDetails.flightId,
-        AllocationId: reservationData.tripDetails.allocationId,
-        Passengers: passengers.map((passenger) => ({
-          FirstName: passenger.firstName,
-          LastName: passenger.lastName,
-          Gender: passenger.gender,
-          Email: passenger.email,
-          PhoneNumber: passenger.phoneNumber,
-        })),
-      };
+      if (reservationId) {
+        // Update existing reservation
+        const updateData = { ReservationStatus: status };
 
-      const response = await fetch(
-        "https://localhost:7238/api/Reservations/FinalizeReservation",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(finalReservationData),
-        }
-      );
+        const response = await fetch(
+          `https://localhost:7238/api/Reservations/${reservationId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(updateData),
+          }
+        );
 
-      if (!response.ok) throw new Error(await response.text());
+        if (!response.ok) throw new Error(await response.text());
 
-      alert(`Reservation ${status.toLowerCase()} successfully!`);
-      
-      // Xóa dữ liệu đã lưu sau khi hoàn tất
+        alert(`Reservation ${status.toLowerCase()} successfully updated!`);
+        return;
+      } else {
+        // Create new reservation
+        const finalReservationData = {
+          ReservationStatus: status,
+          UserId: userId,
+          FlightId: reservationData.tripDetails.flightId,
+          AllocationId: reservationData.tripDetails.allocationId,
+          Passengers: passengers.map((passenger) => ({
+            FirstName: passenger.firstName,
+            LastName: passenger.lastName,
+            Gender: passenger.gender,
+            Email: passenger.email,
+            PhoneNumber: passenger.phone,
+          })),
+        };
+
+        console.log("Final Reservation Data:", finalReservationData);
+
+        const response = await fetch(
+          "https://localhost:7238/api/Reservations/FinalizeReservation",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(finalReservationData),
+          }
+        );
+
+        if (!response.ok) throw new Error(await response.text());
+
+        alert(`Reservation ${status.toLowerCase()} successfully created!`);
+      }
+
+      // Delete data from storage after finishing
       sessionStorage.removeItem("reservationData");
       sessionStorage.removeItem("checkoutData");
-      
+
       // Redirect to success page or dashboard
       window.location.href = "/success";
-      
     } catch (error) {
       console.error(`Error during ${status.toLowerCase()} reservation:`, error);
       alert(`An error occurred: ${error.message}`);
@@ -180,6 +207,8 @@ const Payment = () => {
         totalPrice,
       };
 
+      console.log("Reservation Data before finalization:", reservationData);
+
       await handleFinalizeReservation(status, reservationData);
     } catch (error) {
       console.error(`Error during reservation:`, error);
@@ -191,64 +220,104 @@ const Payment = () => {
 
   return (
     <div className="payment-page-container">
-      <div className="payment-methods">
-        <h3>Select your preferred payment method</h3>
-        <div className="payment-methods-list">
-          {paymentMethods.map((method) => (
-            <div key={method.id} className="payment-method-box">
-              <input
-                type="radio"
-                id={method.id}
-                name="payment"
-                value={method.id}
-                onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-              />
-              <label htmlFor={method.id}>{method.label}</label>
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="container">
+        <h2 className="page-title">Finalize Your Reservation</h2>
 
-      <div className="payment-summary">
-        <h3>Trip Details</h3>
-        <p>
-          <strong>Airline:</strong> {tripDetails?.airlineName}
-        </p>
-        <p>
-          <strong>Flight Number:</strong> {tripDetails?.flightNumber}
-        </p>
-        <p>
-          <strong>Departure Time:</strong> {tripDetails?.formattedDeparture}
-        </p>
-        <p>
-          <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
-        </p>
-        <h3>Contact Information</h3>
-        <p>
-          <strong>Name:</strong> {contactInfo.firstName} {contactInfo.lastName}
-        </p>
-        <p>
-          <strong>Email:</strong> {contactInfo.email}
-        </p>
-        <p>
-          <strong>Phone:</strong> {contactInfo.phone}
-        </p>
-      </div>
-      <div className="payment-proceed">
-        <button
-          onClick={() => handleReservation("Confirmed")}
-          className="confirm-button"
-          disabled={isProcessingReservation}
-        >
-          Confirm Reservation
-        </button>
-        <button
-          onClick={() => handleReservation("Blocked")}
-          className="block-button"
-          disabled={isProcessingReservation}
-        >
-          Block Reservation
-        </button>
+        {/* Trip Details Container */}
+        <div className="details-container">
+          <h3>Trip Details</h3>
+          <p>
+            <strong>Airline:</strong> {tripDetails.airlineName || "N/A"}
+          </p>
+          <p>
+            <strong>Flight Number:</strong> {tripDetails.flightNumber || "N/A"}
+          </p>
+          <p>
+            <strong>Departure Time:</strong>{" "}
+            {tripDetails.formattedDeparture || "N/A"}
+          </p>
+          <p>
+            <strong>Total Price:</strong> {totalPrice.toLocaleString()} USD
+          </p>
+        </div>
+
+        {/* Contact Information Container */}
+        <div className="details-container">
+          <h3>Contact Information</h3>
+          <p>
+            <strong>Name:</strong> {contactInfo.firstName || "N/A"}{" "}
+            {contactInfo.lastName || "N/A"}
+          </p>
+          <p>
+            <strong>Email:</strong> {contactInfo.email || "N/A"}
+          </p>
+          <p>
+            <strong>Phone:</strong> {contactInfo.phone || "N/A"}
+          </p>
+        </div>
+
+        {/* Passenger Information Container */}
+        <div className="passenger-container">
+          <h3>Passenger Information</h3>
+          {passengers.length > 0 ? (
+            passengers.map((passenger, index) => (
+              <div key={index} className="passenger-info">
+                <p>
+                  <strong>Title:</strong> {passenger.gender || "N/A"}
+                </p>
+                <p>
+                  <strong>Name:</strong> {passenger.firstName}{" "}
+                  {passenger.lastName}
+                </p>
+                <p>
+                  <strong>Email:</strong> {passenger.email}
+                </p>
+                <p>
+                  <strong>Phone Number:</strong> {passenger.phone}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No passenger information available.</p>
+          )}
+        </div>
+
+        {/* Payment Method Selection */}
+        <div className="payment-methods">
+          <h3>Select Your Payment Method</h3>
+          <div className="payment-methods-list">
+            {paymentMethods.map((method) => (
+              <div key={method.id} className="payment-method-box">
+                <input
+                  type="radio"
+                  id={method.id}
+                  name="payment"
+                  value={method.id}
+                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                />
+                <label htmlFor={method.id}>{method.label}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Reservation Actions */}
+        <div className="payment-actions">
+          <button
+            onClick={() => handleReservation("Confirmed")}
+            className="confirm-button"
+            disabled={isProcessingReservation}
+          >
+            Confirm Reservation
+          </button>
+          <button
+            onClick={() => handleReservation("Blocked")}
+            className="block-button"
+            disabled={isProcessingReservation}
+          >
+            Block Reservation
+          </button>
+        </div>
       </div>
     </div>
   );

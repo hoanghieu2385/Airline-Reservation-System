@@ -119,7 +119,11 @@ const CustomerDetail = () => {
 
         const flightData = await fetchFlightById(flightId);
 
-        const allocationId = await fetchAllocationId(flightId, flightData.airlineId, seatClass);
+        const allocationId = await fetchAllocationId(
+          flightId,
+          flightData.airlineId,
+          seatClass
+        );
 
         const basePriceMultiplier = await fetchBasePriceMultiplier(
           flightData.airlineId,
@@ -127,7 +131,7 @@ const CustomerDetail = () => {
         );
 
         if (!allocationId) {
-            throw new Error("Failed to fetch allocation ID.");
+          throw new Error("Failed to fetch allocation ID.");
         }
 
         console.log("Airline ID:", flightData.airlineId);
@@ -203,6 +207,15 @@ const CustomerDetail = () => {
   };
 
   const handleProceedToPayment = () => {
+    const storedUser = sessionStorage.getItem("userProfile");
+    if (!storedUser) {
+      alert("User information is missing. Please log in.");
+      return;
+    }
+    const loggedInUser = JSON.parse(storedUser);
+    sessionStorage.setItem("userId", loggedInUser.id);
+
+    // Validate required fields
     if (!firstName || !lastName || !email || !phone) {
       alert(
         "Please fill in all customer information fields before proceeding."
@@ -211,35 +224,40 @@ const CustomerDetail = () => {
     }
 
     const contactInfo = {
-      gender,
-      firstName,
-      lastName,
-      email,
-      phone,
-    };
-
-    const checkoutData = {
-      flightDetails: {
-        ...flightDetails,
-        allocationId: flightDetails.allocationId || null, // Add allocationId if available
-      },
-      baggagePrice,
-      totalPrice,
-      contactInfo,
+      firstName: loggedInUser.firstName,
+      lastName: loggedInUser.lastName,
+      email: loggedInUser.email,
+      phone: loggedInUser.phone,
     };
 
     const passengers = [
       {
         firstName,
         lastName,
-        gender,
         email,
-        phoneNumber: phone,
+        phone,
+        gender,
       },
     ];
 
-    sessionStorage.setItem("passengers", JSON.stringify(passengers));
+    const checkoutData = {
+      userId: loggedInUser.id,
+      tripDetails: {
+        airlineName: flightDetails.airlineName || "N/A",
+        flightNumber: flightDetails.flightNumber || "N/A",
+        flightId: flightDetails.flightId || null,
+        departureTime: flightDetails.departureTime || "N/A",
+        allocationId: flightDetails.allocationId || "N/A", // Retain allocationId
+      },
+      totalPrice: totalPrice,
+      passengers,
+      contactInfo,
+    };
+
+    // Save to sessionStorage
     sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+    sessionStorage.setItem("contactInfo", JSON.stringify(contactInfo));
+    sessionStorage.setItem("passengers", JSON.stringify(passengers));
 
     window.location.href = "/payment";
   };

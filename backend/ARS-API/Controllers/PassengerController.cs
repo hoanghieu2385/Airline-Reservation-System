@@ -42,6 +42,23 @@ namespace ARS_API.Controllers
             return passenger;
         }
 
+        // GET: api/Passengers/{reservationId}
+        [HttpGet]
+        [Route("Passengers")]
+        public async Task<IActionResult> GetPassengersByReservation(Guid reservationId)
+        {
+            var passengers = await _context.Passengers
+                .Where(p => p.ReservationId == reservationId)
+                .ToListAsync();
+
+            if (!passengers.Any())
+            {
+                return NotFound("No passengers found for the given reservation.");
+            }
+
+            return Ok(passengers);
+        }
+
         // POST: api/Passenger
         [HttpPost]
         public async Task<ActionResult<Passenger>> PostPassenger(CreatePassengerDTO createPassengerDto)
