@@ -81,7 +81,6 @@ const CancelModal = () => (
 );
 
 const BookingHistory = () => {
-
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -115,7 +114,6 @@ const BookingHistory = () => {
       } catch (error) {
         console.error("Error fetching bookings: ", error);
       }
-
     };
 
     fetchBookings();
@@ -138,151 +136,154 @@ const BookingHistory = () => {
   const handleViewDetails = (booking) => {
     navigate(`/eticket?reservationCode=${booking.reservationCode}`);
 
-  const handleConfirmReservation = async (booking) => {
-    try {
-      // Debugging: Log the booking ID
-      console.log("Booking ID:", booking.id);
+    const handleConfirmReservation = async (booking) => {
+      try {
+        // Debugging: Log the booking ID
+        console.log("Booking ID:", booking.id);
 
-      // Fetch passengers from the backend
-      const passengersResponse = await fetch(
-        `https://localhost:7238/api/Passenger/Passengers?reservationId=${booking.id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-          },
+        // Fetch passengers from the backend
+        const passengersResponse = await fetch(
+          `https://localhost:7238/api/Passenger/Passengers?reservationId=${booking.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (!passengersResponse.ok) {
+          // Debugging: Log the backend error message
+          const errorMessage = await passengersResponse.text();
+          console.error("Backend error:", errorMessage);
+
+          throw new Error("Failed to fetch passengers.");
         }
-      );
 
-      if (!passengersResponse.ok) {
-        // Debugging: Log the backend error message
-        const errorMessage = await passengersResponse.text();
-        console.error("Backend error:", errorMessage);
+        const passengers = await passengersResponse.json();
 
-        throw new Error("Failed to fetch passengers.");
+        // Prepare reservation data
+        const reservationData = {
+          userId: sessionStorage.getItem("userId"),
+          tripDetails: {
+            airlineName: booking.airlineName || "N/A",
+            flightNumber: booking.flightNumber || "N/A",
+            flightId: booking.flightId,
+            departureTime: booking.date,
+            allocationId: booking.allocationId,
+          },
+          totalPrice: booking.price,
+          passengers: passengers,
+          contactInfo: {
+            firstName:
+              sessionStorage.getItem("userFirstName") || "DefaultFirstName",
+            lastName:
+              sessionStorage.getItem("userLastName") || "DefaultLastName",
+            email: sessionStorage.getItem("userEmail") || "default@example.com",
+            phone: sessionStorage.getItem("userPhone") || "123456789",
+          },
+        };
+
+        // Store reservation data in sessionStorage
+        sessionStorage.setItem("checkoutData", JSON.stringify(reservationData));
+
+        // Navigate to the Payment page
+        navigate("/payment");
+      } catch (error) {
+        console.error("Error preparing reservation data:", error);
       }
+    };
 
-      const passengers = await passengersResponse.json();
-
-      // Prepare reservation data
-      const reservationData = {
-        userId: sessionStorage.getItem("userId"),
-        tripDetails: {
-          airlineName: booking.airlineName || "N/A",
-          flightNumber: booking.flightNumber || "N/A",
-          flightId: booking.flightId,
-          departureTime: booking.date,
-          allocationId: booking.allocationId,
-        },
-        totalPrice: booking.price,
-        passengers: passengers,
-        contactInfo: {
-          firstName: sessionStorage.getItem("userFirstName") || "DefaultFirstName",
-          lastName: sessionStorage.getItem("userLastName") || "DefaultLastName",
-          email: sessionStorage.getItem("userEmail") || "default@example.com",
-          phone: sessionStorage.getItem("userPhone") || "123456789",
-        },
-      };
-
-      // Store reservation data in sessionStorage
-      sessionStorage.setItem("checkoutData", JSON.stringify(reservationData));
-
-      // Navigate to the Payment page
-      navigate("/payment");
-    } catch (error) {
-      console.error("Error preparing reservation data:", error);
-    }
-  };
-
-  return (
-    <div className="flight-booking">
-      <div className="flight-booking__header">
-        <h2 className="flight-booking__title">Booking History</h2>
-        <div className="flight-booking__filter">
-          <label className="flight-booking__filter-label">Filter:</label>
-          <select
-            className="flight-booking__filter-select"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option value="all">All Bookings</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="Blocked">Blocked</option>
-            <option value="Confirmed">Confirmed</option>
-          </select>
+    return (
+      <div className="flight-booking">
+        <div className="flight-booking__header">
+          <h2 className="flight-booking__title">Booking History</h2>
+          <div className="flight-booking__filter">
+            <label className="flight-booking__filter-label">Filter:</label>
+            <select
+              className="flight-booking__filter-select"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All Bookings</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Blocked">Blocked</option>
+              <option value="Confirmed">Confirmed</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <CancelModal />
-      </Modal>
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <CancelModal />
+        </Modal>
 
-      {filteredBookings.length === 0 ? (
-        <div className="flight-booking__empty">
-          <p>No bookings found.</p>
-        </div>
-      ) : (
-        <div className="flight-booking__table-wrapper">
-          <table className="flight-booking__table">
-            <thead>
-              <tr>
-                <th>Flight Number</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Date</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredBookings.map((booking) => (
-                <tr key={booking.reservationCode}>
-                  <td>{booking.flightNumber}</td>
-                  <td>{booking.from}</td>
-                  <td>{booking.to}</td>
-                  <td>{new Date(booking.date).toLocaleDateString()}</td>
-                  <td>${booking.price.toFixed(2)}</td>
-                  <td>
-                    <span
-                      className={`flight-booking__status ${booking.status.toLowerCase()}`}
-                    >
-                      {booking.status}
-                    </span>
-                  </td>
-                  <td className="space-x-2">
-                    <button
-                      className="flight-booking__action-btn"
-                      onClick={() => handleViewDetails(booking)}
-                    >
-                      Details
-                    </button>
-                    {booking.status === "Blocked" && (
-                      <button
-                        className="flight-booking__action-btn confirm"
-                        onClick={() => handleConfirmReservation(booking)}
-                      >
-                        Confirm Reservation
-                      </button>
-                    )}
-                    <button
-                      className="flight-booking__action-btn cancel"
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      Cancel
-                    </button>
-                  </td>
+        {filteredBookings.length === 0 ? (
+          <div className="flight-booking__empty">
+            <p>No bookings found.</p>
+          </div>
+        ) : (
+          <div className="flight-booking__table-wrapper">
+            <table className="flight-booking__table">
+              <thead>
+                <tr>
+                  <th>Flight Number</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Date</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
+              </thead>
+              <tbody>
+                {filteredBookings.map((booking) => (
+                  <tr key={booking.reservationCode}>
+                    <td>{booking.flightNumber}</td>
+                    <td>{booking.from}</td>
+                    <td>{booking.to}</td>
+                    <td>{new Date(booking.date).toLocaleDateString()}</td>
+                    <td>${booking.price.toFixed(2)}</td>
+                    <td>
+                      <span
+                        className={`flight-booking__status ${booking.status.toLowerCase()}`}
+                      >
+                        {booking.status}
+                      </span>
+                    </td>
+                    <td className="space-x-2">
+                      <button
+                        className="flight-booking__action-btn"
+                        onClick={() => handleViewDetails(booking)}
+                      >
+                        Details
+                      </button>
+                      {booking.status === "Blocked" && (
+                        <button
+                          className="flight-booking__action-btn confirm"
+                          onClick={() => handleConfirmReservation(booking)}
+                        >
+                          Confirm Reservation
+                        </button>
+                      )}
+                      <button
+                        className="flight-booking__action-btn cancel"
+                        onClick={() => setIsModalOpen(true)}
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
 };
 
 export default BookingHistory;
