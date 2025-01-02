@@ -112,6 +112,8 @@ const BookingHistory = () => {
           };
         });
 
+        data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
         setBookings(data);
       } catch (error) {
         console.error("Error fetching bookings: ", error);
@@ -124,10 +126,6 @@ const BookingHistory = () => {
   useEffect(() => {
     if (filter === "all") {
       setFilteredBookings(bookings);
-    } else if (filter === "paid") {
-      setFilteredBookings(bookings.filter((booking) => booking.paymentStatus));
-    } else if (filter === "pending") {
-      setFilteredBookings(bookings.filter((booking) => !booking.paymentStatus));
     } else {
       setFilteredBookings(
         bookings.filter((booking) => booking.status === filter)
@@ -266,8 +264,6 @@ const BookingHistory = () => {
             onChange={(e) => setFilter(e.target.value)}
           >
             <option value="all">All Bookings</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
             <option value="Cancelled">Cancelled</option>
             <option value="Blocked">Blocked</option>
             <option value="Confirmed">Confirmed</option>
@@ -313,22 +309,22 @@ const BookingHistory = () => {
                     </span>
                   </td>
                   <td className="space-x-2">
-                    <button
-                      className="flight-booking__action-btn"
-                      onClick={() => handleViewDetails(booking)}
-                    >
-                      Details
-                    </button>
                     {booking.status === "Blocked" && (
                       <button
-                        className="flight-booking__action-btn confirm"
+                        className="flight-booking__action-btn confirm btn btn-success"
                         onClick={() => handleConfirmReservation(booking)}
                       >
                         Confirm Reservation
                       </button>
                     )}
                     <button
-                      className="flight-booking__action-btn cancel"
+                      className="flight-booking__action-btn btn btn-primary"
+                      onClick={() => handleViewDetails(booking)}
+                    >
+                      Details
+                    </button>
+                    <button
+                      className="flight-booking__action-btn cancel btn btn-danger"
                       onClick={() => setIsModalOpen(true)}
                     >
                       Cancel
