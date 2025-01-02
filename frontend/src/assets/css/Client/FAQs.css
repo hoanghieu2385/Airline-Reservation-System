@@ -1,0 +1,33 @@
+.custom-faq-page {
+    background-color: #f8f9fa;
+}
+
+.custom-faq-heading {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.accordion-button {
+    background-color: #e9ecef;
+    color: #333;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.accordion-button:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #007bff;
+    color: #fff;
+    box-shadow: none;
+}
+
+.accordion-body {
+    font-size: 0.9rem;
+    color: #555;
+}
