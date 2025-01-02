@@ -25,7 +25,7 @@ const ClientLayout = ({ children }) => {
     return (
         <div>
             <Header />
-            <main style={{ minHeight: '80vh', padding: isIndexPage ? '0' : '0px 0px 20px 0px' }}>
+            <main style={{ minHeight: '80vh', padding: isIndexPage ? '0' : '70px 0px 20px 0px' }}>
                 {children}
             </main>
             <Footer />
