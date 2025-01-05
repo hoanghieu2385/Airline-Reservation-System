@@ -106,8 +106,6 @@ const Header = () => {
                                 <a
                                     className="nav-link"
                                     href="/policies"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                 >
                                     Policies
                                 </a>

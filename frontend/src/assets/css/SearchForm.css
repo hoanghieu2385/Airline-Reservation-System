@@ -255,7 +255,7 @@ select:focus,
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 15px;
+    margin-top: 5px;
 }
 
 .search-button:hover {

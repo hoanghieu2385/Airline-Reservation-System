@@ -226,7 +226,7 @@ const ReservationManagement = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="9" className="text-center">
+                <td colSpan="10" className="text-center">
                   No reservations available
                 </td>
               </tr>
