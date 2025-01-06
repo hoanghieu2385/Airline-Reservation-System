@@ -90,13 +90,28 @@ const BookingHistory = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
+        // Lấy UserId từ sessionStorage
+        const userId = sessionStorage.getItem("userId");
+  
+        if (!userId) {
+          console.error("UserId not found in sessionStorage");
+          return;
+        }
+  
+        // Gọi API để lấy danh sách reservations và flights
         const reservationsResponse = await api.get("/reservations");
         const flightsResponse = await api.get("/flight");
         const flights = flightsResponse.data;
-
-        const data = reservationsResponse.data.map((booking) => {
+  
+        // Lọc reservation theo UserId
+        const userReservations = reservationsResponse.data.filter(
+          (booking) => booking.userId === userId
+        );
+  
+        // Kết hợp dữ liệu reservations với flights
+        const data = userReservations.map((booking) => {
           const flight = flights.find((f) => f.flightId === booking.flightId);
-
+  
           return {
             id: booking.reservationId,
             reservationCode: booking.reservationCode,
@@ -111,17 +126,19 @@ const BookingHistory = () => {
             status: booking.reservationStatus,
           };
         });
-
+  
+        // Sắp xếp theo ngày
         data.sort((a, b) => new Date(a.date) - new Date(b.date));
-
+  
         setBookings(data);
       } catch (error) {
         console.error("Error fetching bookings: ", error);
       }
     };
-
+  
     fetchBookings();
   }, []);
+  
 
   useEffect(() => {
     if (filter === "all") {
