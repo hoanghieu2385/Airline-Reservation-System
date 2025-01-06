@@ -1,3 +1,4 @@
+// FlightManagement.js
 import React, { useEffect, useState } from "react";
 import Alert from "@mui/material/Alert";
 import AddFlightModal from "../../modals/AddFlightModal";
@@ -24,6 +25,7 @@ const FlightManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [showCompleted, setShowCompleted] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({
     flightNumber: "",
@@ -104,8 +106,8 @@ const FlightManagement = () => {
     }
   };
 
-  const filteredFlights = flights.filter(
-    (flight) =>
+  const filteredFlights = flights.filter((flight) => {
+    const matchesSearch =
       flight.flightNumber.toLowerCase().includes(searchText.toLowerCase()) ||
       flight.airlineName.toLowerCase().includes(searchText.toLowerCase()) ||
       flight.originAirportName
@@ -113,8 +115,9 @@ const FlightManagement = () => {
         .includes(searchText.toLowerCase()) ||
       flight.destinationAirportName
         .toLowerCase()
-        .includes(searchText.toLowerCase())
-  );
+        .includes(searchText.toLowerCase());
+    return showCompleted ? matchesSearch : matchesSearch && flight.status !== "COMPLETED";
+  });
 
   if (loading) {
     return <div className="text-center mt-4">Loading...</div>;
@@ -139,6 +142,18 @@ const FlightManagement = () => {
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
+        <div className="form-check mt-2">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="showCompleted"
+            checked={showCompleted}
+            onChange={(e) => setShowCompleted(e.target.checked)}
+          />
+          <label className="form-check-label" htmlFor="showCompleted">
+            Show Completed Flights
+          </label>
+        </div>
       </div>
 
       <button

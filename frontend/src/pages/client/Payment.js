@@ -67,7 +67,12 @@ const Payment = () => {
     };
   }, []);
 
-  const paymentMethods = [{ id: "paypal", label: "PayPal" }];
+  const paymentMethods = [
+    { id: "paypal", label: "PayPal" },
+    { id: "credit_card", label: "Credit Card" },
+    { id: "bank_transfer", label: "Bank Transfer" },
+    { id: "apple_pay", label: "Apple Pay" },
+  ];
 
   const handlePayPalPayment = async () => {
     try {
