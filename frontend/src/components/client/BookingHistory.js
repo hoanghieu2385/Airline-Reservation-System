@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import "../../assets/css/ClientDashboard/BookingHistory.css";
-// Modal Component
+
 const Modal = ({ isOpen, onClose, children }) => {
   useEffect(() => {
     const handleEscape = (event) => {
@@ -22,9 +22,8 @@ const Modal = ({ isOpen, onClose, children }) => {
 
   return (
     <div
-      className={`booking-history-modal__overlay ${
-        isOpen ? "booking-history-modal__overlay--active" : ""
-      }`}
+      className={`booking-history-modal__overlay ${isOpen ? "booking-history-modal__overlay--active" : ""
+        }`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="booking-history-modal__content">
@@ -37,10 +36,11 @@ const Modal = ({ isOpen, onClose, children }) => {
   );
 };
 
-// Cancel Modal Component
 const CancelModal = () => (
   <>
-    <h2 className="booking-history-modal__title">Cancel Booking Instructions</h2>
+    <h2 className="booking-history-modal__title">
+      Cancel Booking Instructions
+    </h2>
     <div className="booking-history-modal__body">
       <p>
         To cancel your flight booking, please contact our customer service team.
@@ -85,69 +85,44 @@ const BookingHistory = () => {
   const [filter, setFilter] = useState("all");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      const userId = sessionStorage.getItem("userId");
-
-      // Fetch all necessary data in parallel
-      const [reservationsResponse, flightsResponse, allocationResponse] = await Promise.all([
-        api.get("/reservations"),
-        api.get("/flight"),
-        api.get("/FlightSeatAllocation")
-      ]);
-
-      const allReservations = reservationsResponse.data;
-      const flights = flightsResponse.data;
-      const allocations = allocationResponse.data;
-
-      // Filter reservations for current user
-      const userReservations = allReservations.filter(
-        booking => booking.userId === userId
-      );
-
-      const data = userReservations.map((booking) => {
-        const flight = flights.find((f) => f.flightId === booking.flightId);
-        const allocation = allocations.find((a) => a.allocationId === booking.allocationId);
-
-        return {
-          id: booking.reservationId,
-          reservationCode: booking.reservationCode,
-          flightId: booking.flightId,
-          allocationId: booking.allocationId,
-          flightNumber: flight ? flight.flightNumber : "N/A",
-          from: flight ? flight.originAirportName : "N/A",
-          to: flight ? flight.destinationAirportName : "N/A",
-          date: booking.travelDate,
-          price: booking.totalPrice,
-          paymentStatus: booking.reservationStatus === "Paid",
-          status: booking.reservationStatus,
-          seatClass: allocation ? allocation.seatClassName : "N/A",
-          numberOfPassengers: booking.numberOfBlockedSeats || 0
-        };
-      });
-
-      // Sort bookings by date, most recent first
-      data.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      setBookings(data);
-      setFilteredBookings(data);
-      setError(null);
-    } catch (error) {
-      console.error("Error fetching bookings: ", error);
-      setError("Failed to load bookings. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const currentUserId = sessionStorage.getItem("userId");
+
+        const reservationsResponse = await api.get("/reservations");
+        const flightsResponse = await api.get("/flight");
+        const flights = flightsResponse.data;
+
+        const userReservations = reservationsResponse.data.filter(
+          (reservation) => reservation.userId === currentUserId
+        );
+
+        const data = userReservations.map((booking) => {
+          const flight = flights.find((f) => f.flightId === booking.flightId);
+
+          return {
+            id: booking.reservationId,
+            reservationCode: booking.reservationCode,
+            flightNumber: flight ? flight.flightNumber : "N/A",
+            from: flight ? flight.originAirportName : "N/A",
+            to: flight ? flight.destinationAirportName : "N/A",
+            date: booking.travelDate,
+            price: booking.totalPrice,
+            paymentStatus: booking.reservationStatus === "Paid",
+            status: booking.reservationStatus,
+          };
+        });
+
+        setBookings(data);
+      } catch (error) {
+        console.error("Error fetching bookings: ", error);
+      }
+    };
+
     fetchBookings();
   }, []);
-
   useEffect(() => {
     if (filter === "all") {
       setFilteredBookings(bookings);
@@ -168,6 +143,10 @@ const BookingHistory = () => {
 
   const handleConfirmReservation = async (booking) => {
     try {
+      // Debugging: Log the booking ID
+      console.log("Booking ID:", booking.id);
+
+      // Fetch passengers from the backend
       const passengersResponse = await fetch(
         `https://localhost:7238/api/Passenger/Passengers?reservationId=${booking.id}`,
         {
@@ -180,13 +159,16 @@ const BookingHistory = () => {
       );
 
       if (!passengersResponse.ok) {
+        // Debugging: Log the backend error message
         const errorMessage = await passengersResponse.text();
         console.error("Backend error:", errorMessage);
+
         throw new Error("Failed to fetch passengers.");
       }
 
       const passengers = await passengersResponse.json();
 
+      // Prepare reservation data
       const reservationData = {
         userId: sessionStorage.getItem("userId"),
         tripDetails: {
@@ -199,18 +181,21 @@ const BookingHistory = () => {
         totalPrice: booking.price,
         passengers: passengers,
         contactInfo: {
-          firstName: sessionStorage.getItem("userFirstName") || "DefaultFirstName",
+          firstName:
+            sessionStorage.getItem("userFirstName") || "DefaultFirstName",
           lastName: sessionStorage.getItem("userLastName") || "DefaultLastName",
           email: sessionStorage.getItem("userEmail") || "default@example.com",
           phone: sessionStorage.getItem("userPhone") || "123456789",
         },
       };
 
+      // Store reservation data in sessionStorage
       sessionStorage.setItem("checkoutData", JSON.stringify(reservationData));
+
+      // Navigate to the Payment page
       navigate("/payment");
     } catch (error) {
       console.error("Error preparing reservation data:", error);
-      setError("Failed to prepare reservation data. Please try again.");
     }
   };
 
@@ -239,10 +224,7 @@ const BookingHistory = () => {
         <CancelModal />
       </Modal>
 
-      {loading && <div className="flight-booking__loading">Loading...</div>}
-      {error && <div className="flight-booking__error">{error}</div>}
-      
-      {!loading && !error && filteredBookings.length === 0 ? (
+      {filteredBookings.length === 0 ? (
         <div className="flight-booking__empty">
           <p>No bookings found.</p>
         </div>
@@ -262,7 +244,7 @@ const BookingHistory = () => {
             </thead>
             <tbody>
               {filteredBookings.map((booking) => (
-                <tr key={booking.reservationCode}>
+                <tr key={booking.code}>
                   <td>{booking.flightNumber}</td>
                   <td>{booking.from}</td>
                   <td>{booking.to}</td>
@@ -307,5 +289,4 @@ const BookingHistory = () => {
   );
 };
 
-export default BookingHistory;
-
+export default BookingHistory;  
