@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import "../../assets/css/ClientDashboard/BookingHistory.css";
-// Modal Component
+
 const Modal = ({ isOpen, onClose, children }) => {
   useEffect(() => {
     const handleEscape = (event) => {
@@ -37,10 +37,11 @@ const Modal = ({ isOpen, onClose, children }) => {
   );
 };
 
-// Cancel Modal Component
 const CancelModal = () => (
   <>
-    <h2 className="booking-history-modal__title">Cancel Booking Instructions</h2>
+    <h2 className="booking-history-modal__title">
+      Cancel Booking Instructions
+    </h2>
     <div className="booking-history-modal__body">
       <p>
         To cancel your flight booking, please contact our customer service team.
@@ -85,76 +86,63 @@ const BookingHistory = () => {
   const [filter, setFilter] = useState("all");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      const userId = sessionStorage.getItem("userId");
-
-      // Fetch all necessary data in parallel
-      const [reservationsResponse, flightsResponse, allocationResponse] = await Promise.all([
-        api.get("/reservations"),
-        api.get("/flight"),
-        api.get("/FlightSeatAllocation")
-      ]);
-
-      const allReservations = reservationsResponse.data;
-      const flights = flightsResponse.data;
-      const allocations = allocationResponse.data;
-
-      // Filter reservations for current user
-      const userReservations = allReservations.filter(
-        booking => booking.userId === userId
-      );
-
-      const data = userReservations.map((booking) => {
-        const flight = flights.find((f) => f.flightId === booking.flightId);
-        const allocation = allocations.find((a) => a.allocationId === booking.allocationId);
-
-        return {
-          id: booking.reservationId,
-          reservationCode: booking.reservationCode,
-          flightId: booking.flightId,
-          allocationId: booking.allocationId,
-          flightNumber: flight ? flight.flightNumber : "N/A",
-          from: flight ? flight.originAirportName : "N/A",
-          to: flight ? flight.destinationAirportName : "N/A",
-          date: booking.travelDate,
-          price: booking.totalPrice,
-          paymentStatus: booking.reservationStatus === "Paid",
-          status: booking.reservationStatus,
-          seatClass: allocation ? allocation.seatClassName : "N/A",
-          numberOfPassengers: booking.numberOfBlockedSeats || 0
-        };
-      });
-
-      // Sort bookings by date, most recent first
-      data.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      setBookings(data);
-      setFilteredBookings(data);
-      setError(null);
-    } catch (error) {
-      console.error("Error fetching bookings: ", error);
-      setError("Failed to load bookings. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        // Lấy UserId từ sessionStorage
+        const userId = sessionStorage.getItem("userId");
+  
+        if (!userId) {
+          console.error("UserId not found in sessionStorage");
+          return;
+        }
+  
+        // Gọi API để lấy danh sách reservations và flights
+        const reservationsResponse = await api.get("/reservations");
+        const flightsResponse = await api.get("/flight");
+        const flights = flightsResponse.data;
+  
+        // Lọc reservation theo UserId
+        const userReservations = reservationsResponse.data.filter(
+          (booking) => booking.userId === userId
+        );
+  
+        // Kết hợp dữ liệu reservations với flights
+        const data = userReservations.map((booking) => {
+          const flight = flights.find((f) => f.flightId === booking.flightId);
+  
+          return {
+            id: booking.reservationId,
+            reservationCode: booking.reservationCode,
+            flightNumber: flight ? flight.flightNumber : "N/A",
+            airlineName: flight ? flight.airlineName : "N/A",
+            flightId: flight ? flight.flightId : null,
+            from: flight ? flight.originAirportName : "N/A",
+            to: flight ? flight.destinationAirportName : "N/A",
+            date: booking.travelDate,
+            price: booking.totalPrice,
+            paymentStatus: booking.reservationStatus === "Paid",
+            status: booking.reservationStatus,
+          };
+        });
+  
+        // Sắp xếp theo ngày
+        data.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+        setBookings(data);
+      } catch (error) {
+        console.error("Error fetching bookings: ", error);
+      }
+    };
+  
     fetchBookings();
   }, []);
+  
 
   useEffect(() => {
     if (filter === "all") {
       setFilteredBookings(bookings);
-    } else if (filter === "paid") {
-      setFilteredBookings(bookings.filter((booking) => booking.paymentStatus));
-    } else if (filter === "pending") {
-      setFilteredBookings(bookings.filter((booking) => !booking.paymentStatus));
     } else {
       setFilteredBookings(
         bookings.filter((booking) => booking.status === filter)
@@ -168,6 +156,36 @@ const BookingHistory = () => {
 
   const handleConfirmReservation = async (booking) => {
     try {
+      console.log("Booking ID:", booking.id);
+
+      // Fetch reservation details to get AllocationId
+      const reservationResponse = await fetch(
+        `https://localhost:7238/api/Reservations/${booking.reservationCode}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!reservationResponse.ok) {
+        const errorMessage = await reservationResponse.text();
+        console.error("Backend error fetching reservation:", errorMessage);
+        throw new Error("Failed to fetch reservation details.");
+      }
+
+      const reservationDetails = await reservationResponse.json();
+      console.log("Reservation Details:", reservationDetails);
+
+      const allocationId = reservationDetails.allocationId;
+
+      if (!allocationId) {
+        throw new Error("Allocation ID is missing in the reservation.");
+      }
+
+      // Fetch passengers
       const passengersResponse = await fetch(
         `https://localhost:7238/api/Passenger/Passengers?reservationId=${booking.id}`,
         {
@@ -181,36 +199,73 @@ const BookingHistory = () => {
 
       if (!passengersResponse.ok) {
         const errorMessage = await passengersResponse.text();
-        console.error("Backend error:", errorMessage);
+        console.error("Backend error fetching passengers:", errorMessage);
         throw new Error("Failed to fetch passengers.");
       }
 
-      const passengers = await passengersResponse.json();
+      let passengers = await passengersResponse.json();
+      passengers = passengers.map((p) => ({
+        firstName: p.firstName,
+        lastName: p.lastName,
+        gender: p.gender,
+        email: p.email,
+        phoneNumber: p.phoneNumber,
+      }));
+      console.log("Mapped Passengers:", passengers);
+      sessionStorage.setItem("passengers", JSON.stringify(passengers));
 
+      // Fetch seat class using AllocationId
+      const seatClassResponse = await fetch(
+        `https://localhost:7238/api/SeatClass/GetClassNameByFlightAndAllocation?flightId=${booking.flightId}&allocationId=${allocationId}`
+      );
+
+      if (!seatClassResponse.ok) {
+        const errorMessage = await seatClassResponse.text();
+        console.error("Backend error fetching seat class:", errorMessage);
+        throw new Error("Failed to fetch seat class.");
+      }
+
+      console.log("Seat Class Response:", seatClassResponse);
+
+      const seatClassRaw = await seatClassResponse.text();
+      const seatClass = seatClassRaw.trim();
+      console.log("Validated Seat Class:", seatClass);
+
+      // Retrieve user data from userProfile
+      const userProfile =
+        JSON.parse(sessionStorage.getItem("userProfile")) || {};
+
+      // Prepare reservation data
       const reservationData = {
         userId: sessionStorage.getItem("userId"),
+        reservationId: booking.id,
         tripDetails: {
           airlineName: booking.airlineName || "N/A",
           flightNumber: booking.flightNumber || "N/A",
           flightId: booking.flightId,
           departureTime: booking.date,
-          allocationId: booking.allocationId,
+          allocationId: allocationId || "N/A",
+          seatClass: seatClass || "N/A",
         },
         totalPrice: booking.price,
-        passengers: passengers,
+        passengers,
         contactInfo: {
-          firstName: sessionStorage.getItem("userFirstName") || "DefaultFirstName",
-          lastName: sessionStorage.getItem("userLastName") || "DefaultLastName",
-          email: sessionStorage.getItem("userEmail") || "default@example.com",
-          phone: sessionStorage.getItem("userPhone") || "123456789",
+          firstName: userProfile.firstName || "Guest",
+          lastName: userProfile.lastName || "User",
+          email: userProfile.email || "default@example.com",
+          phoneNumber: userProfile.phoneNumber || "123456789",
         },
       };
 
+      console.log("Prepared Reservation Data:", reservationData);
+
+      // Store reservation data in sessionStorage
       sessionStorage.setItem("checkoutData", JSON.stringify(reservationData));
+
+      // Navigate to the Payment page
       navigate("/payment");
     } catch (error) {
       console.error("Error preparing reservation data:", error);
-      setError("Failed to prepare reservation data. Please try again.");
     }
   };
 
@@ -226,8 +281,6 @@ const BookingHistory = () => {
             onChange={(e) => setFilter(e.target.value)}
           >
             <option value="all">All Bookings</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
             <option value="Cancelled">Cancelled</option>
             <option value="Blocked">Blocked</option>
             <option value="Confirmed">Confirmed</option>
@@ -239,10 +292,7 @@ const BookingHistory = () => {
         <CancelModal />
       </Modal>
 
-      {loading && <div className="flight-booking__loading">Loading...</div>}
-      {error && <div className="flight-booking__error">{error}</div>}
-      
-      {!loading && !error && filteredBookings.length === 0 ? (
+      {filteredBookings.length === 0 ? (
         <div className="flight-booking__empty">
           <p>No bookings found.</p>
         </div>
@@ -262,7 +312,7 @@ const BookingHistory = () => {
             </thead>
             <tbody>
               {filteredBookings.map((booking) => (
-                <tr key={booking.reservationCode}>
+                <tr key={booking.code}>
                   <td>{booking.flightNumber}</td>
                   <td>{booking.from}</td>
                   <td>{booking.to}</td>
@@ -276,22 +326,22 @@ const BookingHistory = () => {
                     </span>
                   </td>
                   <td className="space-x-2">
-                    <button
-                      className="flight-booking__action-btn"
-                      onClick={() => handleViewDetails(booking)}
-                    >
-                      Details
-                    </button>
                     {booking.status === "Blocked" && (
                       <button
-                        className="flight-booking__action-btn confirm"
+                        className="flight-booking__action-btn confirm btn btn-success"
                         onClick={() => handleConfirmReservation(booking)}
                       >
                         Confirm Reservation
                       </button>
                     )}
                     <button
-                      className="flight-booking__action-btn cancel"
+                      className="flight-booking__action-btn btn btn-primary"
+                      onClick={() => handleViewDetails(booking)}
+                    >
+                      Details
+                    </button>
+                    <button
+                      className="flight-booking__action-btn cancel btn btn-danger"
                       onClick={() => setIsModalOpen(true)}
                     >
                       Cancel
@@ -308,4 +358,3 @@ const BookingHistory = () => {
 };
 
 export default BookingHistory;
-
